@@ -13,14 +13,8 @@ class _CreatedAndUpdatedTimestamps(models.Model):
 
 
 class User(AbstractUser):
-    username = models.EmailField(
-        verbose_name='email address',
-        max_length=255,
-        unique=True,
-        error_messages={
-            'unique': _("A user with that username already exists."),
-        },
-    )
+    email = models.EmailField()
+    email2 = models.EmailField(blank=True)
 
     # Django doesn't have a one-to-many field other than as the
     # reverse lookup of a foreign key.

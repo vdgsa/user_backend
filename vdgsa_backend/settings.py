@@ -24,6 +24,7 @@ SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ALLOWED_HOSTS = []
 
@@ -43,9 +44,22 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'django_extensions',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 
     'accounts',
+
+    'django.contrib.sites',
 ]
+
+SITE_ID = 2  # for django.contrib.sites
+
+# IMPORTANT: When we redirect users from the Wix site to register,
+# set the "next" GET query param to redirect them back to the page
+# they were on.
+# TODO: change this to the url of the Wix site members area.
+LOGIN_REDIRECT_URL = '/404'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -62,7 +76,7 @@ ROOT_URLCONF = 'vdgsa_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -115,6 +129,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 500

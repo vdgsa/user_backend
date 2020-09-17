@@ -1,7 +1,7 @@
 import itertools
 from typing import Any
 from django.contrib.auth.models import Group
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db import transaction
 from django.utils import timezone
 from django.views import View
@@ -111,16 +111,11 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
                 owner=user, valid_until=valid_until,
                 membership_type=MembershipSubscription.MembershipType.regular
             )
-            family_members = [
-                User.objects.get_or_create(username=username)[0]
-                for username in request.data.get('family_members', [])
-            ]
-            subscription.family_members.set(family_members)
             history_entry = MembershipSubscriptionHistory.objects.create(
                 owner=user, valid_from=now, valid_until=valid_until,
                 membership_type=subscription.membership_type
             )
-            history_entry.family_members.set(family_members)
+
             return response.Response(MembershipSubscriptionSerializer(subscription).data)
         else:
             # Extend existing subscription by 1 year
@@ -152,10 +147,19 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
         _check_is_requested_user_or_membership_secretary(request, user)
 
         if 'family_members' in request.data:
-            user.owned_subscription.family_members.set([
-                User.objects.get_or_create(username=username)[0]
-                for username in request.data.get('family_members')
-            ])
+            family_members = []
+            for username in request.data.get('family_members'):
+                try:
+                    family_members.append(User.objects.get(username=username))
+                except ObjectDoesNotExist:
+                    return response.Response(
+                        f'Requested family memebr {username} does not exist.'
+                        'Please have them create and account and then try your request again.',
+                        400
+                    )
+
+            user.owned_subscription.family_members.set([family_members])
+
         return response.Response(
             MembershipSubscriptionSerializer(user.owned_subscription).data)
 

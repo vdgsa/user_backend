@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from .models import MembershipSubscriptionHistory, User, MembershipSubscription
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
