@@ -51,7 +51,11 @@ INSTALLED_APPS = [
     'accounts',
 
     'django.contrib.sites',
+
+    'corsheaders'
 ]
+
+CORS_ALLOWED_ORIGINS = []
 
 SITE_ID = 2  # for django.contrib.sites
 
@@ -62,6 +66,7 @@ SITE_ID = 2  # for django.contrib.sites
 LOGIN_REDIRECT_URL = '/404'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

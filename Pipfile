@@ -18,6 +18,7 @@ djangorestframework = "*"
 psycopg2 = "*"
 django-extensions = "*"
 django-allauth = "*"
+django-cors-headers = "*"
 
 [requires]
 python_version = "3.8"
