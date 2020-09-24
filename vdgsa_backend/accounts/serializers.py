@@ -1,7 +1,6 @@
-from django.contrib.auth.models import Group
 from rest_framework import serializers
 
-from .models import MembershipSubscriptionHistory, User, MembershipSubscription
+from .models import MembershipSubscription, MembershipSubscriptionHistory, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -9,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id',
-            'username',
+            'email',
             'first_name',
             'last_name',
             'owned_subscription',
@@ -24,7 +23,7 @@ class NestedUserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id',
-            'username',
+            'email',
             'first_name',
             'last_name',
         ]

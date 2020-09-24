@@ -15,14 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-
+from django.views.defaults import page_not_found
 from rest_framework.authtoken import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('accounts.urls')),
-    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
-    path('api/token_auth/', views.obtain_auth_token),
+    path('accounts/', include('vdgsa_backend.accounts.urls')),
+    path('token_auth/', views.obtain_auth_token),
 
-    path('accounts/', include('allauth.urls')),
+    path('login/', page_not_found, {'exception': Exception()}),
+    path('logout/', page_not_found, {'exception': Exception()}),
+    path('', include('django.contrib.auth.urls')),
 ]

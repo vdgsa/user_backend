@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from typing import List
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,7 @@ SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
 DEBUG = True
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: List[str] = []
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -44,26 +45,15 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'django_extensions',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
 
-    'accounts',
-
-    'django.contrib.sites',
+    'vdgsa_backend.accounts',
 
     'corsheaders'
 ]
 
-CORS_ALLOWED_ORIGINS = []
+CORS_ALLOWED_ORIGINS: List[str] = []
 
-SITE_ID = 2  # for django.contrib.sites
-
-# IMPORTANT: When we redirect users from the Wix site to register,
-# set the "next" GET query param to redirect them back to the page
-# they were on.
-# TODO: change this to the url of the Wix site members area.
-LOGIN_REDIRECT_URL = '/404'
+WIX_SITE_URL = 'https://webmaster85689.wixsite.com/vdgsa-test/membersArea/landing'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -125,16 +115,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 500

@@ -1,7 +1,10 @@
-from django.db import models
+from __future__ import annotations
+
+import uuid
+
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.views.decorators.http import last_modified
 
 
 class _CreatedAndUpdatedTimestamps(models.Model):
@@ -13,8 +16,8 @@ class _CreatedAndUpdatedTimestamps(models.Model):
 
 
 class User(AbstractUser):
-    email = models.EmailField()
-    email2 = models.EmailField(blank=True)
+    # Require that usernames are email addresses
+    username = models.EmailField(unique=True)
 
     # Django doesn't have a one-to-many field other than as the
     # reverse lookup of a foreign key.
