@@ -17,11 +17,9 @@ class UserTestCase(TestCase):
         user.refresh_from_db()
 
         self.assertEqual(username, user.username)
+        # email should automatically be set to username's value.
+        self.assertEqual(username, user.email)
         self.assertFalse(user.is_superuser)
-
-        # Make sure that auto-generated, unused usernames don't collide.
-        user2 = User.objects.create_user('robin@robin.com', password='norisetnrnoweftan')
-        self.assertNotEqual(user.username, user2.username)
 
     def test_error_username_not_unique(self) -> None:
         username = 'spam@spam.com'

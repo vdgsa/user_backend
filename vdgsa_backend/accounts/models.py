@@ -1,9 +1,9 @@
 from __future__ import annotations
-
-import uuid
+from typing import Any
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 
@@ -31,6 +31,15 @@ class User(AbstractUser):
     )
 
     last_modified = models.DateTimeField(auto_now=True)
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        # User.email is used by some out-of-the-box features (like
+        # password reset emails), so we want to make sure that
+        # email is set to the same value as username.
+        if self.email != self.username:
+            self.email = self.username
+
+        super().save(*args, **kwargs)
 
 
 class MembershipSubscription(_CreatedAndUpdatedTimestamps, models.Model):
