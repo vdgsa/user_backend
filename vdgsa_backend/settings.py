@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 from typing import List
 
+import stripe  # type: ignore
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,6 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
+
+stripe.key = 'pk_live_usJMqkUJfxvqtJ8d4mhwQdK7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -47,6 +51,7 @@ INSTALLED_APPS = [
     'django_extensions',
 
     'vdgsa_backend.accounts',
+    'vdgsa_backend.api_schema',
 
     'corsheaders'
 ]

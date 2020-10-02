@@ -1,9 +1,9 @@
 from __future__ import annotations
+
 from typing import Any
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 
@@ -40,6 +40,23 @@ class User(AbstractUser):
             self.email = self.username
 
         super().save(*args, **kwargs)
+
+
+class PendingMembershipSubscriptionPurchase(_CreatedAndUpdatedTimestamps, models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        help_text="The user to purchase a subscription for."
+    )
+
+    stripe_payment_intent_id = models.TextField(
+        help_text="The PaymentIntent ID for the stripe checkout session for this purchase.")
+
+    is_completed = models.BooleanField(
+        blank=True,
+        help_text="Indicates whether payment has succeeded"
+                  " and the subscription has been purchased."
+    )
 
 
 class MembershipSubscription(_CreatedAndUpdatedTimestamps, models.Model):

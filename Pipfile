@@ -11,6 +11,8 @@ autopep8 = "*"
 pycodestyle = "*"
 pydocstyle = "*"
 isort = "*"
+pyyaml = "*"
+uritemplate = "*"
 
 [packages]
 django = "*"
@@ -18,6 +20,7 @@ djangorestframework = "*"
 psycopg2 = "*"
 django-extensions = "*"
 django-cors-headers = "*"
+stripe = "*"
 
 [requires]
 python_version = "3.8"

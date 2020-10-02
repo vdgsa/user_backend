@@ -1,7 +1,8 @@
 import itertools
 from functools import wraps
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, TypeVar, Union, cast
 
+import stripe  # type: ignore
 from django.contrib.auth import password_validation
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -10,7 +11,7 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from rest_framework import mixins, permissions, response, status, viewsets
+from rest_framework import mixins, permissions, status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.generics import get_object_or_404
@@ -19,15 +20,25 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
-from .models import MembershipSubscription, MembershipSubscriptionHistory, User
+from vdgsa_backend.api_schema.schema import CustomSchema
+
+from .models import (
+    MembershipSubscription,
+    MembershipSubscriptionHistory,
+    PendingMembershipSubscriptionPurchase,
+    User
+)
 from .serializers import (
     MembershipSubscriptionHistorySerializer,
     MembershipSubscriptionSerializer,
     UserSerializer
 )
 
+# See https://github.com/python/mypy/issues/3157
+_DecoratedFunc = TypeVar('_DecoratedFunc', bound=Callable[..., Any])
 
-def convert_django_validation_error(func: Callable[..., Any]) -> Callable[..., Any]:
+
+def convert_django_validation_error(func: _DecoratedFunc) -> _DecoratedFunc:
     """
     If the decorated function raises django.core.exceptions.ValidationError,
     catches the error and raises rest_framework.exceptions.ValidationError
@@ -48,7 +59,7 @@ def convert_django_validation_error(func: Callable[..., Any]) -> Callable[..., A
 
             raise DRFValidationError(detail)
 
-    return decorated_func
+    return cast(_DecoratedFunc, decorated_func)
 
 
 class IsAuthenticatedAndActive(permissions.IsAuthenticated):
@@ -61,14 +72,14 @@ class IsAuthenticatedAndActive(permissions.IsAuthenticated):
         if not is_authenticated:
             return False
 
-        return request.user.is_active
+        return cast(User, request.user).is_active
 
     def has_object_permission(self, request: Request, view: View, obj: Any) -> bool:
         is_authenticated = super().has_object_permission(request, view, obj)
         if not is_authenticated:
             return False
 
-        return request.user.is_active
+        return cast(User, request.user).is_active
 
 
 class RequireAuthentication:
@@ -81,16 +92,39 @@ class RequireAuthentication:
 
 
 class CurrentUserView(RequireAuthentication, APIView):
+    schema = CustomSchema(
+        operation_data={
+            'GET': {
+                'operationId': 'getCurrentUser',
+                'responses': {
+                    '200': {
+                        'description': 'Returns the current authenticated User',
+                        'content': {
+                            'application/json': {
+                                'schema': {
+                                    '$ref': '#/components/schemas/User'
+                                }
+                            }
+                        }
+                    },
+                    '401': {
+                        'description': 'The requester is not authenticated.'
+                    }
+                }
+            }
+        }
+    )
+
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return Response(UserSerializer(request.user).data)
 
 
 class UserViewSetPermission(permissions.BasePermission):
     def has_permission(self, request: Request, view: View) -> bool:
-        return request.user.has_perm('accounts.membership_secretary')
+        return cast(User, request.user).has_perm('accounts.membership_secretary')
 
     def has_object_permission(self, request: Request, view: View, obj: Any) -> bool:
-        return (request.user.has_perm('accounts.membership_secretary')
+        return (cast(User, request.user).has_perm('accounts.membership_secretary')
                 or request.kwargs['pk'] == request.user.pk)
 
 
@@ -107,6 +141,44 @@ class UserViewSet(
 
 
 class UserRegistrationView(APIView):
+    schema = CustomSchema(
+        operation_data={
+            'POST': {
+                'operationId': 'registerUser',
+                'description': 'Creates a new user and returns an auth token',
+                'requestBody': {
+                    'content': {
+                        'application/json': {
+                            'schema': {
+                                'properties': {
+                                    'username': {
+                                        'type': 'string',
+                                        'format': 'email'
+                                    },
+                                    'password': {
+                                        'type': 'string'
+                                    }
+                                },
+                            },
+                            'required': ['username', 'password']
+                        }
+                    }
+                },
+                'responses': {
+                    '201': {
+                        'content': {
+                            'application/json': {
+                                'schema': {
+                                    '$ref': '#/components/schemas/AuthToken'
+                                }
+                            }
+                        }
+                    },
+                }
+            }
+        }
+    )
+
     @convert_django_validation_error
     @transaction.atomic
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -119,7 +191,10 @@ class UserRegistrationView(APIView):
             token = Token.objects.create(user=user)
             return Response({'token': token.key}, status=status.HTTP_201_CREATED)
         except IntegrityError:
-            return Response('A user with this username address already exists')
+            return Response(
+                'A user with this username address already exists',
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 def _check_is_requested_user_or_membership_secretary(request: Request, user: User) -> None:
@@ -134,23 +209,72 @@ def _plus_one_calendar_year(start_at: timezone.datetime) -> timezone.datetime:
 class StripeWebhookView(APIView):
     # See https://stripe.com/docs/webhooks/build#example-code
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        # try:
-        #     event = stripe.Event.construct_from(
-        #         request.data, stripe.api_key
-        #     )
-        # except ValueError as e:
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
+        try:
+            event = stripe.Event.construct_from(
+                request.data, stripe.api_key
+            )
+        except ValueError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except stripe.error.SignatureVerificationError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        # if event.type == 'payment_intent.succeeded':
-        #     payment_intent = event.data.object
-        #     return Response()
+        if event.type == 'payment_intent.succeeded':
+            # TODO: check "payment_type" in metadata
+            payment_intent = event.data.object
+            with transaction.atomic():
+                pending_purchase = get_object_or_404(
+                    PendingMembershipSubscriptionPurchase.objects.select_for_update(),
+                    stripe_payment_intent_id=payment_intent.id
+                )
+                _create_or_renew_subscription(pending_purchase.user)
+                pending_purchase.is_completed = True
+                pending_purchase.save()
+                return Response()
 
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-# /api/users/:username/membership_subscription/
 class MembershipSubscriptionView(RequireAuthentication, APIView):
+    schema = None
+    # schema = CustomSchema(
+    #     register_serializers={
+    #         'MembershipSubscription': MembershipSubscriptionSerializer
+    #     },
+    #     operation_data={
+    #         'GET': {
+    #             'operationId': 'getMembershipSubscription',
+    #             'responses': {
+    #                 '200': {
+    #                     'content': {
+    #                         'application/json': {
+    #                             'schema': {
+    #                                 '$ref': '#/components/schemas/MembershipSubscription'
+    #                             }
+    #                         }
+    #                     }
+    #                 },
+    #             }
+    #         },
+    #         'POST': {
+    #             'requestBody': {
+    #                 'content': {
+    #                     'application/json': {
+    #                         'schema': {
+    #                             'membership_type': {
+
+    #                             },
+    #                             'required': ['membership_type']
+    #                         }
+    #                     }
+    #                 }
+    #             },
+    #             'responses': {
+
+    #             }
+    #         }
+    #     }
+    # )
+
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Returns the membership subscription associated
@@ -195,14 +319,91 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
         user = get_object_or_404(User.objects.select_for_update(), username=kwargs['username'])
         _check_is_requested_user_or_membership_secretary(request, user)
 
-        # If the requester is not the requested user, they must be the membership secretary.
+        membership_type = request.data.get('membership_type', None)
+        if membership_type is None:
+            return Response(
+                'Missing required request body key "membership_type"',
+                status.HTTP_400_BAD_REQUEST
+            )
+
+        line_items = []
+
+        if membership_type == MembershipSubscription.MembershipType.lifetime:
+            return Response(
+                'This API endpoint cannot be used for granting lifetime memberships',
+                status.HTTP_400_BAD_REQUEST
+            )
+
+        # If the request sender is not the specified user, they must be the membership secretary.
         if request.user != user:
             return Response(
                 MembershipSubscriptionSerializer(_create_or_renew_subscription(user)).data
             )
 
-        # TODO: Create stripe session and return it.
-        return Response('stripe payment not implemented yet.', status=400)
+        if membership_type == MembershipSubscription.MembershipType.student:
+            line_items.append({
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': '1-year Student Membership'
+                    },
+                    'unit_amount': 35  # FIXME: get actual number
+                },
+                'quantity': 1,
+            })
+        elif membership_type == MembershipSubscription.MembershipType.regular:
+            line_items.append({
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': '1-year Membership'
+                    },
+                    'unit_amount': 40  # FIXME: get actual number
+                },
+                'quantity': 1,
+            })
+        else:
+            return Response(
+                f'Invalid membership type: {membership_type}',
+                status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            donation = int(request.data.get('donation', 0))
+        except ValueError:
+            return Response('"donation" must be a number', status.HTTP_400_BAD_REQUEST)
+
+        if donation < 0:
+            return Response('"donation" may not be negative', status.HTTP_400_BAD_REQUEST)
+
+        if donation:
+            line_items.append({
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': 'Donation'
+                    },
+                    'unit_amount': donation
+                },
+                'quantity': 1,
+            })
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode='payment',
+            customer_email=user.username,
+            # success_url=FIXME
+            # cancel_url=FIXME
+            metadata={'transaction_type': 'membership'}
+        )
+
+        PendingMembershipSubscriptionPurchase.objects.create(
+            user=user,
+            stripe_payment_intent_id=session.payment_intent,
+        )
+
+        return Response(session.id)
 
     @transaction.atomic
     def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -279,8 +480,9 @@ def _create_or_renew_subscription(user: User) -> MembershipSubscription:
         return user.owned_subscription
 
 
-# /api/users/:username/membership_history/
 class MembershipSubscriptionHistoryView(RequireAuthentication, APIView):
+    schema = None
+
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Returns a list of MembershipSubscriptionHistory objects

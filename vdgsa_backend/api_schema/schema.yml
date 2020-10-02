@@ -1,0 +1,283 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /accounts/users/current/:
+    get:
+      operationId: getCurrentUser
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: Returns the current authenticated User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: The requester is not authenticated.
+      tags:
+      - accounts
+  /accounts/users/:
+    get:
+      operationId: listUsers
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - accounts
+  /accounts/users/{id}/:
+    get:
+      operationId: retrieveUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - accounts
+    put:
+      operationId: updateUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - accounts
+    patch:
+      operationId: partialUpdateUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+      tags:
+      - accounts
+  /accounts/register/:
+    post:
+      operationId: registerUser
+      description: Creates a new user and returns an auth token
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                username:
+                  type: string
+                  format: email
+                password:
+                  type: string
+            required:
+            - username
+            - password
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+      tags:
+      - accounts
+  /token_auth/:
+    post:
+      operationId: createAuthToken
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+      tags:
+      - token-auth
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        owned_subscription:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            last_modified:
+              type: string
+              format: date-time
+              readOnly: true
+            valid_until:
+              type: string
+              format: date-time
+              nullable: true
+            membership_type:
+              enum:
+              - regular
+              - student
+              - lifetime
+              type: string
+            owner:
+              type: integer
+          required:
+          - membership_type
+          - owner
+          readOnly: true
+        subscription_is_family_member_for:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            last_modified:
+              type: string
+              format: date-time
+              readOnly: true
+            valid_until:
+              type: string
+              format: date-time
+              nullable: true
+            membership_type:
+              enum:
+              - regular
+              - student
+              - lifetime
+              type: string
+            owner:
+              type: integer
+          required:
+          - membership_type
+          - owner
+          readOnly: true
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - username
+      - password

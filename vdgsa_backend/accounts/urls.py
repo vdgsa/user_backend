@@ -9,9 +9,9 @@ router.register(r'users', views.UserViewSet)
 
 urlpatterns = [
     path('users/current/', views.CurrentUserView.as_view()),
-    path('users/<email>/membership_subscription/',
+    path('users/<username>/membership_subscription/',
          views.MembershipSubscriptionView.as_view()),
-    path('users/<email>/subscription_history/',
+    path('users/<username>/subscription_history/',
          views.MembershipSubscriptionHistoryView.as_view()),
     path('', include(router.urls)),
 

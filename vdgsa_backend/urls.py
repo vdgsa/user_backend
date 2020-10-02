@@ -21,6 +21,7 @@ from rest_framework.authtoken import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('vdgsa_backend.accounts.urls')),
+    path('schema/', include('vdgsa_backend.api_schema.urls')),
     path('token_auth/', views.obtain_auth_token),
 
     path('login/', page_not_found, {'exception': Exception()}),
