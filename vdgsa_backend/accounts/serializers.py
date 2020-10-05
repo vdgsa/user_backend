@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id',
-            'email',
+            'username',
             'first_name',
             'last_name',
             'owned_subscription',
@@ -23,7 +23,7 @@ class NestedUserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id',
-            'email',
+            'username',
             'first_name',
             'last_name',
         ]

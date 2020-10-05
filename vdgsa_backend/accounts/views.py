@@ -186,7 +186,7 @@ class UserRegistrationView(APIView):
         password = request.data['password']
         password_validation.validate_password(password)
         try:
-            user = User.objects.create_user(username, password)
+            user = User.objects.create_user(username=username, email=username, password=password)
             user.full_clean()
             token = Token.objects.create(user=user)
             return Response({'token': token.key}, status=status.HTTP_201_CREATED)
