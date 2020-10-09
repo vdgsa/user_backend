@@ -1,13 +1,15 @@
-from django.contrib.auth.models import Permission
 from unittest.case import skip
-from vdgsa_backend.accounts.serializers import UserSerializer
+
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import Permission
+from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from vdgsa_backend.accounts.models import User
-from django.test import TestCase
 from rest_framework.test import APIClient
+
+from vdgsa_backend.accounts.models import User
+from vdgsa_backend.accounts.serializers import UserSerializer
 
 
 class UserViewTestCase(TestCase):
@@ -32,6 +34,7 @@ class UserViewTestCase(TestCase):
             reverse('register'), {'username': username, 'password': password}
         )
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        assert response.data is not None
         self.assertIn('token', response.data)
 
         loaded_user = Token.objects.get(key=response.data['token']).user
@@ -55,6 +58,7 @@ class UserViewTestCase(TestCase):
         self.client.force_authenticate(self.membership_secretary)
         response = self.client.get(reverse('user-list'))
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        assert response.data is not None
         self.assertCountEqual(
             UserSerializer([self.membership_secretary, self.user], many=True).data,
             response.data['results']
@@ -99,6 +103,7 @@ class UserViewTestCase(TestCase):
             data=new_data
         )
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        assert response.data is not None
         self.assertEqual(new_data['first_name'], response.data['first_name'])
         self.assertEqual(new_data['last_name'], response.data['last_name'])
 
@@ -116,6 +121,7 @@ class UserViewTestCase(TestCase):
             data=new_data
         )
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        assert response.data is not None
         self.assertEqual(new_data['first_name'], response.data['first_name'])
         self.assertEqual(new_data['last_name'], response.data['last_name'])
 
@@ -148,7 +154,7 @@ class UserViewTestCase(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(original_username, self.user.username)
 
-    @skip
+    @skip('Not implemented')
     def test_user_change_username_self(self) -> None:
         self.fail()
 
@@ -160,6 +166,7 @@ class UserViewTestCase(TestCase):
             data={'username': 'new_username@username.org'}
         )
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+        assert response.data is not None
         self.assertEqual(new_username, response.data['username'])
 
         self.user.refresh_from_db()

@@ -1,4 +1,3 @@
-from rest_framework.permissions import DjangoModelPermissions
 import itertools
 from functools import wraps
 from typing import Any, Callable, Dict, List, TypeVar, Union, cast
@@ -177,7 +176,7 @@ class ChangeUsernameView(APIView):
                 'responses': {
                     '202': {
                         'description': 'NOT YET IMPLEMENTED. '
-                                        'An email is sent to the new email address '
+                                       'An email is sent to the new email address '
                                        'with a link to validate and finish updating '
                                        'the new email address.',
                     },
@@ -331,7 +330,7 @@ class StripeWebhookView(APIView):
 
 
 class MembershipSubscriptionView(RequireAuthentication, APIView):
-    schema = None
+    schema = None  # type: ignore
     # schema = CustomSchema(
     #     register_serializers={
     #         'MembershipSubscription': MembershipSubscriptionSerializer
@@ -577,7 +576,7 @@ def _create_or_renew_subscription(user: User) -> MembershipSubscription:
 
 
 class MembershipSubscriptionHistoryView(RequireAuthentication, APIView):
-    schema = None
+    schema = None  # type: ignore
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
