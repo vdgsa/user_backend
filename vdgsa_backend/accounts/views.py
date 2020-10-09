@@ -1,3 +1,4 @@
+from rest_framework.permissions import DjangoModelPermissions
 import itertools
 from functools import wraps
 from typing import Any, Callable, Dict, List, TypeVar, Union, cast
@@ -119,25 +120,103 @@ class CurrentUserView(RequireAuthentication, APIView):
         return Response(UserSerializer(request.user).data)
 
 
-class UserViewSetPermission(permissions.BasePermission):
+class IsMembershipSecretary(permissions.BasePermission):
     def has_permission(self, request: Request, view: View) -> bool:
         return cast(User, request.user).has_perm('accounts.membership_secretary')
 
-    def has_object_permission(self, request: Request, view: View, obj: Any) -> bool:
-        return (cast(User, request.user).has_perm('accounts.membership_secretary')
-                or request.kwargs['pk'] == request.user.pk)
 
-
-class UserViewSet(
+class ListUserViewSet(
     RequireAuthentication,
     mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
     GenericViewSet
 ):
     queryset = User.objects.all().order_by('username')
     serializer_class = UserSerializer
-    permission_classes = [UserViewSetPermission]
+    permission_classes = [IsMembershipSecretary]
+
+
+class IsMembershipSecretaryOrCurrentUser(permissions.BasePermission):
+    def has_object_permission(self, request: Request, view: View, obj: Any) -> bool:
+        return (cast(User, request.user).has_perm('accounts.membership_secretary')
+                or view.kwargs['username'] == request.user.username)
+
+
+class RetrieveUpdateUserViewSet(
+    RequireAuthentication,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    GenericViewSet
+):
+    lookup_field = 'username'
+    lookup_value_regex = '.+'
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsMembershipSecretaryOrCurrentUser]
+
+
+class ChangeUsernameView(APIView):
+    schema = CustomSchema(
+        operation_data={
+            'PUT': {
+                'operationId': 'changeUsername',
+                'requestBody': {
+                    'content': {
+                        'application/json': {
+                            'schema': {
+                                'properties': {
+                                    'username': {
+                                        'type': 'string',
+                                        'format': 'email'
+                                    },
+                                },
+                            },
+                            'required': ['username']
+                        }
+                    }
+                },
+                'responses': {
+                    '202': {
+                        'description': 'NOT YET IMPLEMENTED. '
+                                        'An email is sent to the new email address '
+                                       'with a link to validate and finish updating '
+                                       'the new email address.',
+                    },
+                    '200': {
+                        'description': "If the request was sent by the membership secretary "
+                                       "(to update another user's username), "
+                                       "the username is immediately updated.",
+                        'content': {
+                            'application/json': {
+                                'schema': {
+                                    '$ref': '#/components/schemas/User'
+                                }
+                            }
+                        }
+                    },
+                }
+            }
+        }
+    )
+
+    def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = get_object_or_404(User, username=kwargs['username'])
+        _check_is_requested_user_or_membership_secretary(request, user)
+
+        if 'username' not in request.data:
+            return Response(
+                'Missing required request body param: "username"',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if request.user.username != kwargs['username']:
+            # Requester is membership secretary
+            user.username = request.data['username']
+            user.full_clean()
+            user.save()
+            return Response(UserSerializer(user).data)
+
+        # TODO: Email user
+        return Response('Not implemented yet', status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserRegistrationView(APIView):
@@ -182,6 +261,18 @@ class UserRegistrationView(APIView):
     @convert_django_validation_error
     @transaction.atomic
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        if 'username' not in request.data:
+            return Response(
+                'Missing required request body param: "username"',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if 'password' not in request.data:
+            return Response(
+                'Missing required request body param: "password"',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         username = request.data['username']
         password = request.data['password']
         password_validation.validate_password(password)
@@ -197,8 +288,13 @@ class UserRegistrationView(APIView):
             )
 
 
-def _check_is_requested_user_or_membership_secretary(request: Request, user: User) -> None:
-    if user != request.user and not user.has_perm('accounts.membership_secretary'):
+def _check_is_requested_user_or_membership_secretary(
+    request: Request,
+    requested_user: User
+) -> None:
+    request_sender = request.user
+    if (requested_user != request_sender
+            and not request_sender.has_perm('accounts.membership_secretary')):
         raise PermissionDenied
 
 

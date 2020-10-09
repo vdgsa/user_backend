@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
             'owned_subscription',
             'subscription_is_family_member_for',
         ]
-        read_only_fields = ['owned_subscription', 'subscription_is_family_member_for']
+        read_only_fields = ['username', 'owned_subscription', 'subscription_is_family_member_for']
         depth = 1
 
 

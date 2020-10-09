@@ -57,15 +57,15 @@ paths:
           description: ''
       tags:
       - accounts
-  /accounts/users/{id}/:
+  /accounts/users/{username}/:
     get:
       operationId: retrieveUser
       description: ''
       parameters:
-      - name: id
+      - name: username
         in: path
         required: true
-        description: A unique integer value identifying this user.
+        description: ''
         schema:
           type: string
       responses:
@@ -81,10 +81,10 @@ paths:
       operationId: updateUser
       description: ''
       parameters:
-      - name: id
+      - name: username
         in: path
         required: true
-        description: A unique integer value identifying this user.
+        description: ''
         schema:
           type: string
       requestBody:
@@ -111,10 +111,10 @@ paths:
       operationId: partialUpdateUser
       description: ''
       parameters:
-      - name: id
+      - name: username
         in: path
         required: true
-        description: A unique integer value identifying this user.
+        description: ''
         schema:
           type: string
       requestBody:
@@ -188,6 +188,40 @@ paths:
           description: ''
       tags:
       - token-auth
+  /accounts/users/{username}/username/:
+    put:
+      operationId: changeUsername
+      description: ''
+      parameters:
+      - name: username
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                username:
+                  type: string
+                  format: email
+            required:
+            - username
+      responses:
+        '202':
+          description: NOT YET IMPLEMENTED. An email is sent to the new email address
+            with a link to validate and finish updating the new email address.
+        '200':
+          description: If the request was sent by the membership secretary (to update
+            another user's username), the username is immediately updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      tags:
+      - accounts
 components:
   schemas:
     User:
@@ -196,10 +230,10 @@ components:
         id:
           type: integer
           readOnly: true
-        email:
+        username:
           type: string
           format: email
-          maxLength: 254
+          readOnly: true
         first_name:
           type: string
           maxLength: 150

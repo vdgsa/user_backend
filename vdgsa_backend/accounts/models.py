@@ -86,3 +86,20 @@ class MembershipSubscriptionHistory(_CreatedAndUpdatedTimestamps, models.Model):
         max_length=50,
         choices=MembershipSubscription.MembershipType.choices
     )
+
+
+# See https://stackoverflow.com/a/37988537
+# This class is used to define our custom permissions.
+class AccountPermissions(models.Model):
+    class Meta:
+        # No database table creation or deletion
+        # operations will be performed for this model.
+        managed = False
+        # disable "add", "change", "delete"
+        # and "view" default permissions
+        default_permissions = ()
+
+        # Our custom permissions.
+        permissions = (
+            ('membership_secretary', 'Membership Secretary'),
+        )
