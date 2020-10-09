@@ -25,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
 
-stripe.key = 'pk_live_usJMqkUJfxvqtJ8d4mhwQdK7'
+# SET THIS VALUE BUT DO NOT COMMIT
+stripe.api_key = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

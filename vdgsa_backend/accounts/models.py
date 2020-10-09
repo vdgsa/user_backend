@@ -54,6 +54,7 @@ class PendingMembershipSubscriptionPurchase(_CreatedAndUpdatedTimestamps, models
 
     is_completed = models.BooleanField(
         blank=True,
+        default=False,
         help_text="Indicates whether payment has succeeded"
                   " and the subscription has been purchased."
     )

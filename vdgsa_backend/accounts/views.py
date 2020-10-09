@@ -321,7 +321,7 @@ class StripeWebhookView(APIView):
                     PendingMembershipSubscriptionPurchase.objects.select_for_update(),
                     stripe_payment_intent_id=payment_intent.id
                 )
-                _create_or_renew_subscription(pending_purchase.user)
+                create_or_renew_subscription(pending_purchase.user)
                 pending_purchase.is_completed = True
                 pending_purchase.save()
                 return Response()
@@ -330,45 +330,63 @@ class StripeWebhookView(APIView):
 
 
 class MembershipSubscriptionView(RequireAuthentication, APIView):
-    schema = None  # type: ignore
-    # schema = CustomSchema(
-    #     register_serializers={
-    #         'MembershipSubscription': MembershipSubscriptionSerializer
-    #     },
-    #     operation_data={
-    #         'GET': {
-    #             'operationId': 'getMembershipSubscription',
-    #             'responses': {
-    #                 '200': {
-    #                     'content': {
-    #                         'application/json': {
-    #                             'schema': {
-    #                                 '$ref': '#/components/schemas/MembershipSubscription'
-    #                             }
-    #                         }
-    #                     }
-    #                 },
-    #             }
-    #         },
-    #         'POST': {
-    #             'requestBody': {
-    #                 'content': {
-    #                     'application/json': {
-    #                         'schema': {
-    #                             'membership_type': {
-
-    #                             },
-    #                             'required': ['membership_type']
-    #                         }
-    #                     }
-    #                 }
-    #             },
-    #             'responses': {
-
-    #             }
-    #         }
-    #     }
-    # )
+    schema = CustomSchema(
+        register_serializers={
+            'MembershipSubscription': MembershipSubscriptionSerializer
+        },
+        operation_data={
+            'GET': {
+                'operationId': 'getMembershipSubscription',
+                'responses': {
+                    '200': {
+                        'content': {
+                            'application/json': {
+                                'schema': {
+                                    '$ref': '#/components/schemas/MembershipSubscription'
+                                }
+                            }
+                        }
+                    },
+                }
+            },
+            'POST': {
+                'operationId': 'purchaseMembershipSubscription',
+                'requestBody': {
+                    'content': {
+                        'application/json': {
+                            'schema': {
+                                'properties': {
+                                    'membership_type': {
+                                        'type': 'string',
+                                        'enum': [
+                                            MembershipSubscription.MembershipType.regular.value,
+                                            MembershipSubscription.MembershipType.student.value,
+                                        ]
+                                    },
+                                    'donation': {
+                                        'type': 'integer',
+                                    }
+                                },
+                                'required': ['membership_type']
+                            }
+                        }
+                    }
+                },
+                'responses': {
+                    '202': {
+                        'content': {
+                            'application/json': {
+                                'schema': {
+                                    'description': 'A stripe session checkout ID.',
+                                    'type': 'string'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
@@ -390,6 +408,7 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
 
         return Response(MembershipSubscriptionSerializer(subscription).data)
 
+    @transaction.atomic
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Purchases a subscription for the specified user or renews
@@ -401,9 +420,10 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
         If the requester does not have the "membership_secretary" permission,
         or if the membership secretary is renewing their own membership,
         a stripe checkout session is created and returned with 202 status.
-
         Otherwise, the requested user's subscription is updated immediately
-        (no payment is initiated). If a new subscription was created,
+        (no payment is initiated).
+
+        If a new subscription was created,
         the subscription data is returned with 201 status.
         If an existing subscription was renewed, the updated subscription
         data is returned with 200 status.
@@ -422,6 +442,7 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
             )
 
         line_items = []
+        total = 0
 
         if membership_type == MembershipSubscription.MembershipType.lifetime:
             return Response(
@@ -432,28 +453,32 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
         # If the request sender is not the specified user, they must be the membership secretary.
         if request.user != user:
             return Response(
-                MembershipSubscriptionSerializer(_create_or_renew_subscription(user)).data
+                MembershipSubscriptionSerializer(create_or_renew_subscription(user)).data
             )
 
         if membership_type == MembershipSubscription.MembershipType.student:
+            student_rate = 35 * 100  # FIXME: get actual number
+            # total += student_rate
             line_items.append({
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
                         'name': '1-year Student Membership'
                     },
-                    'unit_amount': 35  # FIXME: get actual number
+                    'unit_amount': student_rate
                 },
                 'quantity': 1,
             })
         elif membership_type == MembershipSubscription.MembershipType.regular:
+            regular_rate = 40 * 100  # FIXME: get actual number
+            # total += regular_rate
             line_items.append({
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
                         'name': '1-year Membership'
                     },
-                    'unit_amount': 40  # FIXME: get actual number
+                    'unit_amount': regular_rate
                 },
                 'quantity': 1,
             })
@@ -472,13 +497,14 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
             return Response('"donation" may not be negative', status.HTTP_400_BAD_REQUEST)
 
         if donation:
+            # total += donation
             line_items.append({
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
                         'name': 'Donation'
                     },
-                    'unit_amount': donation
+                    'unit_amount': donation * 100
                 },
                 'quantity': 1,
             })
@@ -488,8 +514,8 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
             line_items=line_items,
             mode='payment',
             customer_email=user.username,
-            # success_url=FIXME
-            # cancel_url=FIXME
+            success_url='https://webmaster85689.wixsite.com/vdgsa-test',
+            cancel_url='https://webmaster85689.wixsite.com/vdgsa-test',
             metadata={'transaction_type': 'membership'}
         )
 
@@ -532,7 +558,7 @@ class MembershipSubscriptionView(RequireAuthentication, APIView):
 
 
 @transaction.atomic
-def _create_or_renew_subscription(user: User) -> MembershipSubscription:
+def create_or_renew_subscription(user: User) -> MembershipSubscription:
     """
     Extends the given user's membership subscription by 1 year. If the
     user does not own a membership subscription, one is created.
