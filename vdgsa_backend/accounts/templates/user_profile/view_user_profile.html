@@ -1,0 +1,7 @@
+<a href="{% url 'edit-user-profile' pk=object.pk %}">Edit</a>
+<div>
+  <b>Username:</b> {{object.username}}
+  <a href="{% url 'change-email-request' pk=object.pk %}">Change Username</a>
+</div>
+<div><b>First Name</b>: {{object.first_name}}</div>
+<div><b>Last Name</b>: {{object.last_name}}</div>

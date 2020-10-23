@@ -1,0 +1,5 @@
+Please set a password for your VdGSA account by visiting the following page:
+
+{{protocol}}://{{domain}}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+Your username is {{email}}

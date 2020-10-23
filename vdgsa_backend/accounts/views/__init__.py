@@ -1,0 +1,9 @@
+from .change_email import ChangeEmailRequestView as ChangeEmailRequestView
+from .change_email import change_current_user_email_request as change_current_user_email_request
+from .change_email import change_email_confirm as change_email_confirm
+from .user_profile import EditUserProfileView as EditUserProfileView
+from .user_profile import UserProfileView as UserProfileView
+from .user_profile import current_user_profile_view as current_user_profile_view
+from .user_profile import edit_current_user_profile_view as edit_current_user_profile_view
+from .user_registration import UserRegistrationView as UserRegistrationView
+from .views import CurrentUserView as CurrentUserView

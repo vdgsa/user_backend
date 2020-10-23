@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List
 
 import stripe  # type: ignore
+from django.urls.base import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,11 +31,14 @@ stripe.api_key = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+# Change the email backend in production
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ALLOWED_HOSTS: List[str] = []
 
 AUTH_USER_MODEL = 'accounts.User'
+LOGIN_URL = reverse_lazy('login')
 
 # Application definition
 

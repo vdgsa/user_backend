@@ -1,0 +1,7 @@
+{# This template is used with django.contrib.auth.views.LoginView #}
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Sign In</button>
+</form>

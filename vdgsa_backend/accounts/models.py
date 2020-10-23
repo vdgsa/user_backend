@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import uuid
 from typing import Any
 
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -40,6 +42,12 @@ class User(AbstractUser):
             self.email = self.username
 
         super().save(*args, **kwargs)
+
+
+class ChangeEmailRequest(_CreatedAndUpdatedTimestamps, models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    new_email = models.EmailField()
 
 
 class PendingMembershipSubscriptionPurchase(_CreatedAndUpdatedTimestamps, models.Model):

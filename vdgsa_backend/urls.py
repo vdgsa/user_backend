@@ -24,7 +24,7 @@ urlpatterns = [
     path('schema/', include('vdgsa_backend.api_schema.urls')),
     path('token_auth/', views.obtain_auth_token),
 
-    path('login/', page_not_found, {'exception': Exception()}),
-    path('logout/', page_not_found, {'exception': Exception()}),
+    # path('login/', page_not_found, {'exception': Exception()}),
+    # path('logout/', page_not_found, {'exception': Exception()}),
     path('', include('django.contrib.auth.urls')),
 ]
