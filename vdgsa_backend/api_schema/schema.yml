@@ -19,6 +19,27 @@ paths:
           description: The requester is not authenticated.
       tags:
       - accounts
+  /accounts/stripe_webhook/:
+    post:
+      operationId: createStripeWebhook
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - accounts
   /token_auth/:
     post:
       operationId: createAuthToken
@@ -62,6 +83,9 @@ components:
         last_name:
           type: string
           maxLength: 150
+        subscription:
+          type: string
+          readOnly: true
         owned_subscription:
           type: object
           properties:

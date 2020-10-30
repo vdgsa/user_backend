@@ -1,3 +1,4 @@
+from vdgsa_backend.accounts.views import subscription
 from rest_framework import serializers
 
 from .models import MembershipSubscription, MembershipSubscriptionHistory, User
@@ -11,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
+            'subscription',
             'owned_subscription',
             'subscription_is_family_member_for',
         ]
