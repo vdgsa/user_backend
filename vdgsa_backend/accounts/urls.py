@@ -1,3 +1,4 @@
+from vdgsa_backend.accounts.views.views import StripeWebhookView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
@@ -38,6 +39,7 @@ urlpatterns = [
     path('user/<int:pk>/subscription/', views.PurchaseSubscriptionView.as_view(),
          name='purchase-subscription'),
 
+    path('stripe_webhook/', views.StripeWebhookView.as_view()),
     path('stripe_checkout/<stripe_session_id>/', views.stripe_checkout_view,
          name='stripe-checkout'),
     path('stripe_cancel/', views.stripe_cancel_view,

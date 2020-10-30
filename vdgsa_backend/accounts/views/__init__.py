@@ -10,3 +10,4 @@ from .user_profile import current_user_profile_view as current_user_profile_view
 from .user_profile import edit_current_user_profile_view as edit_current_user_profile_view
 from .user_registration import UserRegistrationView as UserRegistrationView
 from .views import CurrentUserView as CurrentUserView
+from .views import StripeWebhookView as StripeWebhookView

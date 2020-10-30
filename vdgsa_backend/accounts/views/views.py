@@ -169,25 +169,26 @@ class StripeWebhookView(APIView):
             event = stripe.Event.construct_from(
                 request.data, stripe.api_key
             )
-        except ValueError as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        except stripe.error.SignatureVerificationError as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, stripe.error.SignatureVerificationError) as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
-        if event.type == 'payment_intent.succeeded':
-            # TODO: check "payment_type" in metadata
-            payment_intent = event.data.object
+        transaction_type = event.data.object.metadata.get("transaction_type", None)
+        if event.type == 'checkout.session.completed' and transaction_type == 'membership':
             with transaction.atomic():
                 pending_purchase = get_object_or_404(
                     PendingMembershipSubscriptionPurchase.objects.select_for_update(),
-                    stripe_payment_intent_id=payment_intent.id
+                    stripe_payment_intent_id=event.data.object.payment_intent
                 )
+                if pending_purchase.is_completed:
+                    return Response('Purchase already completed')
                 create_or_renew_subscription(pending_purchase.user)
                 pending_purchase.is_completed = True
                 pending_purchase.save()
-                return Response()
+                return Response('Purchase completed')
 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            f'No action taken for "{event.type}" event with transaction type "{transaction_type}"'
+        )
 
 
 # class MembershipSubscriptionView(RequireAuthentication, APIView):
