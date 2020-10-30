@@ -1,4 +1,3 @@
-from vdgsa_backend.accounts.views import subscription
 from rest_framework import serializers
 
 from .models import MembershipSubscription, MembershipSubscriptionHistory, User
