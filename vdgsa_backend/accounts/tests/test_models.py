@@ -3,9 +3,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from vdgsa_backend.accounts.models import (
-    MembershipSubscription,
-    MembershipSubscriptionHistory,
-    User
+    MembershipSubscription, MembershipSubscriptionHistory, MembershipType, User
 )
 from vdgsa_backend.exceptions import DjangoValidationError
 
@@ -55,7 +53,7 @@ class MembershipSubscriptionTestCase(TestCase):
         subscription = MembershipSubscription.objects.create(
             owner=self.owner,
             valid_until=now,
-            membership_type=MembershipSubscription.MembershipType.regular
+            membership_type=MembershipType.regular
         )
         subscription.family_members.set(family)
 
@@ -64,7 +62,7 @@ class MembershipSubscriptionTestCase(TestCase):
         self.assertCountEqual(family, subscription.family_members.all())
         self.assertEqual(now, subscription.valid_until)
         self.assertEqual(
-            MembershipSubscription.MembershipType.regular,
+            MembershipType.regular,
             subscription.membership_type
         )
 
@@ -72,7 +70,7 @@ class MembershipSubscriptionTestCase(TestCase):
         subscription = MembershipSubscription.objects.create(
             owner=self.owner,
             valid_until=None,
-            membership_type=MembershipSubscription.MembershipType.lifetime
+            membership_type=MembershipType.lifetime
         )
         subscription.refresh_from_db()
         self.assertEqual(self.owner, subscription.owner)
@@ -94,7 +92,7 @@ class MembershipSubscriptionTestCase(TestCase):
         with self.assertRaises(IntegrityError):
             MembershipSubscription.objects.create(
                 valid_until=None,
-                membership_type=MembershipSubscription.MembershipType.lifetime
+                membership_type=MembershipType.lifetime
             )
 
 
@@ -112,7 +110,7 @@ class MembershipSubscriptionHistoryTestCase(TestCase):
             owner=owner,
             valid_from=valid_from,
             valid_until=valid_until,
-            membership_type=MembershipSubscription.MembershipType.student
+            membership_type=MembershipType.student
         )
         history.family_members.set(family)
 
@@ -122,7 +120,7 @@ class MembershipSubscriptionHistoryTestCase(TestCase):
         self.assertEqual(valid_from, history.valid_from)
         self.assertEqual(valid_until, history.valid_until)
         self.assertEqual(
-            MembershipSubscription.MembershipType.student,
+            MembershipType.student,
             history.membership_type
         )
 
@@ -131,7 +129,7 @@ class MembershipSubscriptionHistoryTestCase(TestCase):
             owner=owner,
             valid_from=valid_from,
             valid_until=valid_until,
-            membership_type=MembershipSubscription.MembershipType.student
+            membership_type=MembershipType.student
         )
         history2.family_members.set(family)
 
@@ -141,6 +139,6 @@ class MembershipSubscriptionHistoryTestCase(TestCase):
         self.assertEqual(valid_from, history2.valid_from)
         self.assertEqual(valid_until, history2.valid_until)
         self.assertEqual(
-            MembershipSubscription.MembershipType.student,
+            MembershipType.student,
             history2.membership_type
         )

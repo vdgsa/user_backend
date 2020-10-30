@@ -5,3 +5,10 @@
 </div>
 <div><b>First Name</b>: {{object.first_name}}</div>
 <div><b>Last Name</b>: {{object.last_name}}</div>
+
+{% if object.subscription is None %}
+<div><a href="{% url 'purchase-subscription' pk=object.pk %}">Become a member</a></div>
+{% else %}
+<div>Your membership is valid until {{object.subscription.valid_until}}.</div>
+<div><a href="{% url 'purchase-subscription' pk=object.pk %}">Renew your membership</a></div>
+{% endif %}

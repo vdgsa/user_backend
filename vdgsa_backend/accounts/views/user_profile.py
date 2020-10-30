@@ -20,7 +20,7 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     template_name = 'user_profile/view_user_profile.html'
 
-    def test_func(self) -> Optional[bool]:
+    def test_func(self) -> bool:
         return is_requested_user_or_membership_secretary(
             cast(User, self.get_object()), self.request
         )

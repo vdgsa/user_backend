@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
+from typing import Any, Optional
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -33,6 +33,13 @@ class User(AbstractUser):
     )
 
     last_modified = models.DateTimeField(auto_now=True)
+
+    @property
+    def subscription(self) -> Optional[MembershipSubscription]:
+        if hasattr(self, 'owned_subscription'):
+            return self.owned_subscription
+
+        return self.subscription_is_family_member_for
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         # User.email is used by some out-of-the-box features (like
@@ -68,16 +75,17 @@ class PendingMembershipSubscriptionPurchase(_CreatedAndUpdatedTimestamps, models
     )
 
 
+class MembershipType(models.TextChoices):
+    regular = 'regular', 'Regular ($40)'
+    student = 'student', 'Student ($35)'
+    lifetime = 'lifetime'
+
+
 class MembershipSubscription(_CreatedAndUpdatedTimestamps, models.Model):
     owner = models.OneToOneField(User, on_delete=models.PROTECT, related_name='owned_subscription')
     # family_members is the reverse lookup of a foreign key defined in User.
 
     valid_until = models.DateTimeField(null=True)
-
-    class MembershipType(models.TextChoices):
-        regular = 'regular'
-        student = 'student'
-        lifetime = 'lifetime'
 
     membership_type = models.CharField(max_length=50, choices=MembershipType.choices)
 
@@ -93,7 +101,7 @@ class MembershipSubscriptionHistory(_CreatedAndUpdatedTimestamps, models.Model):
 
     membership_type = models.CharField(
         max_length=50,
-        choices=MembershipSubscription.MembershipType.choices
+        choices=MembershipType.choices
     )
 
 

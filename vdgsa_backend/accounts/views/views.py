@@ -20,15 +20,11 @@ from rest_framework.viewsets import GenericViewSet
 from vdgsa_backend.api_schema.schema import CustomSchema
 
 from ..models import (
-    MembershipSubscription,
-    MembershipSubscriptionHistory,
-    PendingMembershipSubscriptionPurchase,
-    User
+    MembershipSubscription, MembershipSubscriptionHistory, MembershipType,
+    PendingMembershipSubscriptionPurchase, User
 )
 from ..serializers import (
-    MembershipSubscriptionHistorySerializer,
-    MembershipSubscriptionSerializer,
-    UserSerializer
+    MembershipSubscriptionHistorySerializer, MembershipSubscriptionSerializer, UserSerializer
 )
 
 # See https://github.com/python/mypy/issues/3157
@@ -166,32 +162,32 @@ def _plus_one_calendar_year(start_at: timezone.datetime) -> timezone.datetime:
     return start_at.replace(year=start_at.year + 1)
 
 
-# class StripeWebhookView(APIView):
-#     # See https://stripe.com/docs/webhooks/build#example-code
-#     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-#         try:
-#             event = stripe.Event.construct_from(
-#                 request.data, stripe.api_key
-#             )
-#         except ValueError as e:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
-#         except stripe.error.SignatureVerificationError as e:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
+class StripeWebhookView(APIView):
+    # See https://stripe.com/docs/webhooks/build#example-code
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        try:
+            event = stripe.Event.construct_from(
+                request.data, stripe.api_key
+            )
+        except ValueError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except stripe.error.SignatureVerificationError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-#         if event.type == 'payment_intent.succeeded':
-#             # TODO: check "payment_type" in metadata
-#             payment_intent = event.data.object
-#             with transaction.atomic():
-#                 pending_purchase = get_object_or_404(
-#                     PendingMembershipSubscriptionPurchase.objects.select_for_update(),
-#                     stripe_payment_intent_id=payment_intent.id
-#                 )
-#                 create_or_renew_subscription(pending_purchase.user)
-#                 pending_purchase.is_completed = True
-#                 pending_purchase.save()
-#                 return Response()
+        if event.type == 'payment_intent.succeeded':
+            # TODO: check "payment_type" in metadata
+            payment_intent = event.data.object
+            with transaction.atomic():
+                pending_purchase = get_object_or_404(
+                    PendingMembershipSubscriptionPurchase.objects.select_for_update(),
+                    stripe_payment_intent_id=payment_intent.id
+                )
+                create_or_renew_subscription(pending_purchase.user)
+                pending_purchase.is_completed = True
+                pending_purchase.save()
+                return Response()
 
-#         return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 # class MembershipSubscriptionView(RequireAuthentication, APIView):
@@ -422,48 +418,47 @@ def _plus_one_calendar_year(start_at: timezone.datetime) -> timezone.datetime:
 #             MembershipSubscriptionSerializer(user.owned_subscription).data)
 
 
-# @transaction.atomic
-# def create_or_renew_subscription(user: User) -> MembershipSubscription:
-#     """
-#     Extends the given user's membership subscription by 1 year. If the
-#     user does not own a membership subscription, one is created.
+@transaction.atomic
+def create_or_renew_subscription(user: User) -> MembershipSubscription:
+    """
+    Extends the given user's membership subscription by 1 year. If the
+    user does not own a membership subscription, one is created.
 
-#     Returns the new or updated MembershipSubscription object.
-#     """
-#     if not hasattr(user, 'owned_subscription'):
-#         # Purchase new subscription
-#         now = timezone.now()
-#         valid_until = _plus_one_calendar_year(now)
+    Returns the new or updated MembershipSubscription object.
+    """
+    if not hasattr(user, 'owned_subscription'):
+        # Purchase new subscription
+        now = timezone.now()
+        valid_until = _plus_one_calendar_year(now)
 
-#         subscription = MembershipSubscription.objects.create(
-#             owner=user, valid_until=valid_until,
-#             membership_type=MembershipSubscription.MembershipType.regular
-#         )
-#         history_entry = MembershipSubscriptionHistory.objects.create(
-#             owner=user, valid_from=now, valid_until=valid_until,
-#             membership_type=subscription.membership_type
-#         )
+        subscription = MembershipSubscription.objects.create(
+            owner=user, valid_until=valid_until,
+            membership_type=MembershipType.regular
+        )
+        history_entry = MembershipSubscriptionHistory.objects.create(
+            owner=user, valid_from=now, valid_until=valid_until,
+            membership_type=subscription.membership_type
+        )
 
-#         return subscription
-#     else:
-#         if (user.owned_subscription.membership_type
-#                 == MembershipSubscription.MembershipType.lifetime):
-#             return user.owned_subscription
+        return subscription
+    else:
+        if user.owned_subscription.membership_type == MembershipType.lifetime:
+            return user.owned_subscription
 
-#         # Only lifetime members should have valid_until be None.
-#         assert user.owned_subscription.valid_until is not None
-#         # Extend existing subscription by 1 year
-#         valid_from = user.owned_subscription.valid_until
-#         valid_until = _plus_one_calendar_year(user.owned_subscription.valid_until)
-#         user.owned_subscription.valid_until = valid_until
-#         user.owned_subscription.save()
+        # Only lifetime members should have valid_until be None.
+        assert user.owned_subscription.valid_until is not None
+        # Extend existing subscription by 1 year
+        valid_from = user.owned_subscription.valid_until
+        valid_until = _plus_one_calendar_year(user.owned_subscription.valid_until)
+        user.owned_subscription.valid_until = valid_until
+        user.owned_subscription.save()
 
-#         history_entry = MembershipSubscriptionHistory.objects.create(
-#             owner=user, valid_from=valid_from, valid_until=valid_until,
-#             membership_type=user.owned_subscription.membership_type
-#         )
-#         history_entry.family_members.set(list(user.owned_subscription.family_members.all()))
-#         return user.owned_subscription
+        history_entry = MembershipSubscriptionHistory.objects.create(
+            owner=user, valid_from=valid_from, valid_until=valid_until,
+            membership_type=user.owned_subscription.membership_type
+        )
+        history_entry.family_members.set(list(user.owned_subscription.family_members.all()))
+        return user.owned_subscription
 
 
 # class MembershipSubscriptionHistoryView(RequireAuthentication, APIView):

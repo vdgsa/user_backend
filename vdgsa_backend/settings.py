@@ -19,15 +19,14 @@ from django.urls.base import reverse_lazy
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+with open(BASE_DIR / 'stripe_key') as f:
+    stripe.api_key = f.read().strip()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
-
-# SET THIS VALUE BUT DO NOT COMMIT
-stripe.api_key = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

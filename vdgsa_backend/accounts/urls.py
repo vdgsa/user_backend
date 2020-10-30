@@ -34,4 +34,12 @@ urlpatterns = [
 
     path('edit_profile/<int:pk>/', views.EditUserProfileView.as_view(), name='edit-user-profile'),
     path('edit_profile/', views.edit_current_user_profile_view, name='edit-current-user-profile'),
+
+    path('user/<int:pk>/subscription/', views.PurchaseSubscriptionView.as_view(),
+         name='purchase-subscription'),
+
+    path('stripe_checkout/<stripe_session_id>/', views.stripe_checkout_view,
+         name='stripe-checkout'),
+    path('stripe_cancel/', views.stripe_cancel_view,
+         name='stripe-cancel'),
 ]
