@@ -1,5 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+
 <form method="post">
   {% csrf_token %}
-  {{ form.as_p }}
+  {% include 'utils/form_body.tmpl' with form=form %}
   <button type="submit">Submit</button>
 </form>
+
+{% endblock %}

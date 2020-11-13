@@ -1,6 +1,0 @@
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Save</button>
-  <a href="{% url 'user-profile' pk=object.pk %}">Cancel</a>
-</form>

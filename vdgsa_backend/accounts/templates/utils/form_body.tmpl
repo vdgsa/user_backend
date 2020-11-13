@@ -1,0 +1,31 @@
+{% comment %}
+See https://docs.djangoproject.com/en/3.1/topics/forms/#rendering-fields-manually
+when we want to make our forms and error messages look nicer
+{% endcomment %}
+
+{% comment %}
+Note: The csrf_token tag only takes effect if this template is rendered directly.
+If this template is being included, you MUST still include the csrf_token tag
+in the parent template.
+{% endcomment %}
+
+{% csrf_token %}
+
+{% for field in form %}
+  <!-- IMPORTANT: The class used here should match the class part of the
+       default selector used in setup_ajax_submit (JS) -->
+  <div class="form-body-wrapper">
+    <label class="label">
+      {{field.label}} <br>
+      {{ field }}
+    </label>
+    {% if field.help_text %}
+    <!-- <p class="help">{{ field.help_text|safe }}</p> -->
+    {% endif %}
+    {{field.errors}}
+
+    {% comment %}
+    TODO: Add last modified timestamp
+    {% endcomment %}
+  </div>
+{% endfor %}

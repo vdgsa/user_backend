@@ -6,7 +6,7 @@ from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.urls.base import reverse
 from django.views.generic.base import View
 
@@ -14,6 +14,7 @@ from vdgsa_backend.accounts.models import (
     MembershipType, PendingMembershipSubscriptionPurchase, User
 )
 from vdgsa_backend.accounts.views.permissions import is_requested_user_or_membership_secretary
+from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.accounts.views.views import create_or_renew_subscription
 
 
@@ -32,38 +33,39 @@ class PurchaseSubscriptionForm(forms.Form):
 
 
 class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
-    def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
-        return self._render_form(PurchaseSubscriptionForm(self.requested_user))
-
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         form = PurchaseSubscriptionForm(self.requested_user, request.POST)
         if not form.is_valid():
-            return self._render_form(form)
+            return get_ajax_form_response(form, 400)
 
         # If the request sender is not the specified user, they must be the membership secretary.
         # In this case we immediately complete the purchase.
         if request.user != self.requested_user:
-            create_or_renew_subscription(self.requested_user)
-            return redirect(reverse('user-profile', kwargs={'pk': self.requested_user.pk}))
+            create_or_renew_subscription(self.requested_user, form.cleaned_data['membership_type'])
+            return get_ajax_form_response(form, 200)
+            # return redirect(reverse('user-profile', kwargs={'pk': self.requested_user.pk}))
 
         line_items = self._get_stripe_line_items(form)
+        redirect_url = request.build_absolute_uri(
+            reverse('user-profile', kwargs={'pk': self.requested_user.pk}))
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
             customer_email=self.requested_user.username,
-            success_url=request.build_absolute_uri(
-                reverse('user-profile', kwargs={'pk': self.requested_user.pk})),
-            cancel_url=request.build_absolute_uri(reverse('stripe-cancel')),
+            success_url=redirect_url,
+            cancel_url=redirect_url,
             metadata={'transaction_type': 'membership'}
         )
 
         PendingMembershipSubscriptionPurchase.objects.create(
             user=self.requested_user,
+            membership_type=form.cleaned_data['membership_type'],
             stripe_payment_intent_id=session.payment_intent,
         )
 
-        return redirect(reverse('stripe-checkout', kwargs={'stripe_session_id': session.id}))
+        return HttpResponse(session.id, content_type='text/plain', status=202)
+        # redirect(reverse('stripe-checkout', kwargs={'stripe_session_id': session.id}))
 
     def test_func(self) -> bool:
         return is_requested_user_or_membership_secretary(self.requested_user, self.request)

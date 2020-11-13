@@ -1,10 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+
 {# This template is used with django.contrib.auth.views.LoginView #}
 
 <form method="post">
   {% csrf_token %}
-  {{ form.as_p }}
+  {% include 'utils/form_body.tmpl' %}
   <button type="submit">Sign In</button>
   <div>
     <a href="{% url 'user-registration' %}">Create an account</a>
   </div>
+  <div>
+    <a href="{% url 'password_reset' %}">Forgot Password</a>
+  </div>
 </form>
+
+{% endblock %}

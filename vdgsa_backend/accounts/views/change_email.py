@@ -15,6 +15,7 @@ from django.views.generic.base import View
 
 from vdgsa_backend.accounts.models import ChangeEmailRequest, User
 from vdgsa_backend.accounts.views.permissions import is_requested_user_or_membership_secretary
+from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 
 
 class ChangeEmailForm(forms.ModelForm):
@@ -37,21 +38,18 @@ class ChangeEmailForm(forms.ModelForm):
 
 
 class ChangeEmailRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
-    def get(self, request: HttpRequest, pk: int) -> HttpResponse:
-        return self._render_form(ChangeEmailForm(self.requested_user))
-
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         form = ChangeEmailForm(self.requested_user, request.POST)
 
         if not form.is_valid():
-            return self._render_form(form)
+            return get_ajax_form_response(form, 400)
 
         # If the requester is the membership secretary, then complete the
         # email change immediately and redirect to the user profile page.
         if self.request.user.has_perm('accounts.membership_secretary'):
             self.requested_user.username = form.cleaned_data['new_email']
             self.requested_user.save()
-            return redirect(reverse('user-profile', kwargs={'pk': self.requested_user.pk}))
+            return HttpResponse(self.requested_user.username)
 
         change_request = form.save()
         send_mail(
@@ -72,7 +70,12 @@ The VdGSA Web Team
 ''',
         )
 
-        return render(request, 'change_email/change_email_pending.html')
+        return render(
+            request,
+            'change_email/change_email_pending.tmpl',
+            status=202,
+            context={'new_email': change_request.new_email}
+        )
 
     def test_func(self) -> Optional[bool]:
         return is_requested_user_or_membership_secretary(self.requested_user, self.request)
@@ -80,9 +83,6 @@ The VdGSA Web Team
     @cached_property
     def requested_user(self) -> User:
         return get_object_or_404(User, pk=self.kwargs['pk'])
-
-    def _render_form(self, form: ChangeEmailForm) -> HttpResponse:
-        return render(self.request, 'change_email/change_email_request.html', {'form': form})
 
 
 def change_email_confirm(request: HttpRequest, id: str) -> HttpResponse:

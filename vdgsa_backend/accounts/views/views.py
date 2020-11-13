@@ -181,7 +181,8 @@ class StripeWebhookView(APIView):
                 )
                 if pending_purchase.is_completed:
                     return Response('Purchase already completed')
-                create_or_renew_subscription(pending_purchase.user)
+                create_or_renew_subscription(
+                    pending_purchase.user, pending_purchase.membership_type)
                 pending_purchase.is_completed = True
                 pending_purchase.save()
                 return Response('Purchase completed')
@@ -420,7 +421,10 @@ class StripeWebhookView(APIView):
 
 
 @transaction.atomic
-def create_or_renew_subscription(user: User) -> MembershipSubscription:
+def create_or_renew_subscription(
+    user: User,
+    membership_type: str
+) -> MembershipSubscription:
     """
     Extends the given user's membership subscription by 1 year. If the
     user does not own a membership subscription, one is created.
@@ -434,7 +438,7 @@ def create_or_renew_subscription(user: User) -> MembershipSubscription:
 
         subscription = MembershipSubscription.objects.create(
             owner=user, valid_until=valid_until,
-            membership_type=MembershipType.regular
+            membership_type=membership_type
         )
         history_entry = MembershipSubscriptionHistory.objects.create(
             owner=user, valid_from=now, valid_until=valid_until,
@@ -452,6 +456,7 @@ def create_or_renew_subscription(user: User) -> MembershipSubscription:
         valid_from = user.owned_subscription.valid_until
         valid_until = _plus_one_calendar_year(user.owned_subscription.valid_until)
         user.owned_subscription.valid_until = valid_until
+        user.owned_subscription.membership_type = membership_type
         user.owned_subscription.save()
 
         history_entry = MembershipSubscriptionHistory.objects.create(

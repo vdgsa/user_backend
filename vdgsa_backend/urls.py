@@ -14,17 +14,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth import logout
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import include, path
-from django.views.defaults import page_not_found
 from rest_framework.authtoken import views
+
+
+def logout_view(request: HttpRequest) -> HttpResponse:
+    logout(request)
+    return HttpResponseRedirect('http://vdgsa.org')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('vdgsa_backend.accounts.urls')),
     path('schema/', include('vdgsa_backend.api_schema.urls')),
+
+    # TODO: remove
     path('token_auth/', views.obtain_auth_token),
 
     # path('login/', page_not_found, {'exception': Exception()}),
-    # path('logout/', page_not_found, {'exception': Exception()}),
+    path('logout/', logout_view, name='logout'),
     path('', include('django.contrib.auth.urls')),
 ]

@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load user_name %}
+
+<h2>Login Info</h2>
+<div><b>Email</b></div>
+<div>
+  {{object.username}}
+  <a href="javascript:void(false)" onclick="show_element('change-email-form')">(Change)</a>
+</div>
+
+<form
+  id="change-email-form"
+  method="post"
+  action="{% url 'change-email-request' pk=object.pk %}"
+>
+  {% csrf_token %}
+  {% include 'utils/form_body.tmpl' with form=change_email_form %}
+
+  <button type="submit">Submit</button>
+  <button type="button" onclick="hide_element('change-email-form')">
+    Cancel
+  </button>
+</form>
+
+<div id="change-email-msg"></div>
+
+{% if not perms.accounts.membership_secretary %}
+<div>
+  <b>Password</b>
+  <a href="{% url 'password_change' %}">(Change)</a>
+</div>
+{% endif %}
+
+<h2>Profile</h2>
+
+<form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
+  {% csrf_token %}
+  {% include 'utils/form_body.tmpl' with form=edit_profile_form %}
+
+  <button type="submit">Save</button>
+  <div class="last-saved"></div>
+</form>
+
+<h2>Membership</h2>
+
+{% if object.subscription is None %}
+  <div>
+    <a href="javascript:void(false)"
+       onclick="show_element('purchase-subscription-form')">
+      Become a member
+    </a>
+  </div>
+{% elif object.subscription.membership_type == 'lifetime' %}
+  <div>Your membership is valid forever!</div>
+{% elif object.subscription.owner != object %}
+  <div>You are a family member on {{object.subscription.owner | show_name}}'s membership.</div>
+  <div>Your membership is valid until {{object.subscription.valid_until}}</div>
+{% else %}
+  <!-- TODO: different message if membership expired -->
+  <div>Your membership is valid until {{object.subscription.valid_until}}</div>
+  <div>
+    <a href="javascript:void(false)"
+       onclick="show_element('purchase-subscription-form')">
+      Renew your membership
+    </a>
+  </div>
+{% endif %}
+
+<form
+  id="purchase-subscription-form"
+  method="post"
+  action="{% url 'purchase-subscription' pk=object.pk %}"
+>
+  {% csrf_token %}
+  {% include 'utils/form_body.tmpl' with form=membership_renewal_form %}
+
+  <button type="submit">Checkout</button>
+  <a href="javascript:void(false)" onclick="hide_element('purchase-subscription-form')">
+    Cancel
+  </a>
+</form>
+
+<style>
+#change-email-form, #purchase-subscription-form {
+  display: none;
+}
+</style>
+
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+function show_element(id) {
+  document.getElementById(id).style.display = 'block';
+}
+
+function hide_element(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function setup_ajax_submit(form_id, status_code_handlers = {}) {
+  // IMPORTANT: The latter half of this string should match the class
+  // used in templates/utils/form_body.tmpl
+  let form_body_selector = `#${form_id} .form-inputs-wrapper`;
+
+  let form = $('#' + form_id);
+  form.on('submit', function(event) {
+    event.preventDefault();
+
+    form.find('button').attr('disabled', true);
+    $.ajax(form.attr('action'), {
+      type: 'POST',
+      data: form.serialize(),
+      statusCode: {
+        400: function(response) {
+          console.log(response.responseText);
+          $(form_body_selector).html(response.responseText);
+        },
+        ...status_code_handlers
+      },
+      error: function(response) {
+        if (response.status !== 400) {
+          console.log(response);
+          // TODO: detect network/other errors and adjust message
+          alert('An unexpected error occured');
+        }
+      }
+    }).then(
+      setTimeout(
+        function() {
+          form.find('button').attr('disabled', false);
+        },
+        250
+      )
+    );
+  });
+}
+
+$().ready(function() {
+  setup_ajax_submit('change-email-form', {
+    200: function() {
+      location.reload();
+    },
+    202: function(data) {
+      $('#change-email-msg').html(data);
+    }
+  });
+
+  setup_ajax_submit('user-profile-form', {
+    200: function() {
+      $('#user-profile-form .last-saved').text(
+        `Saved at ${(new Date()).toLocaleTimeString()}`
+      );
+    }
+  });
+
+  setup_ajax_submit('purchase-subscription-form', {
+    200: function() {
+      location.reload();
+    },
+    202: function(session_id) {
+      let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
+      stripe.redirectToCheckout({
+        sessionId: session_id
+      });
+    }
+  });
+});
+</script>
+
+{% endblock %}

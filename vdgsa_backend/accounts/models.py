@@ -57,12 +57,20 @@ class ChangeEmailRequest(_CreatedAndUpdatedTimestamps, models.Model):
     new_email = models.EmailField()
 
 
+class MembershipType(models.TextChoices):
+    regular = 'regular', 'Regular ($40)'
+    student = 'student', 'Student ($35)'
+    lifetime = 'lifetime'
+
+
 class PendingMembershipSubscriptionPurchase(_CreatedAndUpdatedTimestamps, models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
         help_text="The user to purchase a subscription for."
     )
+
+    membership_type = models.CharField(max_length=50, choices=MembershipType.choices)
 
     stripe_payment_intent_id = models.TextField(
         help_text="The PaymentIntent ID for the stripe checkout session for this purchase.")
@@ -73,12 +81,6 @@ class PendingMembershipSubscriptionPurchase(_CreatedAndUpdatedTimestamps, models
         help_text="Indicates whether payment has succeeded"
                   " and the subscription has been purchased."
     )
-
-
-class MembershipType(models.TextChoices):
-    regular = 'regular', 'Regular ($40)'
-    student = 'student', 'Student ($35)'
-    lifetime = 'lifetime'
 
 
 class MembershipSubscription(_CreatedAndUpdatedTimestamps, models.Model):

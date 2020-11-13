@@ -1,3 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+
 <h3>Almost Done!</h3>
 To finish registering:
 <ol>
@@ -7,3 +10,5 @@ To finish registering:
 
 If you still haven't received the email, please visit the
 <a href="{% url 'password_reset' %}">password reset</a> page to send it again.
+
+{% endblock %}
