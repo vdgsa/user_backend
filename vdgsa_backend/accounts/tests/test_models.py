@@ -2,9 +2,7 @@ from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
 
-from vdgsa_backend.accounts.models import (
-    MembershipSubscription, MembershipSubscriptionHistory, MembershipType, User
-)
+from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.exceptions import DjangoValidationError
 
 
@@ -94,51 +92,3 @@ class MembershipSubscriptionTestCase(TestCase):
                 valid_until=None,
                 membership_type=MembershipType.lifetime
             )
-
-
-class MembershipSubscriptionHistoryTestCase(TestCase):
-    def test_create_with_all_fields(self) -> None:
-        owner = User.objects.create_user('someone@me.com', password='noweifvknowfv')
-        family = [
-            User.objects.create_user(f'user{i}@user.com', password='novrfunofvi')
-            for i in range(4)
-        ]
-
-        valid_from = timezone.now()
-        valid_until = valid_from + timezone.timedelta(hours=4)
-        history = MembershipSubscriptionHistory.objects.create(
-            owner=owner,
-            valid_from=valid_from,
-            valid_until=valid_until,
-            membership_type=MembershipType.student
-        )
-        history.family_members.set(family)
-
-        history.refresh_from_db()
-        self.assertEqual(owner, history.owner)
-        self.assertCountEqual(family, history.family_members.all())
-        self.assertEqual(valid_from, history.valid_from)
-        self.assertEqual(valid_until, history.valid_until)
-        self.assertEqual(
-            MembershipType.student,
-            history.membership_type
-        )
-
-        # Owner and family can have multiple history entries
-        history2 = MembershipSubscriptionHistory.objects.create(
-            owner=owner,
-            valid_from=valid_from,
-            valid_until=valid_until,
-            membership_type=MembershipType.student
-        )
-        history2.family_members.set(family)
-
-        history2.refresh_from_db()
-        self.assertEqual(owner, history2.owner)
-        self.assertCountEqual(family, history2.family_members.all())
-        self.assertEqual(valid_from, history2.valid_from)
-        self.assertEqual(valid_until, history2.valid_until)
-        self.assertEqual(
-            MembershipType.student,
-            history2.membership_type
-        )
