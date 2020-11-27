@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, cast
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.forms.models import BaseModelForm
+from django.forms.models import BaseModelForm, ModelForm
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect
@@ -12,7 +12,7 @@ from django.views.generic.edit import UpdateView
 
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.change_email import ChangeEmailForm
-from vdgsa_backend.accounts.views.subscription import PurchaseSubscriptionForm
+from vdgsa_backend.accounts.views.subscription import AddFamilyMemberForm, PurchaseSubscriptionForm
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 
 from .permissions import is_requested_user_or_membership_secretary
@@ -23,9 +23,53 @@ def current_user_profile_view(request: HttpRequest) -> HttpResponse:
     return redirect(reverse('user-profile', kwargs={'pk': request.user.pk}))
 
 
+class UserProfileForm(ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            'first_name',
+            'last_name',
+
+            'address_line_1',
+            'address_line_2',
+            'address_city',
+            'address_state',
+            'address_postal_code',
+            'address_country',
+            'phone1',
+            'phone2',
+
+            'is_young_player',
+            'is_teacher',
+            'is_remote_teacher',
+            'is_builder',
+            'is_publisher',
+            'other_commercial',
+            'educational_institution_affiliation',
+
+            'do_not_email',
+
+            'include_name_in_membership_directory',
+            'include_name_in_mailing_list',
+            'include_name_in_conclave_directory',
+
+            'include_email_in_membership_directory',
+            'include_email_in_mailing_list',
+            'include_email_in_conclave_directory',
+
+            'include_address_in_membership_directory',
+            'include_address_in_mailing_list',
+            'include_address_in_conclave_directory',
+
+            'include_phone_in_membership_directory',
+            'include_phone_in_mailing_list',
+            'include_phone_in_conclave_directory',
+        ]
+
+
 class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = User
-    fields = ['first_name', 'last_name']
+    form_class = UserProfileForm
 
     template_name = 'user_profile/user_profile.html'
 
@@ -37,6 +81,7 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context['change_email_form'] = ChangeEmailForm(requested_user)
         context['change_password_form'] = PasswordChangeForm(requested_user)
         context['membership_renewal_form'] = PurchaseSubscriptionForm(requested_user)
+        context['add_family_member_form'] = AddFamilyMemberForm()
 
         return context
 

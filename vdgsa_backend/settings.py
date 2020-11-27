@@ -42,7 +42,6 @@ LOGIN_URL = reverse_lazy('login')
 # Application definition
 
 INSTALLED_APPS = [
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -62,8 +61,6 @@ INSTALLED_APPS = [
 ]
 
 CORS_ALLOWED_ORIGINS: List[str] = []
-
-WIX_SITE_URL = 'https://webmaster85689.wixsite.com/vdgsa-test/membersArea/landing'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -129,6 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',

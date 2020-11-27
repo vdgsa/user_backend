@@ -25,7 +25,12 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
         users = User.objects.order_by('last_name', 'first_name', 'username')
         field_names = [
-            'Last Name', 'First Name', 'Username', 'Membership Type', 'Membership Expires'
+            'Database ID',
+            'Last Name',
+            'First Name',
+            'Username',
+            'Membership Type',
+            'Membership Expires'
         ]
 
         response = HttpResponse(content_type='text/csv')
@@ -35,6 +40,7 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
         writer.writeheader()
         for user in users:
             writer.writerow({
+                'Database ID': user.pk,
                 'Last Name': user.last_name,
                 'First Name': user.first_name,
                 'Username': user.username,

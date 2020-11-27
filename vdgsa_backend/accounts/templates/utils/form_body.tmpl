@@ -11,21 +11,35 @@ in the parent template.
 
 {% csrf_token %}
 
+<!-- IMPORTANT: The class used here should match the class part of the
+     default selector used in setup_ajax_submit (JS) -->
+<div class="form-body-wrapper">
 {% for field in form %}
-  <!-- IMPORTANT: The class used here should match the class part of the
-       default selector used in setup_ajax_submit (JS) -->
-  <div class="form-body-wrapper">
+
+  <div id="{{field.auto_id}}_wrapper" class="input-wrapper">
     <label class="label">
+    {% if field.field.widget.input_type == 'checkbox' %}
+      {{ field }} {{field.label}}
+    {% else %}
       {{field.label}} <br>
       {{ field }}
-    </label>
-    {% if field.help_text %}
-    <!-- <p class="help">{{ field.help_text|safe }}</p> -->
     {% endif %}
-    {{field.errors}}
-
-    {% comment %}
-    TODO: Add last modified timestamp
-    {% endcomment %}
+    </label>
   </div>
+
+  {% if field.help_text %}
+  <!-- <p class="help">{{ field.help_text }}</p> -->
+  {% endif %}
+
+  {{field.errors}}
 {% endfor %}
+
+{% if form.non_field_errors %}
+  <div class="non-field-errors">
+  {% for err in form.non_field_errors %}
+    <p class="form-error">{{ err }}</p>
+  {% endfor %}
+  </div>
+{% endif %}
+
+</div>

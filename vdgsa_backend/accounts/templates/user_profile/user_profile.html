@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{% load user_name %}
+{% load filters %}
 
 <h2>Login Info</h2>
 <div><b>Email</b></div>
@@ -33,16 +33,6 @@
 </div>
 {% endif %}
 
-<h2>Profile</h2>
-
-<form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
-  {% csrf_token %}
-  {% include 'utils/form_body.tmpl' with form=edit_profile_form %}
-
-  <button type="submit">Save</button>
-  <div class="last-saved"></div>
-</form>
-
 <h2>Membership</h2>
 
 {% if object.subscription is None %}
@@ -60,6 +50,35 @@
 {% else %}
   <!-- TODO: different message if membership expired -->
   <div>Your membership is valid until {{object.subscription.valid_until}}</div>
+  <div>Family Members</div>
+  <div id="family-member-list">
+    {% for member in object.subscription.family_members.all %}
+    <div class="family-member">
+      - {{member | show_name}}
+      <form
+        class="remove-family-member-form"
+        method="post"
+        action="{% url 'remove-family-member' pk=object.subscription.pk %}"
+      >
+        {% csrf_token %}
+        <input type="hidden" value="{{member.username}}" name="username">
+        <button type="submit">(Remove)</button>
+      </form>
+    </div>
+    {% endfor %}
+    {% if object.subscription.family_members.count < 3 %} <!-- TODO: get actual number -->
+    <form
+      id="add-family-member-form"
+      method="post"
+      action="{% url 'add-family-member' pk=object.subscription.pk %}"
+    >
+      {% csrf_token %}
+      {% include 'utils/form_body.tmpl' with form=add_family_member_form %}
+      <button type="submit">Add</button>
+    </form>
+    {% endif %}
+  </div>
+
   <div>
     <a href="javascript:void(false)"
        onclick="show_element('purchase-subscription-form')">
@@ -76,67 +95,41 @@
   {% csrf_token %}
   {% include 'utils/form_body.tmpl' with form=membership_renewal_form %}
 
+  <div class="redirect-info-msg">
+    Clicking "Checkout" will redirect you to Stripe. <br>
+    Please enter your payment info there.
+  </div>
   <button type="submit">Checkout</button>
   <a href="javascript:void(false)" onclick="hide_element('purchase-subscription-form')">
     Cancel
   </a>
 </form>
 
+<h2>Profile</h2>
+
+<form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
+  {% csrf_token %}
+  <div class='form-body-wrapper'>
+    {% include 'user_profile/edit_profile_form.html' with form=edit_profile_form %}
+  </div>
+
+  <button type="submit">Save</button>
+  <div class="last-saved"></div>
+</form>
+
 <style>
 #change-email-form, #purchase-subscription-form {
   display: none;
+}
+
+.remove-family-member-form {
+  display: inline-block;
 }
 </style>
 
 <script src="https://js.stripe.com/v3/"></script>
 
 <script>
-function show_element(id) {
-  document.getElementById(id).style.display = 'block';
-}
-
-function hide_element(id) {
-  document.getElementById(id).style.display = 'none';
-}
-
-function setup_ajax_submit(form_id, status_code_handlers = {}) {
-  // IMPORTANT: The latter half of this string should match the class
-  // used in templates/utils/form_body.tmpl
-  let form_body_selector = `#${form_id} .form-inputs-wrapper`;
-
-  let form = $('#' + form_id);
-  form.on('submit', function(event) {
-    event.preventDefault();
-
-    form.find('button').attr('disabled', true);
-    $.ajax(form.attr('action'), {
-      type: 'POST',
-      data: form.serialize(),
-      statusCode: {
-        400: function(response) {
-          console.log(response.responseText);
-          $(form_body_selector).html(response.responseText);
-        },
-        ...status_code_handlers
-      },
-      error: function(response) {
-        if (response.status !== 400) {
-          console.log(response);
-          // TODO: detect network/other errors and adjust message
-          alert('An unexpected error occured');
-        }
-      }
-    }).then(
-      setTimeout(
-        function() {
-          form.find('button').attr('disabled', false);
-        },
-        250
-      )
-    );
-  });
-}
-
 $().ready(function() {
   setup_ajax_submit('change-email-form', {
     200: function() {
@@ -160,13 +153,95 @@ $().ready(function() {
       location.reload();
     },
     202: function(session_id) {
+      $('#purchase-subscription-form button[type=submit]').text('Redirecting');
       let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
       stripe.redirectToCheckout({
         sessionId: session_id
       });
     }
   });
+
+  setup_ajax_submit('add-family-member-form', {
+    200: function() {
+      location.reload();
+    }
+  });
+
+  $('.remove-family-member-form').each(function(index, element) {
+    let form = $(element);
+    form.on('submit', function(event) {
+      event.preventDefault();
+
+      let username = form.find('input[name=username]').val();
+      console.log(username);
+      if (!confirm(`Remove ${username} from your membership?`)) {
+        return;
+      }
+
+      $.post(
+        form.attr('action'),
+        form.serialize(),
+        function() {
+          $('.family-member').eq(index).remove();
+        }
+      ).fail(function(response) {
+        // TODO: better error message
+        alert('An unexpected error occured');
+      });
+    });
+  });
 });
+
+function show_element(id) {
+  document.getElementById(id).style.display = 'block';
+}
+
+function hide_element(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function remove_family_member(url, username, index) {
+  $.post(url, {'username': username}).then(function() {
+    $('.family-member').eq(index).remove();
+  }).error(function(response) {
+    // TODO: better error message
+    alert('An unexpected error occured');
+  });
+}
+
+function setup_ajax_submit(form_id, status_code_handlers = {}) {
+  // IMPORTANT: The latter half of this string should match the class
+  // used in templates/utils/form_body.tmpl
+  let form_body_selector = `#${form_id} .form-body-wrapper`;
+
+  let form = $('#' + form_id);
+  form.on('submit', function(event) {
+    event.preventDefault();
+
+    form.find('button').attr('disabled', true);
+    $.ajax(form.attr('action'), {
+      type: 'POST',
+      data: form.serialize(),
+      statusCode: {
+        400: function(response) {
+          console.log(response.responseText);
+          $(form_body_selector).html(response.responseText);
+        },
+        ...status_code_handlers
+      },
+      error: function(response) {
+        if (response.status !== 400) {
+          console.log(response);
+          // TODO: detect network/other errors and adjust message
+          alert('An unexpected error occured');
+        }
+      },
+      complete: function() {
+        form.find('button').attr('disabled', false);
+      }
+    });
+  });
+}
 </script>
 
 {% endblock %}

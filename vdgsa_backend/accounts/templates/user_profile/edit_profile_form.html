@@ -1,0 +1,244 @@
+<fieldset>
+  <legend>Contact Info</legend>
+
+  <div class="input-wrapper">
+    <label class="label">
+      First Name <br>
+      {{form.first_name}}
+    </label>
+    {{form.first_name.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      Last Name <br>
+      {{form.last_name}}
+    </label>
+    {{form.last_name.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      Phone 1 <br>
+      {{form.phone1}}
+    </label>
+    {{form.phone1.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      Phone 2 <br>
+      {{form.phone2}}
+    </label>
+    {{form.phone2.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      Address Line 1 <br>
+      {{form.address_line_1}}
+    </label>
+    {{form.address_line_1.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      Address Line 2 <br>
+      {{form.address_line_2}}
+    </label>
+    {{form.address_line_2.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      City <br>
+      {{form.address_city}}
+    </label>
+    {{form.address_city.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      State <br>
+      {{form.address_state}}
+    </label>
+    {{form.address_state.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      ZIP/Postal Code <br>
+      {{form.address_postal_code}}
+    </label>
+    {{form.address_postal_code.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      Country <br>
+      {{form.address_country}}
+    </label>
+    {{form.address_country.errors}}
+  </div>
+
+</fieldset>
+
+<fieldset>
+  <legend>Affiliations and Commercial</legend>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.is_young_player}}
+      Do you identify as a young player?
+    </label>
+    {{form.is_young_player.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.is_teacher}}
+      Are you a teacher?
+    </label>
+    {{form.is_teacher.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.is_remote_teacher}}
+      Do you teach remotely?
+    </label>
+    {{form.is_remote_teacher.errors}}
+  </div>
+
+  <div>Are you a commercial member?</div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.is_builder}}
+      Builder
+    </label>
+    {{form.is_builder.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.is_publisher}}
+      Publisher
+    </label>
+    {{form.is_publisher.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      Other <br>
+      {{form.other_commercial}}
+    </label>
+    {{form.other_commercial.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      What educational institution are you affiliated with? <br>
+      {{form.educational_institution_affiliation}}
+    </label>
+    {{form.educational_institution_affiliation.errors}}
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>Privacy</legend>
+
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.do_not_email}}
+      Do not email me
+    </label>
+    {{form.do_not_email.errors}}
+  </div>
+
+  <div>Include the following in the <b>membership directory</b></div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_name_in_membership_directory}}
+      Name
+    </label>
+    {{form.include_name_in_membership_directory.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_email_in_membership_directory}}
+      Email
+    </label>
+    {{form.include_email_in_membership_directory.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_address_in_membership_directory}}
+      Address
+    </label>
+    {{form.include_address_in_membership_directory.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_phone_in_membership_directory}}
+      Phone number
+    </label>
+    {{form.include_phone_in_membership_directory.errors}}
+  </div>
+
+  <div>Include the following in the <b>mailing list</b></div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_name_in_mailing_list}}
+      Name
+    </label>
+    {{form.include_name_in_mailing_list.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_email_in_mailing_list}}
+      Email
+    </label>
+    {{form.include_email_in_mailing_list.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_address_in_mailing_list}}
+      Address
+    </label>
+    {{form.include_address_in_mailing_list.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_phone_in_mailing_list}}
+      Phone number
+    </label>
+    {{form.include_phone_in_mailing_list.errors}}
+  </div>
+
+  <div>Include the following in the <b>membership directory</b></div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_name_in_conclave_directory}}
+      Name
+    </label>
+    {{form.include_name_in_conclave_directory.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_email_in_conclave_directory}}
+      Email
+    </label>
+    {{form.include_email_in_conclave_directory.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_address_in_conclave_directory}}
+      Address
+    </label>
+    {{form.include_address_in_conclave_directory.errors}}
+  </div>
+  <div class="input-wrapper">
+    <label class="label">
+      {{form.include_phone_in_conclave_directory}}
+      Phone number
+    </label>
+    {{form.include_phone_in_conclave_directory.errors}}
+  </div>
+</fieldset>

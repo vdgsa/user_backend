@@ -4,7 +4,7 @@ import uuid
 from typing import Any, Optional
 
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
+from django.contrib.postgres.fields.array import ArrayField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -31,6 +31,41 @@ class User(AbstractUser):
         null=True,
         default=None
     )
+
+    address_line_1 = models.CharField(max_length=255, blank=True)
+    address_line_2 = models.CharField(max_length=255, blank=True)
+    address_city = models.CharField(max_length=255, blank=True)
+    address_state = models.CharField(max_length=255, blank=True)
+    address_postal_code = models.CharField(max_length=255, blank=True)
+    address_country = models.CharField(max_length=255, blank=True)
+    phone1 = models.CharField(max_length=15, blank=True)
+    phone2 = models.CharField(max_length=15, blank=True)
+
+    is_young_player = models.BooleanField(default=False)
+    is_teacher = models.BooleanField(default=False)
+    is_remote_teacher = models.BooleanField(default=False)
+    is_builder = models.BooleanField(default=False)
+    is_publisher = models.BooleanField(default=False)
+    other_commercial = models.CharField(max_length=255, blank=True)
+    educational_institution_affiliation = models.CharField(max_length=255, blank=True)
+
+    do_not_email = models.BooleanField(default=False)
+
+    include_name_in_membership_directory = models.BooleanField(default=True)
+    include_name_in_mailing_list = models.BooleanField(default=True)
+    include_name_in_conclave_directory = models.BooleanField(default=True)
+
+    include_email_in_membership_directory = models.BooleanField(default=True)
+    include_email_in_mailing_list = models.BooleanField(default=True)
+    include_email_in_conclave_directory = models.BooleanField(default=True)
+
+    include_address_in_membership_directory = models.BooleanField(default=True)
+    include_address_in_mailing_list = models.BooleanField(default=True)
+    include_address_in_conclave_directory = models.BooleanField(default=True)
+
+    include_phone_in_membership_directory = models.BooleanField(default=True)
+    include_phone_in_mailing_list = models.BooleanField(default=True)
+    include_phone_in_conclave_directory = models.BooleanField(default=True)
 
     last_modified = models.DateTimeField(auto_now=True)
 
@@ -90,6 +125,13 @@ class MembershipSubscription(_CreatedAndUpdatedTimestamps, models.Model):
     valid_until = models.DateTimeField(null=True)
 
     membership_type = models.CharField(max_length=50, choices=MembershipType.choices)
+    years_renewed = ArrayField(models.IntegerField(), blank=True, default=list)
+
+    def __str__(self) -> str:
+        return (
+            f'MembershipSubscription {self.owner.last_name}, {self.owner.first_name} '
+            f'{self.owner.username}'
+        )
 
 
 class MembershipSubscriptionHistory(_CreatedAndUpdatedTimestamps, models.Model):

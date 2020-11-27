@@ -5,9 +5,11 @@ from .membership_secretary import AllUsersSpreadsheetView as AllUsersSpreadsheet
 from .membership_secretary import MembershipSecretaryView as MembershipSecretaryView
 from .stripe_checkout import stripe_cancel_view as stripe_cancel_view
 from .stripe_checkout import stripe_checkout_view as stripe_checkout_view
+from .subscription import AddFamilyMemberView as AddFamilyMemberView
 from .subscription import PurchaseSubscriptionView as PurchaseSubscriptionView
+from .subscription import RemoveFamilyMemberView as RemoveFamilyMemberView
+from .subscription import StripeWebhookView as StripeWebhookView
 from .user_profile import UserProfileView as UserProfileView
 from .user_profile import current_user_profile_view as current_user_profile_view
 from .user_registration import UserRegistrationView as UserRegistrationView
 from .views import CurrentUserView as CurrentUserView
-from .views import StripeWebhookView as StripeWebhookView
