@@ -15,10 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.contrib.auth import logout
+from django.contrib.auth.views import LoginView
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import include, path
 from rest_framework.authtoken import views
+
+
+class VdGSALoginView(LoginView):
+    success_url_allowed_hosts = {'public.vdgsa.org', 'members.vdgsa.org'}
 
 
 def logout_view(request: HttpRequest) -> HttpResponse:
@@ -34,7 +39,7 @@ urlpatterns = [
     # TODO: remove
     path('token_auth/', views.obtain_auth_token),
 
-    # path('login/', page_not_found, {'exception': Exception()}),
+    path('login/', VdGSALoginView.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
     path('', include('django.contrib.auth.urls')),
 ]
