@@ -23,7 +23,12 @@ from rest_framework.authtoken import views
 
 
 class VdGSALoginView(LoginView):
-    success_url_allowed_hosts = {'public.vdgsa.org', 'members.vdgsa.org'}
+    success_url_allowed_hosts = {
+        'public.vdgsa.org',
+        'www.public.vdgsa.org',
+        'members.vdgsa.org',
+        'www.members.vdgsa.org',
+    }
 
 
 def logout_view(request: HttpRequest) -> HttpResponse:
