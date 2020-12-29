@@ -44,11 +44,7 @@ urlpatterns = [
     path('membership_secretary/', views.MembershipSecretaryView.as_view(),
          name='membership-secretary'),
 
-    path('stripe_webhook/', views.StripeWebhookView.as_view()),
-    path('stripe_checkout/<stripe_session_id>/', views.stripe_checkout_view,
-         name='stripe-checkout'),
-    path('stripe_cancel/', views.stripe_cancel_view,
-         name='stripe-cancel'),
+    path('stripe_webhook/', views.stripe_webhook_view),
 
     re_path('$', lambda request: redirect(reverse('current-user-profile'))),
 ]

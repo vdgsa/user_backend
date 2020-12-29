@@ -9,6 +9,7 @@ from django.db import transaction
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic.base import View
@@ -42,14 +43,16 @@ class ChangeEmailRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
         form = ChangeEmailForm(self.requested_user, request.POST)
 
         if not form.is_valid():
-            return get_ajax_form_response(form, 400)
+            return get_ajax_form_response('form_validation_error', form)
 
         # If the requester is the membership secretary, then complete the
         # email change immediately and redirect to the user profile page.
         if self.request.user.has_perm('accounts.membership_secretary'):
             self.requested_user.username = form.cleaned_data['new_email']
             self.requested_user.save()
-            return HttpResponse(self.requested_user.username)
+            return get_ajax_form_response('success', None, extra_data={
+                'new_username': self.requested_user.username
+            })
 
         change_request = form.save()
         send_mail(
@@ -70,12 +73,13 @@ The VdGSA Web Team
 ''',
         )
 
-        return render(
-            request,
-            'change_email/change_email_pending.tmpl',
-            status=202,
-            context={'new_email': change_request.new_email}
-        )
+        return get_ajax_form_response('success', None, extra_data={
+            'change_pending_msg': render_to_string(
+                'change_email/change_email_pending.tmpl',
+                request=request,
+                context={'new_email': change_request.new_email}
+            )
+        })
 
     def test_func(self) -> Optional[bool]:
         return is_requested_user_or_membership_secretary(self.requested_user, self.request)

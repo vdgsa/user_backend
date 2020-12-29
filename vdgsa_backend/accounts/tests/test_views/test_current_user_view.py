@@ -1,7 +1,5 @@
 from django.contrib.auth.models import Permission
 from django.test import TestCase
-from django.urls import reverse
-from rest_framework.test import APIClient
 
 from vdgsa_backend.accounts.models import User
 
@@ -10,11 +8,8 @@ class CurrentUserViewTestCase(TestCase):
     membership_secretary: User
     user: User
 
-    client: APIClient
-
     def setUp(self) -> None:
         super().setUp()
-        self.client = APIClient()
         self.membership_secretary = User.objects.create_user(username='batman@batman.com')
         self.membership_secretary.user_permissions.add(
             Permission.objects.get(codename='membership_secretary')

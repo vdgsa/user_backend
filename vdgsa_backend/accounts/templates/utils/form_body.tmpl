@@ -12,7 +12,7 @@ in the parent template.
 {% csrf_token %}
 
 <!-- IMPORTANT: The class used here should match the class part of the
-     default selector used in setup_ajax_submit (JS) -->
+     default selector used in update_form_body (JS) -->
 <div class="form-body-wrapper">
 {% for field in form %}
 
@@ -31,7 +31,9 @@ in the parent template.
   <!-- <p class="help">{{ field.help_text }}</p> -->
   {% endif %}
 
-  {{field.errors}}
+  <div class="form-field-errors">
+    {{field.errors}}
+  </div
 {% endfor %}
 
 {% if form.non_field_errors %}

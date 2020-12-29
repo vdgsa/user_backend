@@ -3,11 +3,11 @@ from django.contrib import admin
 from vdgsa_backend.accounts.models import MembershipSubscription, User
 
 
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(admin.ModelAdmin):  # type: ignore
     exclude = ['password', 'last_login']
 
 
-class MembershipSubscriptionAdmin(admin.ModelAdmin):
+class MembershipSubscriptionAdmin(admin.ModelAdmin):  # type: ignore
     pass
 
 

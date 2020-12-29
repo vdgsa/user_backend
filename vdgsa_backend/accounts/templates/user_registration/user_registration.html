@@ -4,6 +4,15 @@
 <form method="post">
   {% csrf_token %}
   {% include 'utils/form_body.tmpl' with form=form %}
+
+  {% if username_taken %}
+  <div id="username-taken-msg">
+    There is already an account associated with that email address. <br>
+    If you're having trouble logging in, you can
+    <a href="{% url 'password_reset' %}">reset your password here.</a>
+  </div>
+  {% endif %}
+
   <button type="submit">Submit</button>
 </form>
 

@@ -19,7 +19,6 @@ from django.contrib.auth.views import LoginView
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import include, path
-from rest_framework.authtoken import views
 
 
 class VdGSALoginView(LoginView):
@@ -40,9 +39,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('vdgsa_backend.accounts.urls')),
     path('schema/', include('vdgsa_backend.api_schema.urls')),
-
-    # TODO: remove
-    path('token_auth/', views.obtain_auth_token),
 
     path('login/', VdGSALoginView.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),

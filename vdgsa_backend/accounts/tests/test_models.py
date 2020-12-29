@@ -1,9 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
-from vdgsa_backend.exceptions import DjangoValidationError
 
 
 class UserTestCase(TestCase):
@@ -17,6 +17,25 @@ class UserTestCase(TestCase):
         self.assertEqual(username, user.email)
         self.assertFalse(user.is_superuser)
 
+    def test_subscription_property_no_subscription(self) -> None:
+        self.fail()
+
+    def test_subscription_property_has_owned_subscription(self) -> None:
+        self.fail()
+
+    def test_subscription_property_is_family_member(self) -> None:
+        self.fail()
+
+    def test_subscription_property_owned_subscription_takes_precedence(self) -> None:
+        self.fail()
+
+    def test_subscription_is_current_prop(self) -> None:
+        # owned, current
+        # owned, not current
+        # family, current
+        # family, not current
+        self.fail()
+
     def test_error_username_not_unique(self) -> None:
         username = 'spam@spam.com'
         User.objects.create_user(username, password='noirestanoriesato')
@@ -26,7 +45,7 @@ class UserTestCase(TestCase):
 
     def test_error_username_not_email(self) -> None:
         user = User(username='waaaaluigi')
-        with self.assertRaises(DjangoValidationError):
+        with self.assertRaises(ValidationError):
             user.full_clean()
 
     def test_create_superuser(self) -> None:
@@ -76,7 +95,7 @@ class MembershipSubscriptionTestCase(TestCase):
         self.assertIsNone(subscription.valid_until)
 
     def test_error_invalid_membership_type(self) -> None:
-        with self.assertRaises(DjangoValidationError) as cm:
+        with self.assertRaises(ValidationError) as cm:
             subscription = MembershipSubscription(
                 owner=self.owner,
                 valid_until=None,

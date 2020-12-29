@@ -16,9 +16,13 @@ class UserRegistrationView(View):
         if not form.is_valid():
             self._render_form(form)
 
-        # Create a new user object so that form.save() sends them
-        # an email.
-        User.objects.get_or_create(username=form.cleaned_data['email'])
+        email = form.cleaned_data['email']
+        user, created = User.objects.get_or_create(username=email)
+        # Django sets the "password" field to the empty string by default.
+        # If the above query loaded an existing user and that user has
+        # set a password, then the requested email address is in use.
+        if not created and user.password != '':
+            return self._render_form(form, username_taken=True)
 
         form.save(
             subject_template_name='user_registration/finish_registering_subject.txt',
@@ -27,5 +31,11 @@ class UserRegistrationView(View):
         )
         return render(request, 'user_registration/finish_registration.html')
 
-    def _render_form(self, form: PasswordResetForm) -> HttpResponse:
-        return render(self.request, 'user_registration/user_registration.html', {'form': form})
+    # "username_taken = True" will tell the template to show a message with a link to the
+    # password reset page.
+    def _render_form(self, form: PasswordResetForm, username_taken: bool = False) -> HttpResponse:
+        return render(
+            self.request,
+            'user_registration/user_registration.html',
+            {'form': form, 'username_taken': username_taken}
+        )

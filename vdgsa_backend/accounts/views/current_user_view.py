@@ -1,85 +1,43 @@
+from typing import cast
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse, JsonResponse
 from django.utils.translation import gettext_lazy as _
-from rest_framework import permissions, serializers
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.views.generic.base import View
 
-from vdgsa_backend.api_schema.schema import CustomSchema
-
-from ..models import MembershipSubscription, User
+from ..models import User
 
 
-class NestedUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-        ]
+class CurrentUserView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest) -> HttpResponse:
+        user = cast(User, request.user)
+        subscription = user.subscription
 
-
-class MembershipSubscriptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MembershipSubscription
-        fields = ['id', 'owner', 'family_members', 'valid_until', 'membership_type']
-        read_only_fields = fields
-
-    owner = NestedUserSerializer(read_only=True)
-    family_members = NestedUserSerializer(many=True)
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'subscription',
-            # 'owned_subscription',
-            # 'subscription_is_family_member_for',
-        ]
-        read_only_fields = [
-            'username',
-            # 'owned_subscription',
-            # 'subscription_is_family_member_for'
-        ]
-        depth = 1
-
-    subscription = MembershipSubscriptionSerializer(read_only=True)
-
-
-class CurrentUserView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    schema = CustomSchema(
-        register_serializers={
-            'User': UserSerializer
-        },
-        operation_data={
-            'GET': {
-                'operationId': 'getCurrentUser',
-                'responses': {
-                    '200': {
-                        'description': 'Returns the current authenticated User',
-                        'content': {
-                            'application/json': {
-                                'schema': {
-                                    '$ref': '#/components/schemas/User'
-                                }
-                            }
-                        }
-                    },
-                    '401': {
-                        'description': 'The requester is not authenticated.'
+        if subscription is None:
+            subscription_data = None
+        else:
+            subscription_data = {
+                'id': subscription.id,
+                'owner': {
+                    'id': subscription.owner.id,
+                    'username': subscription.owner.username,
+                },
+                'family_members': [
+                    {
+                        'id': family_member.id,
+                        'username': family_member.username,
                     }
-                }
+                    for family_member in subscription.family_members.all()
+                ],
+                'valid_until': subscription.valid_until,
+                'membership_type': subscription.membership_type,
             }
-        }
-    )
 
-    def get(self, request: Request) -> Response:
-        return Response(UserSerializer(request.user).data)
+        return JsonResponse({
+            'id': user.id,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'subscription': subscription_data,
+        })

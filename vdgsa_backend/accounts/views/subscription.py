@@ -1,3 +1,4 @@
+import json
 from functools import cached_property
 from typing import Any, Dict, List
 
@@ -11,48 +12,48 @@ from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls.base import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from vdgsa_backend.accounts.models import (
     MembershipSubscription, MembershipType, PendingMembershipSubscriptionPurchase, User
 )
+from vdgsa_backend.accounts.templatetags.filters import show_name
 from vdgsa_backend.accounts.views.permissions import (
     is_membership_secretary, is_requested_user_or_membership_secretary
 )
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 
 
-class StripeWebhookView(APIView):
-    # See https://stripe.com/docs/webhooks/build#example-code
-    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        try:
-            event = stripe.Event.construct_from(
-                request.data, stripe.api_key
-            )
-        except (ValueError, stripe.error.SignatureVerificationError) as e:
-            return HttpResponse(str(e), status=400)
-
-        transaction_type = event.data.object.metadata.get("transaction_type", None)
-        if event.type == 'checkout.session.completed' and transaction_type == 'membership':
-            with transaction.atomic():
-                pending_purchase = get_object_or_404(
-                    PendingMembershipSubscriptionPurchase.objects.select_for_update(),
-                    stripe_payment_intent_id=event.data.object.payment_intent
-                )
-                if pending_purchase.is_completed:
-                    return HttpResponse('Purchase already completed')
-                create_or_renew_subscription(
-                    pending_purchase.user, pending_purchase.membership_type)
-                pending_purchase.is_completed = True
-                pending_purchase.save()
-                return HttpResponse('Purchase completed')
-
-        return HttpResponse(
-            f'No action taken for "{event.type}" event with transaction type "{transaction_type}"'
+# See https://stripe.com/docs/webhooks/build#example-code
+@csrf_exempt
+def stripe_webhook_view(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    try:
+        request_data = json.loads(request.body)
+        event = stripe.Event.construct_from(
+            request_data, stripe.api_key
         )
+    except (ValueError, stripe.error.SignatureVerificationError) as e:
+        return HttpResponse(str(e), status=400)
+
+    transaction_type = event.data.object.metadata.get("transaction_type", None)
+    if event.type == 'checkout.session.completed' and transaction_type == 'membership':
+        with transaction.atomic():
+            pending_purchase = get_object_or_404(
+                PendingMembershipSubscriptionPurchase.objects.select_for_update(),
+                stripe_payment_intent_id=event.data.object.payment_intent
+            )
+            if pending_purchase.is_completed:
+                return HttpResponse('Purchase already completed')
+            create_or_renew_subscription(
+                pending_purchase.user, pending_purchase.membership_type)
+            pending_purchase.is_completed = True
+            pending_purchase.save()
+            return HttpResponse('Purchase completed')
+
+    return HttpResponse(
+        f'No action taken for "{event.type}" event with transaction type "{transaction_type}"'
+    )
 
 
 class PurchaseSubscriptionForm(forms.Form):
@@ -73,13 +74,16 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         form = PurchaseSubscriptionForm(self.requested_user, request.POST)
         if not form.is_valid():
-            return get_ajax_form_response(form, 400)
+            return get_ajax_form_response('form_validation_error', form)
 
         # If the request sender is not the specified user, they must be the membership secretary.
         # In this case we immediately complete the purchase.
         if request.user != self.requested_user:
-            create_or_renew_subscription(self.requested_user, form.cleaned_data['membership_type'])
-            return get_ajax_form_response(form, 200)
+            subscription = create_or_renew_subscription(
+                self.requested_user, form.cleaned_data['membership_type'])
+            return get_ajax_form_response('success', form, extra_data={
+                'subscription_valid_until': subscription.valid_until
+            })
 
         line_items = self._get_stripe_line_items(form)
         redirect_url = request.build_absolute_uri(
@@ -100,7 +104,9 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
             stripe_payment_intent_id=session.payment_intent,
         )
 
-        return HttpResponse(session.id, content_type='text/plain', status=202)
+        return get_ajax_form_response('success', None, extra_data={
+            'stripe_session_id': session.id
+        })
 
     def test_func(self) -> bool:
         return is_requested_user_or_membership_secretary(self.requested_user, self.request)
@@ -209,12 +215,14 @@ class AddFamilyMemberView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         form = AddFamilyMemberForm(request.POST)
         if not form.is_valid():
-            return get_ajax_form_response(form, 400)
+            return get_ajax_form_response('form_validation_error', form)
 
         family_member = get_object_or_404(User, username=form.cleaned_data['username'])
         self.subscription.family_members.add(family_member)
 
-        return HttpResponse()
+        return get_ajax_form_response('success', None, extra_data={
+            'new_family_member_name': show_name(family_member)
+        })
 
     def test_func(self) -> bool:
         if self.subscription.owner == self.request.user:

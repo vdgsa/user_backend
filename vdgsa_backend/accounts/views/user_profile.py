@@ -8,6 +8,7 @@ from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect
 from django.urls.base import reverse
+from django.utils.functional import cached_property
 from django.views.generic.edit import UpdateView
 
 from vdgsa_backend.accounts.models import User
@@ -73,29 +74,42 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     template_name = 'user_profile/user_profile.html'
 
+    @cached_property
+    def requested_user(self) -> User:
+        return cast(User, self.get_object())
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['edit_profile_form'] = context.pop('form')
 
-        requested_user = cast(User, self.get_object())
-        context['change_email_form'] = ChangeEmailForm(requested_user)
-        context['change_password_form'] = PasswordChangeForm(requested_user)
-        context['membership_renewal_form'] = PurchaseSubscriptionForm(requested_user)
+        context['change_email_form'] = ChangeEmailForm(self.requested_user)
+        context['change_password_form'] = PasswordChangeForm(self.requested_user)
+        context['membership_renewal_form'] = PurchaseSubscriptionForm(self.requested_user)
         context['add_family_member_form'] = AddFamilyMemberForm()
 
         return context
 
     def test_func(self) -> Optional[bool]:
         return is_requested_user_or_membership_secretary(
-            cast(User, self.get_object()), self.request
+            self.requested_user, self.request
         )
 
     def get_success_url(self) -> str:
-        return reverse('user-profile', kwargs={'pk': self.get_object().pk})
+        return reverse('user-profile', kwargs={'pk': self.requested_user.pk})
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         super().form_valid(form)
-        return get_ajax_form_response(form, 200)
+        return get_ajax_form_response(
+            'success',
+            form,
+            form_template=self.template_name,
+            form_context=self.get_context_data()
+        )
 
     def form_invalid(self, form: BaseModelForm) -> HttpResponse:
-        return get_ajax_form_response(form, 400)
+        return get_ajax_form_response(
+            'form_validation_error',
+            form,
+            form_template=self.template_name,
+            form_context=self.get_context_data()
+        )

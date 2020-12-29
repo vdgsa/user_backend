@@ -6,7 +6,7 @@
 <h2>Login Info</h2>
 <div><b>Email</b></div>
 <div>
-  {{object.username}}
+  <span id="current-username">{{object.username}}</span>
   <a href="javascript:void(false)" onclick="show_element('change-email-form')">(Change)</a>
 </div>
 
@@ -46,10 +46,20 @@
   <div>Your membership is valid forever!</div>
 {% elif object.subscription.owner != object %}
   <div>You are a family member on {{object.subscription.owner | show_name}}'s membership.</div>
-  <div>Your membership is valid until {{object.subscription.valid_until}}</div>
+  <div>
+    Your membership is valid until
+    <span id="valid-until-timestamp">
+      {{object.subscription.valid_until | format_datetime}}
+    </span>
+  </div>
 {% else %}
   <!-- TODO: different message if membership expired -->
-  <div>Your membership is valid until {{object.subscription.valid_until}}</div>
+  <div>
+    Your membership is valid until
+    <span id="valid-until-timestamp">
+      {{object.subscription.valid_until | format_datetime}}
+    </span>
+  </div>
   <div>Family Members</div>
   <div id="family-member-list">
     {% for member in object.subscription.family_members.all %}
@@ -114,7 +124,7 @@
   </div>
 
   <button type="submit">Save</button>
-  <div class="last-saved"></div>
+  <span class="last-saved"></span>
 </form>
 
 <style>
@@ -132,16 +142,26 @@
 <script>
 $().ready(function() {
   setup_ajax_submit('change-email-form', {
-    200: function() {
-      location.reload();
-    },
-    202: function(data) {
-      $('#change-email-msg').html(data);
+    success: function(form, response_data) {
+      if (response_data.status === 'form_validation_error') {
+        update_form_body(form, response_data.rendered_form);
+        return;
+      }
+
+      if (response_data.extra_data.change_pending_msg) {
+        $('#change-email-msg').html(response_data.extra_data.change_pending_msg);
+      }
+
+      if (response_data.extra_data.new_username) {
+        $('#current-username').text(response_data.extra_data.new_username);
+      }
+
+      $('#id_new_email').val('');
     }
   });
 
   setup_ajax_submit('user-profile-form', {
-    200: function() {
+    success: function(form, response_data) {
       $('#user-profile-form .last-saved').text(
         `Saved at ${(new Date()).toLocaleTimeString()}`
       );
@@ -149,23 +169,29 @@ $().ready(function() {
   });
 
   setup_ajax_submit('purchase-subscription-form', {
-    200: function() {
-      location.reload();
-    },
-    202: function(session_id) {
-      $('#purchase-subscription-form button[type=submit]').text('Redirecting');
-      let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
-      stripe.redirectToCheckout({
-        sessionId: session_id
-      });
+    success: function(form, response_data) {
+      if (response_data.status === 'form_validation_error') {
+        update_form_body(form, response_data.rendered_form);
+        return;
+      }
+
+      if (response_data.extra_data.stripe_session_id) {
+        $('#purchase-subscription-form button[type=submit]').text('Redirecting');
+        let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
+        stripe.redirectToCheckout({
+          sessionId: session_id
+        });
+        return;
+      }
+
+      if (response_data.rendered_form) {
+        $('#change-email-msg').html(response_data.extra_data.change_pending_msg);
+      }
+
     }
   });
 
-  setup_ajax_submit('add-family-member-form', {
-    200: function() {
-      location.reload();
-    }
-  });
+  setup_ajax_submit('add-family-member-form');
 
   $('.remove-family-member-form').each(function(index, element) {
     let form = $(element);
@@ -209,35 +235,49 @@ function remove_family_member(url, username, index) {
   });
 }
 
-function setup_ajax_submit(form_id, status_code_handlers = {}) {
-  // IMPORTANT: The latter half of this string should match the class
-  // used in templates/utils/form_body.tmpl
-  let form_body_selector = `#${form_id} .form-body-wrapper`;
+function disable_form_buttons(form) {
+  form.find('button').attr('disabled', true);
+}
 
+function update_form_body(form, response_data) {
+  if (response_data.rendered_form) {
+  // IMPORTANT: This class selector should match the class used in
+  // templates/utils/form_body.tmpl
+  // Check for other occurrences of this class when changing.
+    form.find('.form-body-wrapper').html(response_data.rendered_form);
+  }
+}
+
+function reenable_form_buttons(form) {
+  form.find('button').attr('disabled', false);
+}
+
+function setup_ajax_submit(
+  form_id,
+  {
+    before_submit = disable_form_buttons,
+    success = update_form_body,
+    complete = reenable_form_buttons,
+  }
+) {
   let form = $('#' + form_id);
   form.on('submit', function(event) {
     event.preventDefault();
+    before_submit(form);
 
-    form.find('button').attr('disabled', true);
     $.ajax(form.attr('action'), {
       type: 'POST',
       data: form.serialize(),
-      statusCode: {
-        400: function(response) {
-          console.log(response.responseText);
-          $(form_body_selector).html(response.responseText);
-        },
-        ...status_code_handlers
+      success: function(data) {
+        success(form, data)
       },
       error: function(response) {
-        if (response.status !== 400) {
-          console.log(response);
-          // TODO: detect network/other errors and adjust message
-          alert('An unexpected error occured');
-        }
+        console.log(response);
+        // TODO: detect network/other errors and adjust message
+        alert('An unexpected error occured');
       },
       complete: function() {
-        form.find('button').attr('disabled', false);
+        complete(form);
       }
     });
   });

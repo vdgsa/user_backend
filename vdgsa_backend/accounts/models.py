@@ -6,6 +6,7 @@ from typing import Any, Optional
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields.array import ArrayField
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -75,6 +76,19 @@ class User(AbstractUser):
             return self.owned_subscription
 
         return self.subscription_is_family_member_for
+
+    @property
+    def subscription_is_current(self) -> bool:
+        if self.subscription is None:
+            return False
+
+        if self.subscription.membership_type == MembershipType.lifetime:
+            return True
+
+        return (
+            self.subscription.valid_until is not None
+            and timezone.now() <= self.subscription.valid_until
+        )
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         # User.email is used by some out-of-the-box features (like

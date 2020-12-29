@@ -6,17 +6,16 @@ verify_ssl = true
 [dev-packages]
 mypy = "*"
 django-stubs = "*"
-djangorestframework-stubs = "*"
 autopep8 = "*"
 pycodestyle = "*"
 pydocstyle = "*"
 isort = "*"
 pyyaml = "*"
 uritemplate = "*"
+selenium = "*"
 
 [packages]
 django = "*"
-djangorestframework = "*"
 psycopg2 = "*"
 django-extensions = "*"
 django-cors-headers = "*"
