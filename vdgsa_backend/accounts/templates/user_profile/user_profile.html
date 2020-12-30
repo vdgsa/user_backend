@@ -7,7 +7,11 @@
 <div><b>Email</b></div>
 <div>
   <span id="current-username">{{object.username}}</span>
-  <a href="javascript:void(false)" onclick="show_element('change-email-form')">(Change)</a>
+  <a
+    id="show-change-email-form"
+    href="javascript:void(false)"
+    onclick="show_element('change-email-form')"
+  >(Change)</a>
 </div>
 
 <form
@@ -18,8 +22,10 @@
   {% csrf_token %}
   {% include 'utils/form_body.tmpl' with form=change_email_form %}
 
+  <div id="email-in-use-msg"></div>
+
   <button type="submit">Submit</button>
-  <button type="button" onclick="hide_element('change-email-form')">
+  <button id="change-email-cancel-button" type="button" onclick="hide_element('change-email-form')">
     Cancel
   </button>
 </form>
@@ -142,10 +148,19 @@
 <script>
 $().ready(function() {
   setup_ajax_submit('change-email-form', {
+    before_submit: function() {
+      $('#email-in-use-msg').text('');
+    },
     success: function(form, response_data) {
       if (response_data.status === 'form_validation_error') {
         update_form_body(form, response_data.rendered_form);
         return;
+      }
+
+      if (response_data.status === 'other_error' && response_data.extra_data.username_in_use) {
+        $('#email-in-use-msg').text(
+          `The username "${response_data.extra_data.requested_username}" is in use by another account.`
+        );
       }
 
       if (response_data.extra_data.change_pending_msg) {

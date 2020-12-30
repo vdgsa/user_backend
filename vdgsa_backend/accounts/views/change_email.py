@@ -5,10 +5,10 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.mail import send_mail
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
@@ -48,11 +48,19 @@ class ChangeEmailRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
         # If the requester is the membership secretary, then complete the
         # email change immediately and redirect to the user profile page.
         if self.request.user.has_perm('accounts.membership_secretary'):
-            self.requested_user.username = form.cleaned_data['new_email']
-            self.requested_user.save()
-            return get_ajax_form_response('success', None, extra_data={
-                'new_username': self.requested_user.username
-            })
+            requested_username = form.cleaned_data['new_email']
+            try:
+                self.requested_user.username = requested_username
+                self.requested_user.save()
+                return get_ajax_form_response('success', None, extra_data={
+                    'new_username': requested_username
+                })
+            except IntegrityError:
+                # The username is already in use
+                return get_ajax_form_response('other_error', None, extra_data={
+                    'username_in_use': True,
+                    'requested_username': requested_username
+                })
 
         change_request = form.save()
         send_mail(
@@ -89,6 +97,7 @@ The VdGSA Web Team
         return get_object_or_404(User, pk=self.kwargs['pk'])
 
 
+@login_required
 def change_email_confirm(request: HttpRequest, id: str) -> HttpResponse:
     change_request = get_object_or_404(ChangeEmailRequest, id=id)
     if timezone.now() - change_request.created_at > timezone.timedelta(days=1):

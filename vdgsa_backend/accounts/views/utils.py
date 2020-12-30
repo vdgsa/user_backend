@@ -12,7 +12,7 @@ class AjaxFormResponse(JsonResponse):
         super().__init__(data, *args, **kwargs)
 
 
-AjaxFormResponseStatus = Literal['success', 'form_validation_error']
+AjaxFormResponseStatus = Literal['success', 'form_validation_error', 'other_error']
 
 
 class AjaxFormResponseData(TypedDict):
