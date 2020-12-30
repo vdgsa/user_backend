@@ -3,14 +3,12 @@ from unittest import mock
 from django.contrib.auth.models import Permission
 from django.core import mail
 from django.test import LiveServerTestCase, TestCase
-from django.utils import timezone
 from django.urls.base import reverse
-from selenium.common.exceptions import (  # type: ignore ## FIXME
-    ElementNotInteractableException, NoSuchElementException
-)
+from django.utils import timezone
+from selenium.common.exceptions import ElementNotInteractableException  # type: ignore ## FIXME
 from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore ## FIXME
 
-from vdgsa_backend.accounts.models import AccountPermissions, ChangeEmailRequest, User
+from vdgsa_backend.accounts.models import ChangeEmailRequest, User
 
 
 class ChangeEmailUITestCase(LiveServerTestCase):
