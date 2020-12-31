@@ -2,47 +2,21 @@ from unittest import mock
 
 from django.contrib.auth.models import Permission
 from django.core import mail
-from django.test import LiveServerTestCase, TestCase
+from django.test import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
 from selenium.common.exceptions import ElementNotInteractableException  # type: ignore ## FIXME
-from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore ## FIXME
 
 from vdgsa_backend.accounts.models import ChangeEmailRequest, User
 
+from .selenium_test_base import SeleniumTestCaseBase
 
-class ChangeEmailUITestCase(LiveServerTestCase):
-    selenium: WebDriver
+
+class ChangeEmailUITestCase(SeleniumTestCaseBase):
     user: User
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(5)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        cls.selenium.quit()
-        super().tearDownClass()
 
     def setUp(self) -> None:
         self.user = User.objects.create_user(username='steve@stove.com', password='password')
-
-    def login_as(
-        self,
-        user: User,
-        dest_url: str = '/accounts/profile/',
-        password: str = 'password'
-    ) -> None:
-        """
-        Visit dest_url in selenium, get redirected to login page,
-        login as the specified user, get redirected back to dest_url.
-        """
-        self.selenium.get(f'{self.live_server_url}{dest_url}')
-        self.selenium.find_element_by_id('id_username').send_keys(user.username)
-        self.selenium.find_element_by_id('id_password').send_keys(password)
-        self.selenium.find_element_by_css_selector('button[type=submit]').click()
 
     def test_change_email(self) -> None:
         self.login_as(self.user)

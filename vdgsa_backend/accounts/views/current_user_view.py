@@ -1,6 +1,7 @@
 from typing import cast
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import AnonymousUser
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, JsonResponse
 from django.utils.translation import gettext_lazy as _
@@ -9,9 +10,12 @@ from django.views.generic.base import View
 from ..models import User
 
 
-class CurrentUserView(LoginRequiredMixin, View):
+class CurrentUserView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
-        user = cast(User, request.user)
+        if isinstance(request.user, AnonymousUser):
+            return HttpResponse(status=401)
+
+        user = request.user
         subscription = user.subscription
 
         if subscription is None:
@@ -40,4 +44,6 @@ class CurrentUserView(LoginRequiredMixin, View):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'subscription': subscription_data,
+            'subscription_is_current': user.subscription_is_current,
+            'last_modified': user.last_modified,
         })

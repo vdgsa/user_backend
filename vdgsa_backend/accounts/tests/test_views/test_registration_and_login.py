@@ -1,25 +1,12 @@
 from django.core import mail
-from django.test import LiveServerTestCase
 from selenium.common.exceptions import NoSuchElementException  # type: ignore ## FIXME
-from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore ## FIXME
 
 from vdgsa_backend.accounts.models import User
 
+from .selenium_test_base import SeleniumTestCaseBase
 
-class RegistrationAndLoginUITestCase(LiveServerTestCase):
-    selenium: WebDriver
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        super().setUpClass()
-        cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(5)
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        cls.selenium.quit()
-        super().tearDownClass()
-
+class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
     def test_register_and_login(self) -> None:
         email = 'zomg_email@wat.com'
 

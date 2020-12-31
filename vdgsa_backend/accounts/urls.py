@@ -10,7 +10,7 @@ from . import views
 # user_router.register(r'users', views.RetrieveUpdateUserViewSet)
 
 urlpatterns = [
-    path('users/current/', views.CurrentUserView.as_view()),
+    path('users/current/', views.CurrentUserView.as_view(), name='current-user'),
     # path('users/<username>/membership_subscription/',
     #      views.MembershipSubscriptionView.as_view()),
     # path('users/<username>/subscription_history/',
