@@ -16,6 +16,7 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
     user: User
 
     def setUp(self) -> None:
+        super().setUp()
         self.user = User.objects.create_user(username='steve@stove.com', password='password')
 
     def test_change_email(self) -> None:

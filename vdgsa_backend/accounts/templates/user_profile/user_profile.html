@@ -55,7 +55,7 @@
   <div>
     Your membership is valid until
     <span id="valid-until-timestamp">
-      {{object.subscription.valid_until | format_datetime}}
+      {% format_datetime object.subscription.valid_until none_ok=True %}
     </span>
   </div>
 {% else %}
@@ -63,7 +63,7 @@
   <div>
     Your membership is valid until
     <span id="valid-until-timestamp">
-      {{object.subscription.valid_until | format_datetime}}
+      {% format_datetime object.subscription.valid_until none_ok=True %}
     </span>
   </div>
   <div>Family Members</div>

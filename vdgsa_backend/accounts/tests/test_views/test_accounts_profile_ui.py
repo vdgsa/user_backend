@@ -7,6 +7,7 @@ from .selenium_test_base import SeleniumTestCaseBase
 
 class AccountsProfileUITestCase(SeleniumTestCaseBase):
     def setUp(self) -> None:
+        super().setUp()
         self.membership_secretary = User.objects.create_user(
             username='memsec@steve.com', password='password'
         )

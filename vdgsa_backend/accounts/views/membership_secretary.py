@@ -1,5 +1,6 @@
 import csv
 from typing import Any
+from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
 
 import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -52,11 +53,10 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
         return response
 
     def _get_membership_expiration(self, user: User) -> str:
-        if user.subscription is None or user.subscription.valid_until is None:
+        if user.subscription is None:
             return ''
 
-        localized = pytz.timezone('America/New_York').normalize(user.subscription.valid_until)
-        return localized.strftime('%b %d, %Y')
+        return format_datetime_impl(user.subscription.valid_until, none_ok=True)
 
     def test_func(self) -> bool:
         return is_membership_secretary(self.request.user)

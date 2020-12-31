@@ -87,6 +87,17 @@ class UserTestCase(TestCase):
         user.refresh_from_db()
         self.assertEqual(subscription_owner_for, user.subscription)
 
+    def test_lifetime_member_subscription_is_current_property(self) -> None:
+        owner = User.objects.create_user('user@user.user', password='noirestanoriesato')
+        subscription = MembershipSubscription.objects.create(
+            owner=owner,
+            membership_type=MembershipType.lifetime,
+        )
+
+        owner.refresh_from_db()
+        self.assertEqual(subscription, owner.subscription)
+        self.assertTrue(owner.subscription_is_current)
+
     def test_error_username_not_unique(self) -> None:
         username = 'spam@spam.com'
         User.objects.create_user(username, password='noirestanoriesato')

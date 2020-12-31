@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Permission
 from django.test import LiveServerTestCase
 from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore ## FIXME
 
@@ -32,3 +33,12 @@ class SeleniumTestCaseBase(LiveServerTestCase):
         self.selenium.find_element_by_id('id_username').send_keys(user.username)
         self.selenium.find_element_by_id('id_password').send_keys(password)
         self.selenium.find_element_by_css_selector('button[type=submit]').click()
+
+    def make_membership_secretary(self) -> User:
+        membership_secretary = User.objects.create_user(
+            username=f'memsec@wee.com', password='password'
+        )
+        membership_secretary.user_permissions.add(
+            Permission.objects.get(codename='membership_secretary')
+        )
+        return membership_secretary
