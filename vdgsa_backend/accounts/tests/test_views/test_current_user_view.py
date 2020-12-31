@@ -1,10 +1,11 @@
 from django.contrib.auth.models import Permission
 from django.test import TestCase
+from django.test.testcases import LiveServerTestCase
 
 from vdgsa_backend.accounts.models import User
 
 
-class CurrentUserViewTestCase(TestCase):
+class CurrentUserViewTestCase(LiveServerTestCase):
     membership_secretary: User
     user: User
 

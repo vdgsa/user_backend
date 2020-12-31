@@ -18,23 +18,74 @@ class UserTestCase(TestCase):
         self.assertFalse(user.is_superuser)
 
     def test_subscription_property_no_subscription(self) -> None:
-        self.fail()
+        user = User.objects.create_user('user@user.user', password='noirestanoriesato')
+        self.assertIsNone(user.subscription)
+        self.assertFalse(user.subscription_is_current)
 
     def test_subscription_property_has_owned_subscription(self) -> None:
-        self.fail()
+        user = User.objects.create_user('user@user.user', password='noirestanoriesato')
+        subscription = MembershipSubscription.objects.create(
+            owner=user,
+            membership_type=MembershipType.regular,
+            # Set valid_until to time in past
+            valid_until=timezone.now() - timezone.timedelta(hours=1)
+        )
+
+        user.refresh_from_db()
+        self.assertEqual(subscription, user.subscription)
+        self.assertFalse(user.subscription_is_current)
+
+        # Set valid_until to time in future
+        subscription.valid_until = timezone.now() + timezone.timedelta(days=1)
+        subscription.save()
+        user.refresh_from_db()
+        self.assertEqual(subscription, user.subscription)
+        self.assertTrue(user.subscription_is_current)
 
     def test_subscription_property_is_family_member(self) -> None:
-        self.fail()
+        owner = User.objects.create_user('user@user.user', password='noirestanoriesato')
+        subscription = MembershipSubscription.objects.create(
+            owner=owner,
+            membership_type=MembershipType.regular,
+            valid_until=timezone.now() - timezone.timedelta(hours=1)
+        )
+
+        family = User.objects.create_user(
+            'family@user.user',
+            password='noirestanoriesato',
+            subscription_is_family_member_for=subscription,
+        )
+
+        family.refresh_from_db()
+        self.assertEqual(subscription, family.subscription)
+        self.assertFalse(family.subscription_is_current)
+
+        subscription.valid_until = timezone.now() + timezone.timedelta(days=1)
+        subscription.save()
+        family.refresh_from_db()
+        self.assertEqual(subscription, family.subscription)
+        self.assertTrue(family.subscription_is_current)
 
     def test_subscription_property_owned_subscription_takes_precedence(self) -> None:
-        self.fail()
+        user = User.objects.create_user('user@user.user', password='noirestanoriesato')
 
-    def test_subscription_is_current_prop(self) -> None:
-        # owned, current
-        # owned, not current
-        # family, current
-        # family, not current
-        self.fail()
+        subscription_owner_for = MembershipSubscription.objects.create(
+            owner=user,
+            membership_type=MembershipType.regular,
+            valid_until=timezone.now() - timezone.timedelta(hours=1)
+        )
+
+        user2 = User.objects.create_user('wee@user.user', password='noirestanoriesato')
+        subscription_family_for = MembershipSubscription.objects.create(
+            owner=user2,
+            membership_type=MembershipType.regular,
+            valid_until=timezone.now() + timezone.timedelta(days=1)
+        )
+        user.subscription_is_family_member_for = subscription_family_for
+        user.save()
+
+        user.refresh_from_db()
+        self.assertEqual(subscription_owner_for, user.subscription)
 
     def test_error_username_not_unique(self) -> None:
         username = 'spam@spam.com'
