@@ -1,10 +1,10 @@
-import tempfile
 import csv
+import tempfile
 from typing import List, Protocol, Sequence
+
 from django.contrib.auth.models import Permission
 from django.test.testcases import TestCase
 from django.urls.base import reverse
-
 from django.utils import timezone
 from selenium.webdriver.remote.webelement import WebElement  # type: ignore
 

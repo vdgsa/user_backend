@@ -1,13 +1,12 @@
 import csv
 from typing import Any
-from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
 
-import pytz
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http.response import HttpResponse
 from django.views.generic.base import View
 from django.views.generic.list import ListView
 
+from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
 from vdgsa_backend.accounts.views.permissions import is_membership_secretary
 
 from ..models import User

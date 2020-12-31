@@ -1,4 +1,5 @@
-from typing import Any, Literal, Optional, overload
+from typing import Any, Optional
+
 import pytz
 from django import template
 from django.utils import timezone
