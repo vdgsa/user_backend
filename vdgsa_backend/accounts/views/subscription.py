@@ -74,16 +74,23 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         form = PurchaseSubscriptionForm(self.requested_user, request.POST)
         if not form.is_valid():
-            return get_ajax_form_response('form_validation_error', form)
+            return get_ajax_form_response(
+                'form_validation_error',
+                form,
+                form_template='membership_subscription.html',
+                form_context={'user': self.requested_user, 'form': form}
+            )
 
         # If the request sender is not the specified user, they must be the membership secretary.
         # In this case we immediately complete the purchase.
         if request.user != self.requested_user:
-            subscription = create_or_renew_subscription(
-                self.requested_user, form.cleaned_data['membership_type'])
-            return get_ajax_form_response('success', form, extra_data={
-                'subscription_valid_until': subscription.valid_until
-            })
+            create_or_renew_subscription(self.requested_user, form.cleaned_data['membership_type'])
+            return get_ajax_form_response(
+                'success',
+                form,
+                form_template='membership_subscription.html',
+                form_context={'user': self.requested_user, 'form': form}
+            )
 
         line_items = self._get_stripe_line_items(form)
         redirect_url = request.build_absolute_uri(
@@ -114,9 +121,6 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
     @cached_property
     def requested_user(self) -> User:
         return User.objects.get(pk=self.kwargs['pk'])
-
-    def _render_form(self, form: PurchaseSubscriptionForm) -> HttpResponse:
-        return render(self.request, 'subscription/purchase_subscription.html', {'form': form})
 
     def _get_stripe_line_items(self, form: PurchaseSubscriptionForm) -> List[Dict[str, object]]:
         membership_type = form.cleaned_data['membership_type']

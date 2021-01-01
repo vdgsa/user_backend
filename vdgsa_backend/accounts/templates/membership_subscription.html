@@ -1,0 +1,100 @@
+{% load filters %}
+
+<h2>Membership</h2>
+
+{% if user.subscription is not None and user.subscription.owner != user %}
+<div id="family-member-msg">
+  You are a family member on {{user.subscription.owner | show_name}}'s membership.
+</div>
+{% endif %}
+
+{% if user.subscription is None %}
+  <div>
+    <a id="show-membership-purchase"
+       href="javascript:void(false)"
+       onclick="toggle_element('purchase-subscription-form')">
+      Become a member
+    </a>
+  </div>
+{% elif user.subscription.membership_type == 'lifetime' %}
+  <div id="membership-status-msg">Your membership is valid forever!</div>
+{% else %}
+  {% if user.subscription_is_current %}
+  <div id="membership-status-msg">
+    Your membership is valid until
+    <span id="valid-until-timestamp">
+      {% format_datetime user.subscription.valid_until none_ok=True %}
+    </span>
+  </div>
+  {% else %}
+  <div id="membership-status-msg">
+    Your membership <b>expired</b> on
+    <span id="valid-until-timestamp">
+      {% format_datetime user.subscription.valid_until none_ok=True %}
+    </span>
+  </div>
+  {% endif %}
+
+  {% if user.subscription.owner == user %}
+  <div id="family-members-wrapper">
+    <div>Family Members</div>
+    <div id="family-member-list">
+      {% for member in user.subscription.family_members.all %}
+      <div class="family-member">
+        - {{member | show_name}}
+        <form
+          class="remove-family-member-form"
+          method="post"
+          action="{% url 'remove-family-member' pk=user.subscription.pk %}"
+        >
+          {% csrf_token %}
+          <input type="hidden" value="{{member.username}}" name="username">
+          <button type="submit">(Remove)</button>
+        </form>
+      </div>
+      {% endfor %}
+      {% if user.subscription.family_members.count < 3 %}
+      <form
+        id="add-family-member-form"
+        method="post"
+        action="{% url 'add-family-member' pk=user.subscription.pk %}"
+      >
+        {% csrf_token %}
+        {% include 'utils/form_body.tmpl' with form=add_family_member_form %}
+        <button type="submit">Add</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div>
+    <a id="show-membership-purchase"
+       href="javascript:void(false)"
+       onclick="toggle_element('purchase-subscription-form')">
+      Renew your membership
+    </a>
+  </div>
+  {% endif %}
+{% endif %}
+
+<form
+  id="purchase-subscription-form"
+  method="post"
+  action="{% url 'purchase-subscription' pk=user.pk %}"
+>
+  {% csrf_token %}
+  {% include 'utils/form_body.tmpl' with form=form %}
+
+  <div class="redirect-info-msg">
+    Clicking "Checkout" will redirect you to Stripe. <br>
+    Please enter your payment info there.
+  </div>
+  <button type="submit">Checkout</button>
+  <a
+    id="hide-purchase-subscription"
+    href="javascript:void(false)"
+    onclick="hide_element('purchase-subscription-form')"
+  >
+    Cancel
+  </a>
+</form>

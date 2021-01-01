@@ -10,7 +10,7 @@
   <a
     id="show-change-email-form"
     href="javascript:void(false)"
-    onclick="show_element('change-email-form')"
+    onclick="toggle_element('change-email-form')"
   >(Change)</a>
 </div>
 
@@ -39,87 +39,9 @@
 </div>
 {% endif %}
 
-<h2>Membership</h2>
-
-{% if object.subscription is None %}
-  <div>
-    <a href="javascript:void(false)"
-       onclick="show_element('purchase-subscription-form')">
-      Become a member
-    </a>
-  </div>
-{% elif object.subscription.membership_type == 'lifetime' %}
-  <div>Your membership is valid forever!</div>
-{% elif object.subscription.owner != object %}
-  <div>You are a family member on {{object.subscription.owner | show_name}}'s membership.</div>
-  <div>
-    Your membership is valid until
-    <span id="valid-until-timestamp">
-      {% format_datetime object.subscription.valid_until none_ok=True %}
-    </span>
-  </div>
-{% else %}
-  <!-- TODO: different message if membership expired -->
-  <div>
-    Your membership is valid until
-    <span id="valid-until-timestamp">
-      {% format_datetime object.subscription.valid_until none_ok=True %}
-    </span>
-  </div>
-  <div>Family Members</div>
-  <div id="family-member-list">
-    {% for member in object.subscription.family_members.all %}
-    <div class="family-member">
-      - {{member | show_name}}
-      <form
-        class="remove-family-member-form"
-        method="post"
-        action="{% url 'remove-family-member' pk=object.subscription.pk %}"
-      >
-        {% csrf_token %}
-        <input type="hidden" value="{{member.username}}" name="username">
-        <button type="submit">(Remove)</button>
-      </form>
-    </div>
-    {% endfor %}
-    {% if object.subscription.family_members.count < 3 %} <!-- TODO: get actual number -->
-    <form
-      id="add-family-member-form"
-      method="post"
-      action="{% url 'add-family-member' pk=object.subscription.pk %}"
-    >
-      {% csrf_token %}
-      {% include 'utils/form_body.tmpl' with form=add_family_member_form %}
-      <button type="submit">Add</button>
-    </form>
-    {% endif %}
-  </div>
-
-  <div>
-    <a href="javascript:void(false)"
-       onclick="show_element('purchase-subscription-form')">
-      Renew your membership
-    </a>
-  </div>
-{% endif %}
-
-<form
-  id="purchase-subscription-form"
-  method="post"
-  action="{% url 'purchase-subscription' pk=object.pk %}"
->
-  {% csrf_token %}
-  {% include 'utils/form_body.tmpl' with form=membership_renewal_form %}
-
-  <div class="redirect-info-msg">
-    Clicking "Checkout" will redirect you to Stripe. <br>
-    Please enter your payment info there.
-  </div>
-  <button type="submit">Checkout</button>
-  <a href="javascript:void(false)" onclick="hide_element('purchase-subscription-form')">
-    Cancel
-  </a>
-</form>
+<div id="membership-subscription-wrapper">
+  {% include 'membership_subscription.html' with user=object form=membership_renewal_form %}
+</div>
 
 <h2>Profile</h2>
 
@@ -153,7 +75,7 @@ $().ready(function() {
     },
     success: function(form, response_data) {
       if (response_data.status === 'form_validation_error') {
-        update_form_body(form, response_data.rendered_form);
+        update_form_body(form, response_data);
         return;
       }
 
@@ -183,28 +105,39 @@ $().ready(function() {
     }
   });
 
-  setup_ajax_submit('purchase-subscription-form', {
-    success: function(form, response_data) {
-      if (response_data.status === 'form_validation_error') {
-        update_form_body(form, response_data.rendered_form);
-        return;
-      }
+  function on_purchase_subscription_form_submit(event) {
+    event.preventDefault();
+    disable_form_buttons(purchase_subscription_form);
 
-      if (response_data.extra_data.stripe_session_id) {
-        $('#purchase-subscription-form button[type=submit]').text('Redirecting');
-        let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
-        stripe.redirectToCheckout({
-          sessionId: session_id
-        });
-        return;
+    $.ajax(purchase_subscription_form.attr('action'), {
+      type: 'POST',
+      data: purchase_subscription_form.serialize(),
+      success: function(response_data) {
+        if (response_data.extra_data.stripe_session_id) {
+          $('#purchase-subscription-form button[type=submit]').text('Redirecting');
+          let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
+          stripe.redirectToCheckout({
+            sessionId: response_data.extra_data.stripe_session_id
+          });
+        }
+        else {
+          console.log(response_data);
+          $('#membership-subscription-wrapper').html(response_data.rendered_form);
+          $('#purchase-subscription-form').on('submit', on_purchase_subscription_form_submit);
+          reenable_form_buttons(purchase_subscription_form);
+        }
+      },
+      error: function(response) {
+        console.log(response);
+        // TODO: detect network/other errors and adjust message
+        alert('An unexpected error occured');
+        reenable_form_buttons(purchase_subscription_form);
       }
+    });
+  }
 
-      if (response_data.rendered_form) {
-        $('#change-email-msg').html(response_data.extra_data.change_pending_msg);
-      }
-
-    }
-  });
+  let purchase_subscription_form = $('#purchase-subscription-form');
+  purchase_subscription_form.on('submit', on_purchase_subscription_form_submit);
 
   setup_ajax_submit('add-family-member-form');
 
@@ -233,8 +166,8 @@ $().ready(function() {
   });
 });
 
-function show_element(id) {
-  document.getElementById(id).style.display = 'block';
+function toggle_element(id) {
+  $(`#${id}`).toggle();
 }
 
 function hide_element(id) {
@@ -254,12 +187,12 @@ function disable_form_buttons(form) {
   form.find('button').attr('disabled', true);
 }
 
-function update_form_body(form, response_data) {
+// IMPORTANT: This default class selector should match the class used in
+// templates/utils/form_body.tmpl
+// Check for other occurrences of this class when changing.
+function update_form_body(form, response_data, body_selector = '.form-body-wrapper') {
   if (response_data.rendered_form) {
-  // IMPORTANT: This class selector should match the class used in
-  // templates/utils/form_body.tmpl
-  // Check for other occurrences of this class when changing.
-    form.find('.form-body-wrapper').html(response_data.rendered_form);
+    form.find(body_selector).html(response_data.rendered_form);
   }
 }
 

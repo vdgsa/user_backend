@@ -19,20 +19,32 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
         super().setUp()
         self.user = User.objects.create_user(username='steve@stove.com', password='password')
 
-    def test_change_email(self) -> None:
+    def test_change_email_form_toggle(self) -> None:
         self.login_as(self.user)
 
-        # The change email form is hidden initially
-        with self.assertRaises(ElementNotInteractableException):
-            self.selenium.find_element_by_id('id_new_email').click()
+        self.assertFalse(
+            self.selenium.find_element_by_id('id_new_email').is_displayed())
 
         # Show the form
         self.selenium.find_element_by_id('show-change-email-form').click()
+        self.assertTrue(
+            self.selenium.find_element_by_id('id_new_email').is_displayed())
 
         # Hide the form
+        self.selenium.find_element_by_id('show-change-email-form').click()
+        self.assertFalse(
+            self.selenium.find_element_by_id('id_new_email').is_displayed())
+
+        self.selenium.find_element_by_id('show-change-email-form').click()
+        self.assertTrue(
+            self.selenium.find_element_by_id('id_new_email').is_displayed())
+
         self.selenium.find_element_by_id('change-email-cancel-button').click()
-        with self.assertRaises(ElementNotInteractableException):
-            self.selenium.find_element_by_id('id_new_email').click()
+        self.assertFalse(
+            self.selenium.find_element_by_id('id_new_email').is_displayed())
+
+    def test_change_email(self) -> None:
+        self.login_as(self.user)
 
         # Show the form
         self.selenium.find_element_by_id('show-change-email-form').click()
