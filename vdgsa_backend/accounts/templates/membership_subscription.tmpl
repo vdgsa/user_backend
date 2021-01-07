@@ -77,10 +77,14 @@
     </ul>
   </div>
 
-  <div>
-    <a id="show-membership-purchase"
-       href="javascript:void(false)"
-       onclick="toggle_element('purchase-subscription-form')">
+  <div id="show-membership-purchase-wrapper">
+    <a
+      id="show-membership-purchase"
+      href="#purchase-subscription-form"
+      data-bs-toggle="collapse"
+      aria-expanded="false"
+      aria-controls="purchase-subscription-form"
+    >
       Renew your membership
     </a>
   </div>
@@ -89,21 +93,25 @@
 
 <form
   id="purchase-subscription-form"
+  class="collapse ms-1"
   method="post"
   action="{% url 'purchase-subscription' pk=user.pk %}"
 >
   {% csrf_token %}
   {% include 'utils/form_body.tmpl' with form=form %}
 
-  <div class="redirect-info-msg">
+  <div class="redirect-info-msg mb-2">
     Clicking "Checkout" will redirect you to Stripe. <br>
     Please enter your payment info there.
   </div>
-  <button type="submit">Checkout</button>
-  <a
+  <button type="submit" class="btn btn-primary">Checkout</button>
+  <button
     id="hide-purchase-subscription"
-    href="javascript:void(false)"
-    onclick="hide_element('purchase-subscription-form')"
+    type="button"
+    class="btn btn-light"
+    data-bs-toggle="collapse"
+    data-bs-target="#purchase-subscription-form"
+    aria-controls="purchase-subscription-form"
   >
     Cancel
   </a>

@@ -77,7 +77,7 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
             return get_ajax_form_response(
                 'form_validation_error',
                 form,
-                form_template='membership_subscription.html',
+                form_template='membership_subscription.tmpl',
                 form_context={'user': self.requested_user, 'form': form}
             )
 
@@ -88,7 +88,7 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
             return get_ajax_form_response(
                 'success',
                 form,
-                form_template='membership_subscription.html',
+                form_template='membership_subscription.tmpl',
                 form_context={'user': self.requested_user, 'form': form}
             )
 
