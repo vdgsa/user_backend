@@ -118,28 +118,29 @@
   </div>
 
   <div class="mt-3">Are you a commercial member? (Select all that apply)</div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.is_builder}}
-      Builder
-    </label>
-    {{form.is_builder.errors}}
+  <div class="ms-1">
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.is_builder}}
+        Builder
+      </label>
+      {{form.is_builder.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.is_publisher}}
+        Publisher
+      </label>
+      {{form.is_publisher.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        Other Commercial Type (Please Specify) <br>
+        {{form.other_commercial}}
+      </label>
+      {{form.other_commercial.errors}}
+    </div>
   </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.is_publisher}}
-      Publisher
-    </label>
-    {{form.is_publisher.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      Other Commercial Type (Please Specify) <br>
-      {{form.other_commercial}}
-    </label>
-    {{form.other_commercial.errors}}
-  </div>
-
 </fieldset>
 
 <fieldset class="mt-3">
