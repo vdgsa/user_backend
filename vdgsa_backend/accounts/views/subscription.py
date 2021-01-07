@@ -160,14 +160,6 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
         return line_items
 
 
-def _user_exists_validator(username: str) -> None:
-    if not User.objects.filter(username=username).exists():
-        raise ValidationError(
-            f'User "{username}" does not exist. '
-            'Please have them create an account before adding them as a family member.'
-        )
-
-
 def create_or_renew_subscription(
     user: User,
     membership_type: str
@@ -212,16 +204,27 @@ def _plus_one_calendar_year(start_at: timezone.datetime) -> timezone.datetime:
 
 
 class AddFamilyMemberForm(forms.Form):
-    username = forms.EmailField(validators=[_user_exists_validator], label='Email')
+    username = forms.EmailField(label='')
 
 
 class AddFamilyMemberView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         form = AddFamilyMemberForm(request.POST)
         if not form.is_valid():
-            return get_ajax_form_response('form_validation_error', form)
+            return get_ajax_form_response('other_error', None, extra_data={
+                'error_msg': 'Please enter a valid email address.'
+            })
 
-        family_member = get_object_or_404(User, username=form.cleaned_data['username'])
+        username = form.cleaned_data['username']
+        family_member_query = User.objects.filter(username=username)
+        if not family_member_query.exists():
+            return get_ajax_form_response('other_error', None, extra_data={
+                'error_msg': f'User "{username}" does not exist. '
+                            'Please have them create an account before '
+                            'adding them as a family member.'
+            })
+
+        family_member = family_member_query.get()
         self.subscription.family_members.add(family_member)
 
         return get_ajax_form_response('success', None, extra_data={

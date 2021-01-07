@@ -16,6 +16,13 @@ def show_name(user: User) -> str:
     return user.username
 
 
+def show_name_and_email(user: User) -> str:
+    if user.first_name:
+        return f'{user.first_name} {user.last_name} ({user.username})'
+
+    return user.username
+
+
 @register.simple_tag
 def format_datetime(*args: Any, **kwargs: Any) -> str:
     return format_datetime_impl(*args, **kwargs)
@@ -67,3 +74,4 @@ def format_date_impl(
 
 
 register.filter('show_name', show_name)
+register.filter('show_name_and_email', show_name_and_email)

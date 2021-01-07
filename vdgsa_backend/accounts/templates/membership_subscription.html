@@ -36,12 +36,11 @@
   {% endif %}
 
   {% if user.subscription.owner == user %}
-  <div id="family-members-wrapper">
-    <div>Family Members</div>
-    <div id="family-member-list">
+  <div id="family-members-wrapper" class="mt-3">
+    <div class="mb-1"><b>Family Members</b></div>
+    <ul id="family-member-list">
       {% for member in user.subscription.family_members.all %}
-      <div class="family-member">
-        - {{member | show_name}}
+      <li class="family-member">
         <form
           class="remove-family-member-form"
           method="post"
@@ -49,22 +48,33 @@
         >
           {% csrf_token %}
           <input type="hidden" value="{{member.username}}" name="username">
-          <button type="submit">(Remove)</button>
+
+          <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text">{{member | show_name_and_email}}</span>
+            <button type="submit" class="btn btn-danger">Remove</button>
+          </div>
         </form>
-      </div>
+      </li>
       {% endfor %}
       {% if user.subscription.family_members.count < 3 %}
-      <form
-        id="add-family-member-form"
-        method="post"
-        action="{% url 'add-family-member' pk=user.subscription.pk %}"
-      >
-        {% csrf_token %}
-        {% include 'utils/form_body.tmpl' with form=add_family_member_form %}
-        <button type="submit">Add</button>
-      </form>
+      <li>
+        <form
+          id="add-family-member-form"
+          method="post"
+          action="{% url 'add-family-member' pk=user.subscription.pk %}"
+        >
+          {% csrf_token %}
+          <div class="input-group input-group-sm">
+            <input
+              class="form-control no-full-width" type="email"
+              name="username" type="email" required autocomplete="off"
+            >
+            <button type="submit" class="btn btn-outline-success">Add</button>
+          </div>
+        </form>
+      </li>
       {% endif %}
-    </div>
+    </ul>
   </div>
 
   <div>

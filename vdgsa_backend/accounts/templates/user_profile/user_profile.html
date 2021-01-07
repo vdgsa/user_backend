@@ -1,21 +1,76 @@
 {% extends 'base.html' %}
+
+{% block page_style %}
+<style>
+  #all-users-link {
+    margin-bottom: .5rem;
+  }
+
+  .remove-family-member-form {
+    display: inline-block;
+  }
+
+  #valid-until-timestamp {
+    color: seagreen;
+    font-weight: bold;
+  }
+  /* fieldset {
+      box-sizing: border-box;
+
+      border-bottom: none;
+      border-left: none;
+      border-right: none;
+      border-color: rgba(255, 255, 255, 0.3);
+      border-width: 2px;
+
+      margin: .75rem 0;
+      padding: 0;
+  }
+
+  legend {
+    box-sizing: border-box;
+    color: gray;
+    font-size: 1.125rem;
+    margin: .5rem 0;
+  }
+
+
+  .input-wrapper {
+    margin: .5rem 0;
+  }
+
+  button[type=submit] {
+    margin: .25rem 0;
+  } */
+</style>
+{% endblock %}
+
 {% block content %}
 
 {% load filters %}
 
-<h2>Login Info</h2>
+{% if perms.accounts.membership_secretary %}
+<div id="all-users-link">
+  <a href="{% url 'membership-secretary' %}">&lt All Users</a>
+</div>
+{% endif %}
+
+<h3>Login Info</h3>
 <div><b>Email</b></div>
-<div>
-  <span id="current-username">{{object.username}}</span>
-  <a
+<div class="input-group input-group-sm mb-2">
+  <span id="current-username" class="input-group-text">{{object.username}}</span>
+  <button type="button" class="btn btn-primary"
     id="show-change-email-form"
-    href="javascript:void(false)"
-    onclick="toggle_element('change-email-form')"
-  >(Change)</a>
+    data-bs-toggle="collapse"
+    data-bs-target="#change-email-form"
+    aria-expanded="false"
+    aria-controls="change-email-form"
+  >Change</button>
 </div>
 
 <form
   id="change-email-form"
+  class="collapse"
   method="post"
   action="{% url 'change-email-request' pk=object.pk %}"
 >
@@ -24,22 +79,29 @@
 
   <div id="email-in-use-msg"></div>
 
-  <button type="submit">Submit</button>
-  <button id="change-email-cancel-button" type="button" onclick="hide_element('change-email-form')">
+  <button type="submit" class="btn btn-primary">Submit</button>
+  <button
+    id="change-email-cancel-button"
+    class="btn btn-light"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#change-email-form"
+    aria-controls="change-email-form"
+  >
     Cancel
   </button>
+  <div id="change-email-msg"></div>
 </form>
 
-<div id="change-email-msg"></div>
 
 {% if not perms.accounts.membership_secretary %}
-<div>
-  <b>Password</b>
-  <a href="{% url 'password_change' %}">(Change)</a>
+<!-- See https://getbootstrap.com/docs/5.0/utilities/spacing/ -->
+<div class="my-3">
+  <a href="{% url 'password_change' %}">Change Password</a>
 </div>
 {% endif %}
 
-<div id="membership-subscription-wrapper">
+<div id="membership-subscription-wrapper" class="mt-4">
   {% include 'membership_subscription.html' with user=object form=membership_renewal_form %}
 </div>
 
@@ -54,16 +116,6 @@
   <button type="submit">Save</button>
   <span class="last-saved"></span>
 </form>
-
-<style>
-#change-email-form, #purchase-subscription-form {
-  display: none;
-}
-
-.remove-family-member-form {
-  display: inline-block;
-}
-</style>
 
 <script src="https://js.stripe.com/v3/"></script>
 
@@ -139,7 +191,16 @@ $().ready(function() {
   let purchase_subscription_form = $('#purchase-subscription-form');
   purchase_subscription_form.on('submit', on_purchase_subscription_form_submit);
 
-  setup_ajax_submit('add-family-member-form');
+  setup_ajax_submit('add-family-member-form', {
+    success: function(form, response_data) {
+      if (response_data.status === 'success') {
+        window.location.reload();
+      }
+      else if (response_data.status === 'other_error' && response_data.extra_data.error_msg) {
+        window.alert(response_data.extra_data.error_msg);
+      }
+    },
+  });
 
   $('.remove-family-member-form').each(function(index, element) {
     let form = $(element);

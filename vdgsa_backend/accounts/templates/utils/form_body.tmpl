@@ -19,12 +19,15 @@ default selector used in update_form_body (JS)
 {% for field in form %}
 
   <div id="{{field.auto_id}}_wrapper" class="input-wrapper">
-    <label class="label">
+    <label class="form-label">
     {% if field.field.widget.input_type == 'checkbox' %}
-      {{ field }} {{field.label}}
-    {% else %}
+      {{field}} {{field.label}}
+    {% else  %}
+      {% comment %}No label tag if label is empty. {% endcomment %}
+      {% if field.label %}
       {{field.label}} <br>
-      {{ field }}
+      {% endif %}
+      {{field}}
     {% endif %}
     </label>
   </div>

@@ -109,6 +109,14 @@
     {{form.is_remote_teacher.errors}}
   </div>
 
+  <div class="input-wrapper">
+    <label class="label">
+      What educational institution are you affiliated with? <br>
+      {{form.educational_institution_affiliation}}
+    </label>
+    {{form.educational_institution_affiliation.errors}}
+  </div>
+
   <div>Are you a commercial member? (Select all that apply)</div>
   <div class="input-wrapper">
     <label class="label">
@@ -126,19 +134,12 @@
   </div>
   <div class="input-wrapper">
     <label class="label">
-      Other <br>
+      Other Commercial Type (Please Specify) <br>
       {{form.other_commercial}}
     </label>
     {{form.other_commercial.errors}}
   </div>
 
-  <div class="input-wrapper">
-    <label class="label">
-      What educational institution are you affiliated with? <br>
-      {{form.educational_institution_affiliation}}
-    </label>
-    {{form.educational_institution_affiliation.errors}}
-  </div>
 </fieldset>
 
 <fieldset>
