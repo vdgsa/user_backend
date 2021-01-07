@@ -18,7 +18,10 @@ from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect
 from django.urls import include, path
+from django.urls.base import reverse, reverse_lazy
+from django.urls.conf import re_path
 
 
 class VdGSALoginView(LoginView):
@@ -43,4 +46,6 @@ urlpatterns = [
     path('login/', VdGSALoginView.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
     path('', include('django.contrib.auth.urls')),
+
+    re_path('$', lambda request: redirect(reverse('current-user-profile'))),
 ]

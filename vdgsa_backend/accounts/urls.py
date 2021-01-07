@@ -11,15 +11,6 @@ from . import views
 
 urlpatterns = [
     path('users/current/', views.CurrentUserView.as_view(), name='current-user'),
-    # path('users/<username>/membership_subscription/',
-    #      views.MembershipSubscriptionView.as_view()),
-    # path('users/<username>/subscription_history/',
-    #      views.MembershipSubscriptionHistoryView.as_view()),
-    # # This must go before including the user_router urls
-    # path('users/<username>/username/',
-    #      views.ChangeUsernameView.as_view(),
-    #      name='change-username'),
-    # path('', include(user_router.urls)),
 
     path('register/', views.UserRegistrationView.as_view(), name='user-registration'),
     path('change_email/<int:pk>/', views.ChangeEmailRequestView.as_view(),
@@ -46,5 +37,5 @@ urlpatterns = [
 
     path('stripe_webhook/', views.stripe_webhook_view),
 
-    re_path('$', lambda request: redirect(reverse('current-user-profile'))),
+    # re_path('$', lambda request: redirect(reverse('current-user-profile'))),
 ]
