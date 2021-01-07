@@ -83,7 +83,7 @@
 
 </fieldset>
 
-<fieldset>
+<fieldset class="mt-3">
   <legend>Affiliations and Commercial</legend>
   <div class="input-wrapper">
     <label class="label">
@@ -109,7 +109,7 @@
     {{form.is_remote_teacher.errors}}
   </div>
 
-  <div class="input-wrapper">
+  <div class="input-wrapper mt-3">
     <label class="label">
       What educational institution are you affiliated with? <br>
       {{form.educational_institution_affiliation}}
@@ -117,7 +117,7 @@
     {{form.educational_institution_affiliation.errors}}
   </div>
 
-  <div>Are you a commercial member? (Select all that apply)</div>
+  <div class="mt-3">Are you a commercial member? (Select all that apply)</div>
   <div class="input-wrapper">
     <label class="label">
       {{form.is_builder}}
@@ -142,7 +142,7 @@
 
 </fieldset>
 
-<fieldset>
+<fieldset class="mt-3">
   <legend>Privacy</legend>
 
   <div class="input-wrapper">
@@ -153,93 +153,99 @@
     {{form.do_not_email.errors}}
   </div>
 
-  <div>Include the following in the <b>membership directory</b></div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_name_in_membership_directory}}
-      Name
-    </label>
-    {{form.include_name_in_membership_directory.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_email_in_membership_directory}}
-      Email
-    </label>
-    {{form.include_email_in_membership_directory.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_address_in_membership_directory}}
-      Address
-    </label>
-    {{form.include_address_in_membership_directory.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_phone_in_membership_directory}}
-      Phone number
-    </label>
-    {{form.include_phone_in_membership_directory.errors}}
-  </div>
-
-  <div>Include the following in the <b>mailing list</b></div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_name_in_mailing_list}}
-      Name
-    </label>
-    {{form.include_name_in_mailing_list.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_email_in_mailing_list}}
-      Email
-    </label>
-    {{form.include_email_in_mailing_list.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_address_in_mailing_list}}
-      Address
-    </label>
-    {{form.include_address_in_mailing_list.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_phone_in_mailing_list}}
-      Phone number
-    </label>
-    {{form.include_phone_in_mailing_list.errors}}
+  <div class="mt-2">Include the following in the <b>membership directory</b></div>
+  <div class="ms-1">
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_name_in_membership_directory}}
+        Name
+      </label>
+      {{form.include_name_in_membership_directory.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_email_in_membership_directory}}
+        Email
+      </label>
+      {{form.include_email_in_membership_directory.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_address_in_membership_directory}}
+        Address
+      </label>
+      {{form.include_address_in_membership_directory.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_phone_in_membership_directory}}
+        Phone number
+      </label>
+      {{form.include_phone_in_membership_directory.errors}}
+    </div>
   </div>
 
-  <div>Include the following in the <b>membership directory</b></div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_name_in_conclave_directory}}
-      Name
-    </label>
-    {{form.include_name_in_conclave_directory.errors}}
+  <div class="mt-2">Include the following in the <b>mailing list</b></div>
+  <div class="ms-1">
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_name_in_mailing_list}}
+        Name
+      </label>
+      {{form.include_name_in_mailing_list.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_email_in_mailing_list}}
+        Email
+      </label>
+      {{form.include_email_in_mailing_list.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_address_in_mailing_list}}
+        Address
+      </label>
+      {{form.include_address_in_mailing_list.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_phone_in_mailing_list}}
+        Phone number
+      </label>
+      {{form.include_phone_in_mailing_list.errors}}
+    </div>
   </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_email_in_conclave_directory}}
-      Email
-    </label>
-    {{form.include_email_in_conclave_directory.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_address_in_conclave_directory}}
-      Address
-    </label>
-    {{form.include_address_in_conclave_directory.errors}}
-  </div>
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.include_phone_in_conclave_directory}}
-      Phone number
-    </label>
-    {{form.include_phone_in_conclave_directory.errors}}
+
+  <div class="mt-2">Include the following in the <b>membership directory</b></div>
+  <div class="ms-1">
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_name_in_conclave_directory}}
+        Name
+      </label>
+      {{form.include_name_in_conclave_directory.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_email_in_conclave_directory}}
+        Email
+      </label>
+      {{form.include_email_in_conclave_directory.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_address_in_conclave_directory}}
+        Address
+      </label>
+      {{form.include_address_in_conclave_directory.errors}}
+    </div>
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.include_phone_in_conclave_directory}}
+        Phone number
+      </label>
+      {{form.include_phone_in_conclave_directory.errors}}
+    </div>
   </div>
 </fieldset>
