@@ -35,7 +35,7 @@ class VdGSALoginView(LoginView):
 
 def logout_view(request: HttpRequest) -> HttpResponse:
     logout(request)
-    return HttpResponseRedirect('http://vdgsa.org')
+    return HttpResponseRedirect('http://public.vdgsa.org')
 
 
 urlpatterns = [
@@ -43,8 +43,8 @@ urlpatterns = [
     path('accounts/', include('vdgsa_backend.accounts.urls')),
     path('schema/', include('vdgsa_backend.api_schema.urls')),
 
-    path('login/', VdGSALoginView.as_view(), name='login'),
-    path('logout/', logout_view, name='logout'),
+    re_path('login/?$', VdGSALoginView.as_view(), name='login'),
+    re_path('logout/?$', logout_view, name='logout'),
     path('', include('django.contrib.auth.urls')),
 
     re_path('$', lambda request: redirect(reverse('current-user-profile'))),
