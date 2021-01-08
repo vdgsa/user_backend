@@ -12,9 +12,13 @@ body {
 
 
 /* Used in forms */
+
 /* The way we use Django to generate form html makes it harder to apply
-   bootstrap classes to form inputs. For now, we'll just define some
-   style rules (lifted from bootstrap) here to apply globally to input tags. */
+   bootstrap classes to form inputs. Additionally, bootstrap's "form-control"
+   class makes inputs take up the full width, which would then force us to
+   use the grid to shrink them down.
+   Instead, us this .input-wrapper class on a div wrapping input and textarea
+   tags. */
 .input-wrapper {
     margin: .125rem 0;
 }
@@ -34,12 +38,15 @@ body {
 }
 
 .input-wrapper textarea {
-    max-width: 95%;
+    /* Together with width 100% on label, this will make
+       textareas take up the fill width on smaller screens but not get too
+       large on bigger ones. */
+    max-width: 500px;
+    width: 100%;
 }
 
-.form-control.no-full-width {
-    /* SUUUUPER HACK to make bootstrap inputs not take the full width of the page automatically */
-    flex: none!important;
-    width: auto!important;
+/* Note: inputs and textareas should go *inside* the <label> tag. */
+.label {
+    width: 100%;
 }
 /* \Used in forms */

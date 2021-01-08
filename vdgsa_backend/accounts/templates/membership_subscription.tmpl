@@ -64,12 +64,16 @@
           action="{% url 'add-family-member' pk=user.subscription.pk %}"
         >
           {% csrf_token %}
-          <div class="input-group input-group-sm">
+          <div id="add-family-member-input_wrapper" class="input-wrapper">
             <input
-              class="form-control no-full-width" type="email"
-              name="username" type="email" required autocomplete="off"
+              type="email"
+              name="username"
+              type="email"
+              required
+              autocomplete="off"
+              placeholder="Username"
             >
-            <button type="submit" class="btn btn-primary">Add</button>
+            <button type="submit" class="btn btn-primary btn-sm">Add</button>
           </div>
         </form>
       </li>

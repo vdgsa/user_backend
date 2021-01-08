@@ -18,8 +18,8 @@ default selector used in update_form_body (JS)
 <div class="form-body-wrapper">
 {% for field in form %}
 
-  <div id="{{field.auto_id}}_wrapper" class="input-wrapper">
-    <label class="form-label">
+  <div id="{{field.auto_id}}_wrapper" class="input-wrapper input-group">
+    <label class="label">
     {% if field.field.widget.input_type == 'checkbox' %}
       {{field}} {{field.label}}
     {% else  %}

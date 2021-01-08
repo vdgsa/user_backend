@@ -63,7 +63,7 @@ class UserProfileForm(ModelForm):
         ]
 
         widgets = {
-            'teacher_description': Textarea(attrs={'rows': 5}),
+            'teacher_description': Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
 
