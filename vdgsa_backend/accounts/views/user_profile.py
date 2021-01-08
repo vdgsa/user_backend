@@ -51,20 +51,14 @@ class UserProfileForm(ModelForm):
             'do_not_email',
 
             'include_name_in_membership_directory',
-            'include_name_in_mailing_list',
-            'include_name_in_conclave_directory',
-
             'include_email_in_membership_directory',
-            'include_email_in_mailing_list',
-            'include_email_in_conclave_directory',
-
             'include_address_in_membership_directory',
-            'include_address_in_mailing_list',
-            'include_address_in_conclave_directory',
-
             'include_phone_in_membership_directory',
+
+            'include_name_in_mailing_list',
+            'include_email_in_mailing_list',
+            'include_address_in_mailing_list',
             'include_phone_in_mailing_list',
-            'include_phone_in_conclave_directory',
         ]
 
 
@@ -86,6 +80,8 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context['change_password_form'] = PasswordChangeForm(self.requested_user)
         context['membership_renewal_form'] = PurchaseSubscriptionForm(self.requested_user)
         context['add_family_member_form'] = AddFamilyMemberForm()
+
+        context['current_authenticated_user'] = self.request.user
 
         return context
 

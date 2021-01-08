@@ -25,7 +25,10 @@ body {
     border-radius: 2px;
 }
 
-.input-wrapper input[type="text"] {
+.input-wrapper input[type="text"],
+.input-wrapper input[type="password"],
+.input-wrapper input[type="email"],
+.input-wrapper input[type="number"] {
     padding: .25rem .5rem;
 }
 

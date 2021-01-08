@@ -39,8 +39,8 @@ class User(AbstractUser):
     address_state = models.CharField(max_length=255, blank=True)
     address_postal_code = models.CharField(max_length=255, blank=True)
     address_country = models.CharField(max_length=255, blank=True)
-    phone1 = models.CharField(max_length=15, blank=True)
-    phone2 = models.CharField(max_length=15, blank=True)
+    phone1 = models.CharField(max_length=30, blank=True)
+    phone2 = models.CharField(max_length=30, blank=True)
 
     is_young_player = models.BooleanField(default=False)
     is_teacher = models.BooleanField(default=False)
@@ -53,20 +53,14 @@ class User(AbstractUser):
     do_not_email = models.BooleanField(default=False)
 
     include_name_in_membership_directory = models.BooleanField(default=True)
-    include_name_in_mailing_list = models.BooleanField(default=True)
-    include_name_in_conclave_directory = models.BooleanField(default=True)
-
     include_email_in_membership_directory = models.BooleanField(default=True)
-    include_email_in_mailing_list = models.BooleanField(default=True)
-    include_email_in_conclave_directory = models.BooleanField(default=True)
-
     include_address_in_membership_directory = models.BooleanField(default=True)
-    include_address_in_mailing_list = models.BooleanField(default=True)
-    include_address_in_conclave_directory = models.BooleanField(default=True)
-
     include_phone_in_membership_directory = models.BooleanField(default=True)
+
+    include_name_in_mailing_list = models.BooleanField(default=True)
+    include_email_in_mailing_list = models.BooleanField(default=True)
+    include_address_in_mailing_list = models.BooleanField(default=True)
     include_phone_in_mailing_list = models.BooleanField(default=True)
-    include_phone_in_conclave_directory = models.BooleanField(default=True)
 
     last_modified = models.DateTimeField(auto_now=True)
 

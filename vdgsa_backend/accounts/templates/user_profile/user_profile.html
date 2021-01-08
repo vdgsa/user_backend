@@ -2,10 +2,6 @@
 
 {% block page_style %}
 <style>
-  #all-users-link {
-    margin-bottom: .5rem;
-  }
-
   .remove-family-member-form {
     display: inline-block;
   }
@@ -36,8 +32,8 @@
 {% load filters %}
 
 {% if perms.accounts.membership_secretary %}
-<div id="all-users-link">
-  <a href="{% url 'membership-secretary' %}">&lt All Users</a>
+<div class="mb-2">
+  <a id="all-users-link" href="{% url 'membership-secretary' %}">&lt All Users</a>
 </div>
 {% endif %}
 
@@ -80,10 +76,10 @@
 </form>
 
 
-{% if not perms.accounts.membership_secretary %}
+{% if object == current_authenticated_user %}
 <!-- See https://getbootstrap.com/docs/5.0/utilities/spacing/ -->
 <div class="my-3">
-  <a href="{% url 'password_change' %}">Change Password</a>
+  <a id="password-change-link" href="{% url 'password_change' %}">Change Password</a>
 </div>
 {% endif %}
 
