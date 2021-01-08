@@ -1,13 +1,6 @@
-from django.shortcuts import redirect
 from django.urls import path
-from django.urls.base import reverse
-from django.urls.conf import re_path
 
 from . import views
-
-# user_router = routers.DefaultRouter()
-# user_router.register(r'users', views.ListUserViewSet)
-# user_router.register(r'users', views.RetrieveUpdateUserViewSet)
 
 urlpatterns = [
     path('users/current/', views.CurrentUserView.as_view(), name='current-user'),
@@ -36,6 +29,4 @@ urlpatterns = [
          name='membership-secretary'),
 
     path('stripe_webhook/', views.stripe_webhook_view),
-
-    # re_path('$', lambda request: redirect(reverse('current-user-profile'))),
 ]
