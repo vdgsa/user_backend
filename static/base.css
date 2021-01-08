@@ -33,6 +33,10 @@ body {
     padding: .25rem .5rem;
 }
 
+.input-wrapper textarea {
+    max-width: 95%;
+}
+
 .form-control.no-full-width {
     /* SUUUUPER HACK to make bootstrap inputs not take the full width of the page automatically */
     flex: none!important;
