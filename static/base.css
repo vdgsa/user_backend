@@ -28,7 +28,8 @@ body {
 .input-wrapper input[type="text"],
 .input-wrapper input[type="password"],
 .input-wrapper input[type="email"],
-.input-wrapper input[type="number"] {
+.input-wrapper input[type="number"],
+.input-wrapper textarea {
     padding: .25rem .5rem;
 }
 
