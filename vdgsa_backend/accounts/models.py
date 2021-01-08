@@ -45,6 +45,7 @@ class User(AbstractUser):
     is_young_player = models.BooleanField(default=False)
     is_teacher = models.BooleanField(default=False)
     is_remote_teacher = models.BooleanField(default=False)
+    teacher_description = models.TextField(max_length=250, blank=True)
     is_builder = models.BooleanField(default=False)
     is_publisher = models.BooleanField(default=False)
     other_commercial = models.CharField(max_length=255, blank=True)

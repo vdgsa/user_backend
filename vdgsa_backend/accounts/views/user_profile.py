@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, cast
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.forms.models import BaseModelForm, ModelForm
+from django.forms import BaseModelForm, ModelForm, Textarea
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import redirect
@@ -42,6 +42,7 @@ class UserProfileForm(ModelForm):
 
             'is_young_player',
             'is_teacher',
+            'teacher_description',
             'is_remote_teacher',
             'is_builder',
             'is_publisher',
@@ -60,6 +61,10 @@ class UserProfileForm(ModelForm):
             'include_address_in_mailing_list',
             'include_phone_in_mailing_list',
         ]
+
+        widgets = {
+            'teacher_description': Textarea(attrs={'rows': 4}),
+        }
 
 
 class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
