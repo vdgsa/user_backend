@@ -1,3 +1,4 @@
+import time
 from unittest import mock
 
 from django.contrib.auth.models import Permission
@@ -5,7 +6,7 @@ from django.core import mail
 from django.test import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
-from selenium.common.exceptions import ElementNotInteractableException  # type: ignore ## FIXME
+from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import ChangeEmailRequest, User
 
@@ -22,26 +23,25 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
     def test_change_email_form_toggle(self) -> None:
         self.login_as(self.user)
 
-        self.assertFalse(
-            self.selenium.find_element_by_id('id_new_email').is_displayed())
+        self.assertFalse(self.selenium.find_element_by_id('id_new_email').is_displayed())
 
         # Show the form
         self.selenium.find_element_by_id('show-change-email-form').click()
-        self.assertTrue(
-            self.selenium.find_element_by_id('id_new_email').is_displayed())
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertTrue(self.selenium.find_element_by_id('id_new_email').is_displayed())
 
         # Hide the form
         self.selenium.find_element_by_id('show-change-email-form').click()
-        self.assertFalse(
-            self.selenium.find_element_by_id('id_new_email').is_displayed())
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertFalse(self.selenium.find_element_by_id('id_new_email').is_displayed())
 
         self.selenium.find_element_by_id('show-change-email-form').click()
-        self.assertTrue(
-            self.selenium.find_element_by_id('id_new_email').is_displayed())
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertTrue(self.selenium.find_element_by_id('id_new_email').is_displayed())
 
         self.selenium.find_element_by_id('change-email-cancel-button').click()
-        self.assertFalse(
-            self.selenium.find_element_by_id('id_new_email').is_displayed())
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertFalse(self.selenium.find_element_by_id('id_new_email').is_displayed())
 
     def test_change_email(self) -> None:
         self.login_as(self.user)
