@@ -20,7 +20,7 @@ class _CreatedAndUpdatedTimestamps(models.Model):
 
 class User(AbstractUser):
     # Require that usernames are email addresses
-    username = models.EmailField(unique=True)
+    username = models.EmailField(unique=True, verbose_name='Email')
 
     # Django doesn't have a one-to-many field other than as the
     # reverse lookup of a foreign key.
