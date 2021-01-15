@@ -142,4 +142,5 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
+# In docker container, ends up being /usr/src/static
 STATIC_ROOT = BASE_DIR.parent / 'static'
