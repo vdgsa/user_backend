@@ -23,7 +23,7 @@ class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView)
 
 class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
-        users = User.objects.order_by('last_name', 'first_name', 'username')
+        users = User.objects.all()
         field_names = [
             'Database ID',
             'Last Name',

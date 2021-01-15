@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Optional
+from typing import Any, Dict, Final, Optional
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields.array import ArrayField
@@ -19,6 +19,9 @@ class _CreatedAndUpdatedTimestamps(models.Model):
 
 
 class User(AbstractUser):
+    class Meta:
+        ordering = ('last_name', 'first_name', 'username')
+
     # Require that usernames are email addresses
     username = models.EmailField(unique=True, verbose_name='Email')
 
@@ -101,9 +104,15 @@ class ChangeEmailRequest(_CreatedAndUpdatedTimestamps, models.Model):
     new_email = models.EmailField()
 
 
+REGULAR_MEMBERSHIP_PRICE: Final[int] = 35
+STUDENT_MEMBERSHIP_PRICE: Final[int] = 20
+INTERNATIONAL_MEMBERSHIP_PRICE: Final[int] = 40
+
+
 class MembershipType(models.TextChoices):
-    regular = 'regular', 'Regular ($40)'
-    student = 'student', 'Student ($35)'
+    regular = 'regular', f'Regular (${REGULAR_MEMBERSHIP_PRICE})'
+    student = 'student', f'Student (${STUDENT_MEMBERSHIP_PRICE})'
+    international = 'international', f'International (${INTERNATIONAL_MEMBERSHIP_PRICE})'
     lifetime = 'lifetime'
 
 

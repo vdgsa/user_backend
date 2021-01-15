@@ -20,12 +20,12 @@
     display: inline-block;
   }
 
-  #add-family-member-input_wrapper {
+  #add-family-member-input-wrapper {
     display: flex;
     align-items: center;
   }
 
-  #add-family-member-input_wrapper input {
+  #add-family-member-input-wrapper input {
     margin-right: .25rem;
     font-size: .875rem;
   }
@@ -213,7 +213,7 @@ $().ready(function() {
         form.attr('action'),
         form.serialize(),
         function() {
-          $('.family-member').eq(index).remove();
+          window.location.reload();
         }
       ).fail(function(response) {
         // TODO: better error message

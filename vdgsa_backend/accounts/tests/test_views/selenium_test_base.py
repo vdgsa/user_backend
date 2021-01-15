@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Permission
 from django.test import LiveServerTestCase
-from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore ## FIXME
+from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore
 
 from vdgsa_backend.accounts.models import User
 

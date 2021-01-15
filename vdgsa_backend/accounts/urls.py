@@ -15,12 +15,12 @@ urlpatterns = [
     path('profile/<int:pk>/', views.UserProfileView.as_view(), name='user-profile'),
     path('profile/', views.current_user_profile_view, name='current-user-profile'),
 
-    path('user/<int:pk>/subscription/add_family_member/', views.AddFamilyMemberView.as_view(),
+    path('subscription/<int:pk>/add_family_member/', views.AddFamilyMemberView.as_view(),
          name='add-family-member'),
-    path('user/<int:pk>/subscription/remove_family_member/',
+    path('subscription/<int:pk>/remove_family_member/',
          views.RemoveFamilyMemberView.as_view(),
          name='remove-family-member'),
-    path('user/<int:pk>/subscription/', views.PurchaseSubscriptionView.as_view(),
+    path('user/<int:pk>/purchase_subscription/', views.PurchaseSubscriptionView.as_view(),
          name='purchase-subscription'),
 
     path('membership_secretary/all_users_csv/', views.AllUsersSpreadsheetView.as_view(),

@@ -1,5 +1,5 @@
 from django.core import mail
-from selenium.common.exceptions import NoSuchElementException  # type: ignore ## FIXME
+from selenium.common.exceptions import NoSuchElementException  # type: ignore
 
 from vdgsa_backend.accounts.models import User
 

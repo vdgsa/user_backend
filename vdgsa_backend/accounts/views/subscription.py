@@ -5,17 +5,17 @@ from typing import Any, Dict, List
 import stripe  # type: ignore
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.urls.base import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 
 from vdgsa_backend.accounts.models import (
+    INTERNATIONAL_MEMBERSHIP_PRICE, REGULAR_MEMBERSHIP_PRICE, STUDENT_MEMBERSHIP_PRICE,
     MembershipSubscription, MembershipType, PendingMembershipSubscriptionPurchase, User
 )
 from vdgsa_backend.accounts.templatetags.filters import show_name
@@ -64,7 +64,8 @@ class PurchaseSubscriptionForm(forms.Form):
     membership_type = forms.ChoiceField(
         choices=[
             (MembershipType.regular.value, MembershipType.regular.label),
-            (MembershipType.student.value, MembershipType.student.label)
+            (MembershipType.student.value, MembershipType.student.label),
+            (MembershipType.international.value, MembershipType.international.label),
         ]
     )
     donation = forms.IntegerField(required=False, min_value=0)
@@ -125,11 +126,14 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
     def _get_stripe_line_items(self, form: PurchaseSubscriptionForm) -> List[Dict[str, object]]:
         membership_type = form.cleaned_data['membership_type']
         if membership_type == MembershipType.student:
-            rate = 35  # FIXME: get actual number
+            rate = STUDENT_MEMBERSHIP_PRICE
             label = '1-year Student Membership'
         elif membership_type == MembershipType.regular:
-            rate = 40  # FIXME: get actual number
+            rate = REGULAR_MEMBERSHIP_PRICE
             label = '1-year Membership'
+        elif membership_type == MembershipType.international:
+            rate = INTERNATIONAL_MEMBERSHIP_PRICE
+            label = '1-year Membership (International)'
         else:
             raise ValueError(f'Unexpected membership_type: {membership_type}')
 
@@ -220,8 +224,8 @@ class AddFamilyMemberView(LoginRequiredMixin, UserPassesTestMixin, View):
         if not family_member_query.exists():
             return get_ajax_form_response('other_error', None, extra_data={
                 'error_msg': f'User "{username}" does not exist. '
-                            'Please have them create an account before '
-                            'adding them as a family member.'
+                             'Please have them create an account before '
+                             'adding them as a family member.'
             })
 
         family_member = family_member_query.get()

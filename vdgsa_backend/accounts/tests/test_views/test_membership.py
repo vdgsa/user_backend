@@ -1,8 +1,11 @@
+import json
 import time
 
 from django.test import TestCase
+from django.urls.base import reverse
 from django.utils import timezone
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
+from selenium.webdriver.support import expected_conditions as EC  # type: ignore
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
@@ -35,12 +38,10 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         self.assertTrue(
             self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
 
-        # TODO: Figure out why this button click closes and then immediately re-opens
-        # the collapsible in selenium only.
-        # self.selenium.find_element_by_id('hide-purchase-subscription').click()
-        # time.sleep(2)  # Wait for bootstrap's animation to finish
-        # self.assertFalse(
-        #     self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
+        self.selenium.find_element_by_id('hide-purchase-subscription').click()
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertFalse(
+            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
 
         # TODO: Figure out a good way to integration test the stripe webhook
 
@@ -59,21 +60,20 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
-            '$40.00',
+            '$35.00',
             self.selenium.find_element_by_id('ProductSummary-totalAmount').text
         )
         self.assertIn('checkout.stripe.com', self.selenium.current_url)
 
         # TODO: Figure out a good way to integration test the stripe webhook
 
-    def test_purchase_student_subscription_with_donation(self) -> None:
+    def test_purchase_student_subscription(self) -> None:
         self.login_as(self.user)
         self.selenium.find_element_by_id('show-membership-purchase').click()
 
         self.selenium.find_element_by_id('id_membership_type').click()
         self.selenium.find_elements_by_css_selector('#id_membership_type option')[1].click()
 
-        self.selenium.find_element_by_id('id_donation').send_keys('20')
         self.selenium.find_element_by_css_selector(
             '#purchase-subscription-form button[type=submit]'
         ).click()
@@ -82,7 +82,48 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
-            '$55.00',
+            '$20.00',
+            self.selenium.find_element_by_id('ProductSummary-totalAmount').text
+        )
+        self.assertIn('checkout.stripe.com', self.selenium.current_url)
+
+    def test_purchase_international_subscription(self) -> None:
+        self.login_as(self.user)
+        self.selenium.find_element_by_id('show-membership-purchase').click()
+
+        self.selenium.find_element_by_id('id_membership_type').click()
+        self.selenium.find_elements_by_css_selector('#id_membership_type option')[2].click()
+
+        self.selenium.find_element_by_css_selector(
+            '#purchase-subscription-form button[type=submit]'
+        ).click()
+
+        wait = WebDriverWait(self.selenium, 5)
+        wait.until(
+            lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
+        self.assertIn(
+            '$40.00',
+            self.selenium.find_element_by_id('ProductSummary-totalAmount').text
+        )
+        self.assertIn('checkout.stripe.com', self.selenium.current_url)
+
+    def test_purchase_student_subscription_with_donation(self) -> None:
+        self.login_as(self.user)
+        self.selenium.find_element_by_id('show-membership-purchase').click()
+
+        self.selenium.find_element_by_id('id_membership_type').click()
+        self.selenium.find_elements_by_css_selector('#id_membership_type option')[1].click()
+
+        self.selenium.find_element_by_id('id_donation').send_keys('25')
+        self.selenium.find_element_by_css_selector(
+            '#purchase-subscription-form button[type=submit]'
+        ).click()
+
+        wait = WebDriverWait(self.selenium, 5)
+        wait.until(
+            lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
+        self.assertIn(
+            '$45.00',
             self.selenium.find_element_by_id('ProductSummary-totalAmount').text
         )
         self.assertIn('checkout.stripe.com', self.selenium.current_url)
@@ -115,7 +156,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
-            '$40.00',
+            '$35.00',
             self.selenium.find_element_by_id('ProductSummary-totalAmount').text
         )
         self.assertIn('checkout.stripe.com', self.selenium.current_url)
@@ -231,29 +272,174 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         )
 
     def test_add_remove_family_members(self) -> None:
-        self.fail()
+        MembershipSubscription.objects.create(
+            owner=self.user, valid_until=timezone.now(), membership_type=MembershipType.regular)
+
+        family1 = User.objects.create_user(username='family1@wat.com')
+        family2 = User.objects.create_user(username='family2@wat.com')
+
+        self.login_as(self.user)
+
+        # Add 2 family members sequentially
+        self.selenium.find_element_by_css_selector(
+            '#add-family-member-input-wrapper input').send_keys(family1.username)
+        self.selenium.find_element_by_css_selector(
+            '#add-family-member-input-wrapper button[type=submit]').click()
+
+        family_member_names = self.selenium.find_elements_by_css_selector(
+            '.family-member .family-member-name')
+        self.assertEqual(1, len(family_member_names))
+        self.assertIn(family1.username, family_member_names[0].text)
+
+        self.selenium.find_element_by_css_selector(
+            '#add-family-member-input-wrapper input').send_keys(family2.username)
+        self.selenium.find_element_by_css_selector(
+            '#add-family-member-input-wrapper button[type=submit]').click()
+
+        family_member_names = self.selenium.find_elements_by_css_selector(
+            '.family-member .family-member-name')
+        self.assertEqual(2, len(family_member_names))
+        self.assertIn(family1.username, family_member_names[0].text)
+        self.assertIn(family2.username, family_member_names[1].text)
+
+        # Make sure family members are displayed on page load
+        self.selenium.refresh()
+        family_member_names = self.selenium.find_elements_by_css_selector(
+            '.family-member .family-member-name')
+        self.assertEqual(2, len(family_member_names))
+        self.assertIn(family1.username, family_member_names[0].text)
+        self.assertIn(family2.username, family_member_names[1].text)
+
+        # Remove both family members
+        remove_buttons = self.selenium.find_elements_by_css_selector(
+            '.remove-family-member-form button[type=submit]')
+        remove_buttons[0].click()
+        wait = WebDriverWait(self.selenium, 5)
+        wait.until(EC.alert_is_present())
+        alert = self.selenium.switch_to.alert
+        alert.accept()
+        time.sleep(2)
+
+        family_member_names = self.selenium.find_elements_by_css_selector(
+            '.family-member .family-member-name')
+        self.assertEqual(1, len(family_member_names))
+        self.assertIn(family2.username, family_member_names[0].text)
+
+        remove_buttons = self.selenium.find_elements_by_css_selector(
+            '.remove-family-member-form button[type=submit]')
+        remove_buttons[0].click()
+        time.sleep(1)
+        wait.until(EC.alert_is_present())
+        alert = self.selenium.switch_to.alert
+        alert.accept()
+        time.sleep(2)
+
+        family_member_names = self.selenium.find_elements_by_css_selector(
+            '.family-member .family-member-name')
+        self.assertEqual(0, len(family_member_names))
+
+        self.selenium.refresh()
+        family_member_names = self.selenium.find_elements_by_css_selector(
+            '.family-member .family-member-name')
+        self.assertEqual(0, len(family_member_names))
+
+    def test_lifetime_members_can_add_family_members(self) -> None:
+        MembershipSubscription.objects.create(
+            owner=self.user, valid_until=None, membership_type=MembershipType.lifetime)
+
+        family = User.objects.create_user(username='family1@wat.com')
+
+        self.login_as(self.user)
+
+        # Add 2 family members sequentially
+        self.selenium.find_element_by_css_selector(
+            '#add-family-member-input-wrapper input').send_keys(family.username)
+        self.selenium.find_element_by_css_selector(
+            '#add-family-member-input-wrapper button[type=submit]').click()
+
+        family_member_names = self.selenium.find_elements_by_css_selector(
+            '.family-member .family-member-name')
+        self.assertEqual(1, len(family_member_names))
+        self.assertIn(family.username, family_member_names[0].text)
 
     def test_membership_secretary_add_remove_family_members(self) -> None:
-        self.fail()
+        MembershipSubscription.objects.create(
+            owner=self.user, valid_until=timezone.now(), membership_type=MembershipType.regular)
+
+        family = User.objects.create_user(username='family1@wat.com')
+
+        self.login_as(self.make_membership_secretary(), f'/accounts/profile/{self.user.pk}/')
+
+        # Add 2 family members sequentially
+        self.selenium.find_element_by_css_selector(
+            '#add-family-member-input-wrapper input').send_keys(family.username)
+        self.selenium.find_element_by_css_selector(
+            '#add-family-member-input-wrapper button[type=submit]').click()
+
+        family_member_names = self.selenium.find_elements_by_css_selector(
+            '.family-member .family-member-name')
+        self.assertEqual(1, len(family_member_names))
+        self.assertIn(family.username, family_member_names[0].text)
 
 
-class MembershipFormsPermission(TestCase):
-    def test_membership_purchase_form_permissions(self) -> None:
-        self.fail()
+class MembershipFormsPermissionTestCase(TestCase):
+    def test_non_owner_non_membership_secretary_buy_subscription_permission_denied(self) -> None:
+        user = User.objects.create_user(username='user@user.com', password='password')
+        unauthorized_user = User.objects.create_user(
+            username='other@other.com', password='password')
 
-    def test_add_remove_family_permissions(self) -> None:
-        self.fail()
+        self.client.force_login(unauthorized_user)
+        response = self.client.post(
+            reverse('purchase-subscription', kwargs={'pk': user.pk}),
+            {'membership_type': MembershipType.regular}
+        )
+        self.assertEqual(403, response.status_code)
+        self.assertFalse(MembershipSubscription.objects.filter(owner=user).exists())
+
+    def test_non_owner_non_membership_secretary_add_family_permission_denied(self) -> None:
+        user = User.objects.create_user(username='user@user.com', password='password')
+        subscription = MembershipSubscription.objects.create(
+            owner=user, valid_until=timezone.now(), membership_type=MembershipType.regular)
+
+        unauthorized_user = User.objects.create_user(
+            username='other@other.com', password='password')
+        family = User.objects.create_user(username='family@family.com', password='password')
+
+        self.client.force_login(unauthorized_user)
+        response = self.client.post(
+            reverse('add-family-member', kwargs={'pk': subscription.pk}),
+            {'username': family.username}
+        )
+        self.assertEqual(403, response.status_code)
+        subscription.refresh_from_db()
+        self.assertEqual(0, subscription.family_members.count())
+
+    def test_non_owner_non_membership_secretary_remove_family_permission_denied(self) -> None:
+        user = User.objects.create_user(username='user@user.com', password='password')
+        subscription = MembershipSubscription.objects.create(
+            owner=user, valid_until=timezone.now(), membership_type=MembershipType.regular)
+        family = User.objects.create_user(username='family@family.com', password='password')
+        subscription.family_members.add(family)
+
+        unauthorized_user = User.objects.create_user(
+            username='other@other.com', password='password')
+        self.client.force_login(unauthorized_user)
+        response = self.client.post(
+            reverse('remove-family-member', kwargs={'pk': subscription.pk}),
+            {'username': family.username}
+        )
+        self.assertEqual(403, response.status_code)
+        subscription.refresh_from_db()
+        self.assertEqual(1, subscription.family_members.count())
 
     def test_invalid_donation_amount(self) -> None:
-        # self.login_as(self.user)
-        # self.selenium.find_element_by_id('show-membership-purchase').click()
+        user = User.objects.create_user(username='user@user.com', password='password')
 
-        # self.selenium.find_element_by_id('id_membership_type').click()
-        # self.selenium.find_elements_by_css_selector('#id_membership_type option')[1].click()
-
-        # self.selenium.find_element_by_id('id_donation').send_keys('20')
-        # self.selenium.find_element_by_css_selector(
-        #     '#purchase-subscription-form button[type=submit]'
-        # ).click()
-
-        self.fail()
+        self.client.force_login(user)
+        response = self.client.post(
+            reverse('purchase-subscription', kwargs={'pk': user.pk}),
+            {'membership_type': MembershipType.regular, 'donation': '-5'}
+        )
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content.decode())
+        self.assertEqual('form_validation_error', data['status'])
