@@ -23,9 +23,9 @@ urlpatterns = [
     path('user/<int:pk>/purchase_subscription/', views.PurchaseSubscriptionView.as_view(),
          name='purchase-subscription'),
 
-    path('membership_secretary/all_users_csv/', views.AllUsersSpreadsheetView.as_view(),
+    path('directory/csv/', views.AllUsersSpreadsheetView.as_view(),
          name='all-users-csv'),
-    path('membership_secretary/', views.MembershipSecretaryView.as_view(),
+    path('directory/', views.MembershipSecretaryView.as_view(),
          name='membership-secretary'),
 
     path('stripe_webhook/', views.stripe_webhook_view),

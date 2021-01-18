@@ -43,9 +43,9 @@ urlpatterns = [
     path('accounts/', include('vdgsa_backend.accounts.urls')),
     path('schema/', include('vdgsa_backend.api_schema.urls')),
 
-    re_path('login/?$', VdGSALoginView.as_view(), name='login'),
-    re_path('logout/?$', logout_view, name='logout'),
+    path('login/', VdGSALoginView.as_view(), name='login'),
+    path('logout/', logout_view, name='logout'),
     path('', include('django.contrib.auth.urls')),
 
-    re_path('$', lambda request: redirect(reverse('current-user-profile'))),
+    re_path('^$', lambda request: redirect(reverse('current-user-profile'))),
 ]
