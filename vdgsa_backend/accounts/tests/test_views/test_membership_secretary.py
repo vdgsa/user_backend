@@ -1,11 +1,13 @@
 import csv
 import tempfile
+import time
 from typing import List, Protocol, Sequence
 
 from django.contrib.auth.models import Permission
 from django.test.testcases import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
+from selenium.common.exceptions import NoSuchElementException  # type: ignore
 from selenium.webdriver.remote.webelement import WebElement  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
@@ -147,7 +149,17 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
             1 for item in elements if item.is_displayed()
         )
 
-    def test_non_membership_secretary_permission_denied(self) -> None:
+    def test_board_members_can_view_but_not_edit(self) -> None:
+        self.login_as(self.make_board_member(), dest_url='/accounts/directory/')
+        self.selenium.find_element_by_id('user-table')
+        with self.assertRaises(NoSuchElementException):
+            self.selenium.find_element_by_id('download-members-csv')
+
+        self.selenium.find_elements_by_css_selector('.user-row td')[0].click()
+        time.sleep(3)
+        self.selenium.find_element_by_id('user-table')
+
+    def test_non_membership_secretary_non_board_member_permission_denied(self) -> None:
         self.login_as(self.users[0], dest_url='/accounts/directory/')
         self.assertIn('Forbidden', self.selenium.find_element_by_css_selector('body').text)
 

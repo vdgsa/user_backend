@@ -17,7 +17,8 @@ class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView)
     template_name = 'membership_secretary.html'
 
     def test_func(self) -> bool:
-        return is_membership_secretary(self.request.user)
+        return (is_membership_secretary(self.request.user)
+                or self.request.user.has_perm('accounts.board_member'))
 
 
 class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
