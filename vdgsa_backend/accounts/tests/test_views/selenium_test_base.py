@@ -42,3 +42,12 @@ class SeleniumTestCaseBase(LiveServerTestCase):
             Permission.objects.get(codename='membership_secretary')
         )
         return membership_secretary
+
+    def make_board_member(self) -> User:
+        board_member = User.objects.create_user(
+            username=f'boardo@wee.com', password='password'
+        )
+        board_member.user_permissions.add(
+            Permission.objects.get(codename='board_member')
+        )
+        return board_member
