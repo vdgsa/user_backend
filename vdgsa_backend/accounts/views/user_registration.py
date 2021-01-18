@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib.auth.forms import PasswordResetForm
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
@@ -7,17 +8,38 @@ from django.views import View
 from vdgsa_backend.accounts.models import User
 
 
+class UserRegistrationForm(PasswordResetForm):
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    address_line_1 = forms.CharField()
+    address_line_2 = forms.CharField(required=False)
+    address_city = forms.CharField(label='City')
+    address_state = forms.CharField(label='State/Province')
+    address_postal_code = forms.CharField(label='ZIP/Postal Code')
+    address_country = forms.CharField(label='Country')
+
+
 class UserRegistrationView(View):
     def get(self, request: HttpRequest) -> HttpResponse:
-        return self._render_form(PasswordResetForm())
+        return self._render_form(UserRegistrationForm())
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        form = PasswordResetForm(request.POST)
+        form = UserRegistrationForm(request.POST)
         if not form.is_valid():
             self._render_form(form)
 
         email = form.cleaned_data['email']
-        user, created = User.objects.get_or_create(username=email)
+        user, created = User.objects.get_or_create(
+            username=email,
+            first_name=form.cleaned_data['first_name'],
+            last_name=form.cleaned_data['last_name'],
+            address_line_1=form.cleaned_data['address_line_1'],
+            address_line_2=form.cleaned_data['address_line_2'],
+            address_city=form.cleaned_data['address_city'],
+            address_state=form.cleaned_data['address_state'],
+            address_postal_code=form.cleaned_data['address_postal_code'],
+            address_country=form.cleaned_data['address_country'],
+        )
         # Django sets the "password" field to the empty string by default.
         # If the above query loaded an existing user and that user has
         # set a password, then the requested email address is in use.

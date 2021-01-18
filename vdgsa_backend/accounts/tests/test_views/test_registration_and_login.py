@@ -10,10 +10,27 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
     def test_register_and_login(self) -> None:
         email = 'zomg_email@wat.com'
 
+        first_name = 'noewfitanwf'
+        last_name = 'nwfoiet'
+        address_line_1 = 'zvorhsul'
+        address_line_2 = 'nothief'
+        address_city = 'nfieo'
+        address_state = 'MU'
+        address_postal_code = '1234234AA'
+        address_country = 'noieftmwnf'
+
         # Go to the registration page, enter an email
         self.selenium.get(f'{self.live_server_url}/accounts/register/')
-        email_input = self.selenium.find_element_by_id('id_email')
-        email_input.send_keys(email)
+        self.selenium.find_element_by_id('id_email').send_keys(email)
+        self.selenium.find_element_by_id('id_first_name').send_keys(first_name)
+        self.selenium.find_element_by_id('id_last_name').send_keys(last_name)
+        self.selenium.find_element_by_id('id_address_line_1').send_keys(address_line_1)
+        self.selenium.find_element_by_id('id_address_line_2').send_keys(address_line_2)
+        self.selenium.find_element_by_id('id_address_city').send_keys(address_city)
+        self.selenium.find_element_by_id('id_address_state').send_keys(address_state)
+        self.selenium.find_element_by_id('id_address_postal_code').send_keys(address_postal_code)
+        self.selenium.find_element_by_id('id_address_country').send_keys(address_country)
+
         self.selenium.find_element_by_css_selector('button[type=submit]').click()
 
         self.assertEqual('Almost Done!', self.selenium.find_element_by_id('almost-done-msg').text)
@@ -36,6 +53,39 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
         self.selenium.find_element_by_css_selector('button[type=submit]').click()
 
         self.assertEqual(self.selenium.find_element_by_id('current-username').text, email)
+        # Name and address in profile should be popluated with entered values.
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_first_name').get_attribute('value'),
+            first_name
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_last_name').get_attribute('value'),
+            last_name
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_address_line_1').get_attribute('value'),
+            address_line_1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_address_line_2').get_attribute('value'),
+            address_line_2
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_address_city').get_attribute('value'),
+            address_city
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_address_state').get_attribute('value'),
+            address_state
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_address_postal_code').get_attribute('value'),
+            address_postal_code
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_address_country').get_attribute('value'),
+            address_country
+        )
 
     def test_username_taken(self) -> None:
         email = 'batman@bat.man'
@@ -97,3 +147,17 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
         self.selenium.find_element_by_css_selector('button[type=submit]').click()
 
         self.assertEqual(self.selenium.find_element_by_id('current-username').text, email)
+
+    def _fill_name_and_address(self) -> None:
+        """
+        Fill name and address with some dummy values for tests where we don't
+        care about that info.
+        """
+        self.selenium.find_element_by_id('id_first_name').send_keys('Firsty')
+        self.selenium.find_element_by_id('id_last_name').send_keys('Lasty')
+        self.selenium.find_element_by_id('id_address_line_1').send_keys('123 Street Rd')
+        # Address line 2 is optional
+        self.selenium.find_element_by_id('id_address_city').send_keys('The Fjords')
+        self.selenium.find_element_by_id('id_address_state').send_keys('Bolton')
+        self.selenium.find_element_by_id('id_address_postal_code').send_keys('43213')
+        self.selenium.find_element_by_id('id_address_country').send_keys('US&A')
