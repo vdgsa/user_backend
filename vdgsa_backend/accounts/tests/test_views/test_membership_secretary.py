@@ -76,7 +76,7 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
         _test_data_init(self)
 
     def test_table_content(self) -> None:
-        self.login_as(self.membership_secretary, dest_url='/accounts/membership_secretary/')
+        self.login_as(self.membership_secretary, dest_url='/accounts/directory/')
         user_rows = self.selenium.find_elements_by_class_name('user-row')
         self.assertEqual(len(self.users), len(user_rows))
 
@@ -111,7 +111,7 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
         self.assertEqual('', user7_subscription_cells[4].text)  # membership expires
 
     def test_filter_text(self) -> None:
-        self.login_as(self.membership_secretary, dest_url='/accounts/membership_secretary/')
+        self.login_as(self.membership_secretary, dest_url='/accounts/directory/')
         user_rows = self.selenium.find_elements_by_class_name('user-row')
         self.assertEqual(len(self.users), len(user_rows))
 
@@ -148,7 +148,7 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
         )
 
     def test_non_membership_secretary_permission_denied(self) -> None:
-        self.login_as(self.users[0], dest_url='/accounts/membership_secretary/')
+        self.login_as(self.users[0], dest_url='/accounts/directory/')
         self.assertIn('Forbidden', self.selenium.find_element_by_css_selector('body').text)
 
 
