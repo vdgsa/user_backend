@@ -53,39 +53,17 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
         self.selenium.find_element_by_css_selector('button[type=submit]').click()
 
         self.assertEqual(self.selenium.find_element_by_id('current-username').text, email)
-        # Name and address in profile should be popluated with entered values.
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_first_name').get_attribute('value'),
-            first_name
-        )
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_last_name').get_attribute('value'),
-            last_name
-        )
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_address_line_1').get_attribute('value'),
-            address_line_1
-        )
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_address_line_2').get_attribute('value'),
-            address_line_2
-        )
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_address_city').get_attribute('value'),
-            address_city
-        )
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_address_state').get_attribute('value'),
-            address_state
-        )
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_address_postal_code').get_attribute('value'),
-            address_postal_code
-        )
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_address_country').get_attribute('value'),
-            address_country
-        )
+
+        # Name and address fields should have been set
+        user = User.objects.get(username=email)
+        self.assertEqual(user.first_name, first_name)
+        self.assertEqual(user.last_name, last_name)
+        self.assertEqual(user.address_line_1, address_line_1)
+        self.assertEqual(user.address_line_2, address_line_2)
+        self.assertEqual(user.address_city, address_city)
+        self.assertEqual(user.address_state, address_state)
+        self.assertEqual(user.address_postal_code, address_postal_code)
+        self.assertEqual(user.address_country, address_country)
 
     def test_username_taken(self) -> None:
         email = 'batman@bat.man'
