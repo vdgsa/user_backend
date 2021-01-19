@@ -33,58 +33,6 @@
   {% endif %}
 
   {% if user.subscription.owner == user %}
-  <div id="family-members-wrapper" class="mt-3">
-    <div class="mb-1">
-      <b>
-        You can add up to 3 family members to your membership. <br>
-        Please enter their email addresses below.
-      </b>
-    </div>
-    <ul id="family-member-list">
-      {% for member in user.subscription.family_members.all %}
-      <li class="family-member">
-        <form
-          class="remove-family-member-form"
-          method="post"
-          action="{% url 'remove-family-member' pk=user.subscription.pk %}"
-        >
-          {% csrf_token %}
-          <input type="hidden" value="{{member.username}}" name="username">
-
-          <div class="input-group input-group-sm mb-2">
-            <span class="input-group-text family-member-name">
-              {{member | show_name_and_email}}
-            </span>
-            <button type="submit" class="btn btn-danger">Remove</button>
-          </div>
-        </form>
-      </li>
-      {% endfor %}
-      {% if user.subscription.family_members.count < 3 %}
-      <li>
-        <form
-          id="add-family-member-form"
-          method="post"
-          action="{% url 'add-family-member' pk=user.subscription.pk %}"
-        >
-          {% csrf_token %}
-          <div id="add-family-member-input-wrapper" class="input-wrapper">
-            <input
-              type="email"
-              name="username"
-              type="email"
-              required
-              autocomplete="off"
-              placeholder="Email"
-            >
-            <button type="submit" class="btn btn-primary btn-sm">Add</button>
-          </div>
-        </form>
-      </li>
-      {% endif %}
-    </ul>
-  </div>
-
   <div id="show-membership-purchase-wrapper">
     <a
       id="show-membership-purchase"
@@ -132,3 +80,57 @@
   </button>
   {% endif %}
 </form>
+
+{% if user.subscription is not None and user.subscription.owner == user %}
+<div id="family-members-wrapper" class="mt-3">
+  <div class="mb-1">
+    <b>
+      You can add up to {{MAX_NUM_FAMILY_MEMBERS}} family members to your membership. <br>
+      Please enter their email addresses below.
+    </b>
+  </div>
+  <ul id="family-member-list">
+    {% for member in user.subscription.family_members.all %}
+    <li class="family-member">
+      <form
+        class="remove-family-member-form"
+        method="post"
+        action="{% url 'remove-family-member' pk=user.subscription.pk %}"
+      >
+        {% csrf_token %}
+        <input type="hidden" value="{{member.username}}" name="username">
+
+        <div class="input-group input-group-sm mb-2">
+          <span class="input-group-text family-member-name">
+            {{member | show_name_and_email}}
+          </span>
+          <button type="submit" class="btn btn-danger">Remove</button>
+        </div>
+      </form>
+    </li>
+    {% endfor %}
+    {% if user.subscription.family_members.count < MAX_NUM_FAMILY_MEMBERS %}
+    <li>
+      <form
+        id="add-family-member-form"
+        method="post"
+        action="{% url 'add-family-member' pk=user.subscription.pk %}"
+      >
+        {% csrf_token %}
+        <div id="add-family-member-input-wrapper" class="input-wrapper">
+          <input
+            type="email"
+            name="username"
+            type="email"
+            required
+            autocomplete="off"
+            placeholder="Email"
+          >
+          <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        </div>
+      </form>
+    </li>
+    {% endif %}
+  </ul>
+</div>
+{% endif %}

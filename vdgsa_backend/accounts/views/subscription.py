@@ -1,6 +1,6 @@
 import json
 from functools import cached_property
-from typing import Any, Dict, List
+from typing import Any, Dict, Final, List
 
 import stripe  # type: ignore
 from django import forms
@@ -212,12 +212,20 @@ class AddFamilyMemberForm(forms.Form):
     username = forms.EmailField(label='')
 
 
+MAX_NUM_FAMILY_MEMBERS: Final[int] = 3
+
+
 class AddFamilyMemberView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         form = AddFamilyMemberForm(request.POST)
         if not form.is_valid():
             return get_ajax_form_response('other_error', None, extra_data={
                 'error_msg': 'Please enter a valid email address.'
+            })
+
+        if self.subscription.family_members.count() == MAX_NUM_FAMILY_MEMBERS:
+            return get_ajax_form_response('other_error', None, extra_data={
+                'error_msg': f'You cannot add more than {MAX_NUM_FAMILY_MEMBERS} to a membership.'
             })
 
         username = form.cleaned_data['username']
