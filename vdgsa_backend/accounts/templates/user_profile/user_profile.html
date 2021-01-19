@@ -47,71 +47,79 @@
 </div>
 {% endif %}
 
-<h3>Login Info</h3>
-<div><b>Email</b></div>
-<div class="input-group input-group-sm mb-2">
-  <span id="current-username" class="input-group-text">{{object.username}}</span>
-  <button type="button" class="btn btn-primary"
-    id="show-change-email-form"
-    data-bs-toggle="collapse"
-    data-bs-target="#change-email-form"
-    aria-expanded="false"
-    aria-controls="change-email-form"
-  >Change</button>
-</div>
-
-<form
-  id="change-email-form"
-  class="collapse"
-  method="post"
-  action="{% url 'change-email-request' pk=object.pk %}"
->
-  {% csrf_token %}
-  {% include 'utils/form_body.tmpl' with form=change_email_form %}
-
-  <div id="email-in-use-msg"></div>
-
-  <div class="mt-2">
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <button
-      id="change-email-cancel-button"
-      class="btn btn-light"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#change-email-form"
-      aria-controls="change-email-form"
-    >
-      Cancel
-    </button>
-  </div>
-  <div id="change-email-msg"></div>
-</form>
-
-
-{% if object == current_authenticated_user %}
-<!-- See https://getbootstrap.com/docs/5.0/utilities/spacing/ -->
-<div class="my-3">
-  <a id="password-change-link" href="{% url 'password_change' %}">Change Password</a>
-</div>
-{% endif %}
-
-<div id="membership-subscription-wrapper" class="mt-4">
+<div id="membership-subscription-wrapper">
   {% include 'membership_subscription.tmpl' with user=object form=membership_renewal_form %}
 </div>
 
-<h3 class="mt-4">Profile</h3>
 
-<form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
-  {% csrf_token %}
-  <div class='form-body-wrapper'>
-    {% include 'user_profile/edit_profile_form.tmpl' with form=edit_profile_form %}
+{% if object.subscription is not None %}
+
+<div class="mt-4" id="login-info-wrapper">
+  <h3>Login Info</h3>
+  <div><b>Email</b></div>
+  <div class="input-group input-group-sm mb-2">
+    <span id="current-username" class="input-group-text">{{object.username}}</span>
+    <button type="button" class="btn btn-primary"
+      id="show-change-email-form"
+      data-bs-toggle="collapse"
+      data-bs-target="#change-email-form"
+      aria-expanded="false"
+      aria-controls="change-email-form"
+    >Change</button>
   </div>
 
-  <div class="d-flex align-items-center mt-2">
-    <button type="submit" class="btn btn-success">Save</button>
-    <div class="last-saved ms-2"></div>
+  <form
+    id="change-email-form"
+    class="collapse"
+    method="post"
+    action="{% url 'change-email-request' pk=object.pk %}"
+  >
+    {% csrf_token %}
+    {% include 'utils/form_body.tmpl' with form=change_email_form %}
+
+    <div id="email-in-use-msg"></div>
+
+    <div class="mt-2">
+      <button type="submit" class="btn btn-primary">Submit</button>
+      <button
+        id="change-email-cancel-button"
+        class="btn btn-light"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#change-email-form"
+        aria-controls="change-email-form"
+      >
+        Cancel
+      </button>
+    </div>
+    <div id="change-email-msg"></div>
+  </form>
+
+
+  {% if object == current_authenticated_user %}
+  <!-- See https://getbootstrap.com/docs/5.0/utilities/spacing/ -->
+  <div class="my-3">
+    <a id="password-change-link" href="{% url 'password_change' %}">Change Password</a>
   </div>
-</form>
+  {% endif %}
+</div>
+
+<div class="mt-4">
+  <h3>Profile</h3>
+  <form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
+    {% csrf_token %}
+    <div class='form-body-wrapper'>
+      {% include 'user_profile/edit_profile_form.tmpl' with form=edit_profile_form %}
+    </div>
+
+    <div class="d-flex align-items-center mt-2">
+      <button type="submit" class="btn btn-success">Save</button>
+      <div class="last-saved ms-2"></div>
+    </div>
+  </form>
+</div>
+
+{% endif %}
 
 <script src="https://js.stripe.com/v3/"></script>
 

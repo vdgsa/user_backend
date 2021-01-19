@@ -18,40 +18,19 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         super().setUp()
         self.user = User.objects.create_user(username='steve@stove.com', password='password')
 
-    def test_purchase_subscription_form_toggle(self) -> None:
-        self.login_as(self.user)
-        self.assertFalse(
-            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
-
-        self.selenium.find_element_by_id('show-membership-purchase').click()
-        time.sleep(2)  # Wait for bootstrap's animation to finish
-        self.assertTrue(
-            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
-
-        self.selenium.find_element_by_id('show-membership-purchase').click()
-        time.sleep(2)  # Wait for bootstrap's animation to finish
-        self.assertFalse(
-            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
-
-        self.selenium.find_element_by_id('show-membership-purchase').click()
-        time.sleep(2)  # Wait for bootstrap's animation to finish
-        self.assertTrue(
-            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
-
-        self.selenium.find_element_by_id('hide-purchase-subscription').click()
-        time.sleep(2)  # Wait for bootstrap's animation to finish
-        self.assertFalse(
-            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
-
-        # TODO: Figure out a good way to integration test the stripe webhook
-
     def test_purchase_regular_subscription(self) -> None:
         self.login_as(self.user)
+        with self.assertRaises(NoSuchElementException):
+            self.selenium.find_element_by_id('login-info-wrapper')
+
+        with self.assertRaises(NoSuchElementException):
+            self.selenium.find_element_by_id('user-profile-form')
+
         self.assertIn(
-            'become a member',
-            self.selenium.find_element_by_id('show-membership-purchase').text.lower()
+            'Pay For Your Membership',
+            self.selenium.find_element_by_id('membership-header').text
         )
-        self.selenium.find_element_by_id('show-membership-purchase').click()
+
         self.selenium.find_element_by_css_selector(
             '#purchase-subscription-form button[type=submit]'
         ).click()
@@ -69,7 +48,6 @@ class MembershipUITestCase(SeleniumTestCaseBase):
 
     def test_purchase_student_subscription(self) -> None:
         self.login_as(self.user)
-        self.selenium.find_element_by_id('show-membership-purchase').click()
 
         self.selenium.find_element_by_id('id_membership_type').click()
         self.selenium.find_elements_by_css_selector('#id_membership_type option')[1].click()
@@ -89,7 +67,6 @@ class MembershipUITestCase(SeleniumTestCaseBase):
 
     def test_purchase_international_subscription(self) -> None:
         self.login_as(self.user)
-        self.selenium.find_element_by_id('show-membership-purchase').click()
 
         self.selenium.find_element_by_id('id_membership_type').click()
         self.selenium.find_elements_by_css_selector('#id_membership_type option')[2].click()
@@ -109,7 +86,6 @@ class MembershipUITestCase(SeleniumTestCaseBase):
 
     def test_purchase_student_subscription_with_donation(self) -> None:
         self.login_as(self.user)
-        self.selenium.find_element_by_id('show-membership-purchase').click()
 
         self.selenium.find_element_by_id('id_membership_type').click()
         self.selenium.find_elements_by_css_selector('#id_membership_type option')[1].click()
@@ -134,6 +110,10 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             owner=self.user, valid_until=valid_until, membership_type=MembershipType.regular)
 
         self.login_as(self.user)
+        # Make sure that these sections exist
+        self.selenium.find_element_by_id('login-info-wrapper')
+        self.selenium.find_element_by_id('user-profile-form')
+
         self.assertEqual(
             format_datetime_impl(valid_until),
             self.selenium.find_element_by_id('valid-until-timestamp').text
@@ -160,6 +140,37 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             self.selenium.find_element_by_id('ProductSummary-totalAmount').text
         )
         self.assertIn('checkout.stripe.com', self.selenium.current_url)
+
+        # TODO: Figure out a good way to integration test the stripe webhook
+
+    def test_renew_membership_form_toggle(self) -> None:
+        valid_until = timezone.now() + timezone.timedelta(days=1)
+        MembershipSubscription.objects.create(
+            owner=self.user, valid_until=valid_until, membership_type=MembershipType.regular)
+
+        self.login_as(self.user)
+        self.assertFalse(
+            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
+
+        self.selenium.find_element_by_id('show-membership-purchase').click()
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertTrue(
+            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
+
+        self.selenium.find_element_by_id('show-membership-purchase').click()
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertFalse(
+            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
+
+        self.selenium.find_element_by_id('show-membership-purchase').click()
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertTrue(
+            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
+
+        self.selenium.find_element_by_id('hide-purchase-subscription').click()
+        time.sleep(2)  # Wait for bootstrap's animation to finish
+        self.assertFalse(
+            self.selenium.find_element_by_id('purchase-subscription-form').is_displayed())
 
         # TODO: Figure out a good way to integration test the stripe webhook
 
@@ -222,12 +233,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
     def test_membership_secretary_purchase_and_renew_subscription_for_other_user(self) -> None:
         membership_secretary = self.make_membership_secretary()
         self.login_as(membership_secretary, f'/accounts/profile/{self.user.pk}/')
-        self.assertIn(
-            'become a member',
-            self.selenium.find_element_by_id('show-membership-purchase').text.lower()
-        )
         # When the membership secretary purchases a membership, it skips the Stripe flow.
-        self.selenium.find_element_by_id('show-membership-purchase').click()
         self.selenium.find_element_by_css_selector(
             '#purchase-subscription-form button[type=submit]'
         ).click()

@@ -1,6 +1,11 @@
 {% load filters %}
 
-<h3>Membership</h3>
+<h3 id="membership-header">
+  {% if user.subscription is None %}
+  Pay For Your
+  {% endif %}
+  Membership
+</h3>
 
 {% if user.subscription is not None and user.subscription.owner != user %}
 <div id="family-member-msg">
@@ -8,19 +13,7 @@
 </div>
 {% endif %}
 
-{% if user.subscription is None %}
-  <div id="show-membership-purchase-wrapper">
-    <a
-      id="show-membership-purchase"
-      href="#purchase-subscription-form"
-      data-bs-toggle="collapse"
-      aria-expanded="false"
-      aria-controls="purchase-subscription-form"
-    >
-      Become a member
-    </a>
-  </div>
-{% else %}
+{% if user.subscription is not None %}
   {% if user.subscription.membership_type == 'lifetime' %}
     <div id="membership-status-msg">Your membership is valid forever!</div>
   {% elif user.subscription_is_current %}
@@ -103,7 +96,13 @@
 
 <form
   id="purchase-subscription-form"
-  class="collapse ms-1"
+  class="
+    collapse
+    {% if user.subscription is None %}
+    show
+    {% endif %}
+    ms-1
+  "
   method="post"
   action="{% url 'purchase-subscription' pk=user.pk %}"
 >
@@ -115,6 +114,7 @@
     Please enter your payment info there.
   </div>
   <button type="submit" class="btn btn-primary">Checkout</button>
+  {% if user.subscription is not None %}
   <button
     id="hide-purchase-subscription"
     type="button"
@@ -124,5 +124,6 @@
     aria-controls="purchase-subscription-form"
   >
     Cancel
-  </a>
+  </button>
+  {% endif %}
 </form>

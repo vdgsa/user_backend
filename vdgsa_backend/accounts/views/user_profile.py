@@ -66,6 +66,19 @@ class UserProfileForm(ModelForm):
             'teacher_description': Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+
+        self.fields['address_line_1'].required = True
+        self.fields['address_line_2'].required = True
+        self.fields['address_city'].required = True
+        self.fields['address_state'].required = True
+        self.fields['address_postal_code'].required = True
+        self.fields['address_country'].required = True
+
 
 class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = User
