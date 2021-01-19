@@ -3,6 +3,8 @@
 
 {# This template is used with django.contrib.auth.views.LoginView #}
 
+<h3>Log in to your VdGSA account</h3>
+
 <form method="post">
   {% csrf_token %}
   {% include 'utils/form_body.tmpl' %}
@@ -10,10 +12,10 @@
     <button type="submit" class="btn btn-primary">Sign In</button>
   </div>
   <div>
-    <a href="{% url 'user-registration' %}">Create an account</a>
+    <a href="{% url 'password_reset' %}">Forgot Password</a>
   </div>
   <div>
-    <a href="{% url 'password_reset' %}">Forgot Password</a>
+    <a href="{% url 'user-registration' %}">Create an Account</a>
   </div>
 </form>
 

@@ -1,14 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h3>Create an Account</h3>
-<div>
-  Enter your info below to start creating an account. <br>
-  We'll send you an email with a link that will let
-  you create a password. <br>
-  Once you've created a password, you'll be able to log in using that email
-  address.
-</div>
+<h3>Create a VdGSA Account</h3>
+<ol>
+  <li>Enter your email address and other info below.</li>
+  <li>Check your email for a link to a secret page where you can create a password.</li>
+  <li>Log in with your username and password.</li>
+  <li>Pay for your membership.</li>
+</ol>
 
 <form method="post">
   {% csrf_token %}
