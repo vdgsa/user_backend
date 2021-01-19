@@ -12,12 +12,7 @@ from .selenium_test_base import SeleniumTestCaseBase
 class AccountsProfileUITestCase(SeleniumTestCaseBase):
     def setUp(self) -> None:
         super().setUp()
-        self.membership_secretary = User.objects.create_user(
-            username='memsec@steve.com', password='password'
-        )
-        self.membership_secretary.user_permissions.add(
-            Permission.objects.get(codename='membership_secretary')
-        )
+        self.membership_secretary = self.make_membership_secretary()
         MembershipSubscription.objects.create(
             owner=self.membership_secretary,
             valid_until=timezone.now() + timezone.timedelta(hours=10),
@@ -48,6 +43,30 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
             'VdGSA',
             'Members Area',
             'My Account',
+            'Logout',
+        ]
+        self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])
+
+    def test_membership_secretary_sees_directory_nav_link(self) -> None:
+        self.login_as(self.membership_secretary)
+        navlinks = self.selenium.find_elements_by_css_selector('nav a')
+        expected_navlinks_text = [
+            'VdGSA',
+            'Members Area',
+            'My Account',
+            'Directory',
+            'Logout',
+        ]
+        self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])
+
+    def test_board_member_sees_directory_nav_link(self) -> None:
+        self.login_as(self.make_board_member())
+        navlinks = self.selenium.find_elements_by_css_selector('nav a')
+        expected_navlinks_text = [
+            'VdGSA',
+            'Members Area',
+            'My Account',
+            'Directory',
             'Logout',
         ]
         self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])

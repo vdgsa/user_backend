@@ -52,7 +52,7 @@
 </div>
 
 
-{% if object.subscription is not None %}
+{% if object.subscription is not None or perms.accounts.membership_secretary %}
 
 <div class="mt-4" id="login-info-wrapper">
   <h3>Login Info</h3>
