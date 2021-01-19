@@ -45,8 +45,4 @@ body {
     width: 100%;
 }
 
-/* Note: inputs and textareas should go *inside* the <label> tag. */
-.label {
-    width: 100%;
-}
 /* \Used in forms */
