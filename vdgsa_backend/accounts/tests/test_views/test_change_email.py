@@ -7,7 +7,9 @@ from django.test import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
 
-from vdgsa_backend.accounts.models import ChangeEmailRequest, User
+from vdgsa_backend.accounts.models import (
+    ChangeEmailRequest, MembershipSubscription, MembershipType, User
+)
 
 from .selenium_test_base import SeleniumTestCaseBase
 
@@ -18,6 +20,12 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
     def setUp(self) -> None:
         super().setUp()
         self.user = User.objects.create_user(username='steve@stove.com', password='password')
+        # Give our user a membership so that we see the full account page
+        MembershipSubscription.objects.create(
+            owner=self.user,
+            valid_until=timezone.now() + timezone.timedelta(hours=500),
+            membership_type=MembershipType.regular
+        )
 
     def test_change_email_form_toggle(self) -> None:
         self.login_as(self.user)

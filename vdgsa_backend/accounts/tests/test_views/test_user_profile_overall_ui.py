@@ -1,9 +1,10 @@
 import time
 
 from django.contrib.auth.models import Permission
+from django.utils import timezone
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
 
-from vdgsa_backend.accounts.models import User
+from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 
 from .selenium_test_base import SeleniumTestCaseBase
 
@@ -17,8 +18,18 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
         self.membership_secretary.user_permissions.add(
             Permission.objects.get(codename='membership_secretary')
         )
+        MembershipSubscription.objects.create(
+            owner=self.membership_secretary,
+            valid_until=timezone.now() + timezone.timedelta(hours=10),
+            membership_type=MembershipType.regular
+        )
 
         self.user = User.objects.create_user(username='steve@stove.com', password='password')
+        MembershipSubscription.objects.create(
+            owner=self.user,
+            valid_until=timezone.now() + timezone.timedelta(hours=10),
+            membership_type=MembershipType.regular
+        )
 
     def test_membership_secretary_sees_all_users_link(self) -> None:
         self.login_as(self.membership_secretary)

@@ -1,7 +1,7 @@
 import json
 import time
-from django.core import mail
 
+from django.core import mail
 from django.test import TestCase
 from django.urls.base import reverse
 from django.utils import timezone

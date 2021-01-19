@@ -31,14 +31,16 @@ class UserRegistrationView(View):
         email = form.cleaned_data['email']
         user, created = User.objects.get_or_create(
             username=email,
-            first_name=form.cleaned_data['first_name'],
-            last_name=form.cleaned_data['last_name'],
-            address_line_1=form.cleaned_data['address_line_1'],
-            address_line_2=form.cleaned_data['address_line_2'],
-            address_city=form.cleaned_data['address_city'],
-            address_state=form.cleaned_data['address_state'],
-            address_postal_code=form.cleaned_data['address_postal_code'],
-            address_country=form.cleaned_data['address_country'],
+            defaults={
+                'first_name': form.cleaned_data['first_name'],
+                'last_name': form.cleaned_data['last_name'],
+                'address_line_1': form.cleaned_data['address_line_1'],
+                'address_line_2': form.cleaned_data['address_line_2'],
+                'address_city': form.cleaned_data['address_city'],
+                'address_state': form.cleaned_data['address_state'],
+                'address_postal_code': form.cleaned_data['address_postal_code'],
+                'address_country': form.cleaned_data['address_country'],
+            }
         )
         # Django sets the "password" field to the empty string by default.
         # If the above query loaded an existing user and that user has

@@ -1,7 +1,7 @@
 from django.core import mail
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
 
-from vdgsa_backend.accounts.models import User
+from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 
 from .selenium_test_base import SeleniumTestCaseBase
 
@@ -52,10 +52,17 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
         self.selenium.find_element_by_id('id_password').send_keys(password)
         self.selenium.find_element_by_css_selector('button[type=submit]').click()
 
+        user = User.objects.get(username=email)
+        # Create a subscription directly in the database to skip stripe
+        MembershipSubscription.objects.create(
+            owner=user, valid_until=None, membership_type=MembershipType.lifetime)
+        # At this point, we should only see the "pay for your membership" stuff
+        self.assertIn('Pay', self.selenium.find_element_by_id('membership-header').text)
+
+        self.selenium.refresh()
         self.assertEqual(self.selenium.find_element_by_id('current-username').text, email)
 
         # Name and address fields should have been set
-        user = User.objects.get(username=email)
         self.assertEqual(user.first_name, first_name)
         self.assertEqual(user.last_name, last_name)
         self.assertEqual(user.address_line_1, address_line_1)
@@ -71,6 +78,7 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
 
         self.selenium.get(f'{self.live_server_url}/accounts/register/')
         self.selenium.find_element_by_id('id_email').send_keys(email)
+        self._fill_name_and_address()
         self.selenium.find_element_by_css_selector('button[type=submit]').click()
 
         self.assertTrue(
@@ -91,7 +99,9 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
 
     def test_password_reset(self) -> None:
         email = 'batman@bat.man'
-        User.objects.create(username=email, email=email)
+        user = User.objects.create(username=email, email=email)
+        MembershipSubscription.objects.create(
+            owner=user, valid_until=None, membership_type=MembershipType.lifetime)
 
         self.selenium.get(f'{self.live_server_url}/password_reset/')
         email_input = self.selenium.find_element_by_id('id_email')
