@@ -1,6 +1,7 @@
 import json
 from functools import cached_property
 from typing import Any, Dict, List
+from django.core.mail import send_mail
 
 import stripe  # type: ignore
 from django import forms
@@ -220,16 +221,25 @@ class AddFamilyMemberView(LoginRequiredMixin, UserPassesTestMixin, View):
             })
 
         username = form.cleaned_data['username']
-        family_member_query = User.objects.filter(username=username)
-        if not family_member_query.exists():
-            return get_ajax_form_response('other_error', None, extra_data={
-                'error_msg': f'User "{username}" does not exist. '
-                             'Please have them create an account before '
-                             'adding them as a family member.'
-            })
-
-        family_member = family_member_query.get()
+        family_member, created = User.objects.get_or_create(username=username)
         self.subscription.family_members.add(family_member)
+        if created:
+            send_mail(
+                subject=f'VdGSA Membership: {show_name(self.subscription.owner)}'
+                ' has added you as a family member',
+                from_email='webmaster@vdgsa.org',
+                recipient_list=[username],
+                message=f"""Hello from the VdGSA Web Team!
+
+{show_name(self.subscription.owner)} has added you as a family member on their VdGSA
+account. Please go to {request.META['HTTP_HOST']}{reverse('user-registration')}
+and create your own account using the email address {username} in order to gain
+access to the Member's Area.
+
+Thanks!
+The VdGSA Web Team
+                """,
+            )
 
         return get_ajax_form_response('success', None, extra_data={
             'new_family_member_name': show_name(family_member)

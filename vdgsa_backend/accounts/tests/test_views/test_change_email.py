@@ -6,7 +6,6 @@ from django.core import mail
 from django.test import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
-from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import ChangeEmailRequest, User
 
