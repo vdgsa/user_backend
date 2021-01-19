@@ -19,22 +19,6 @@
 
   <div class="input-wrapper">
     <label class="label">
-      Phone 1 <br>
-      {{form.phone1}}
-    </label>
-    {{form.phone1.errors}}
-  </div>
-
-  <div class="input-wrapper">
-    <label class="label">
-      Phone 2 <br>
-      {{form.phone2}}
-    </label>
-    {{form.phone2.errors}}
-  </div>
-
-  <div class="input-wrapper">
-    <label class="label">
       Address Line 1 <br>
       {{form.address_line_1}}
     </label>
@@ -79,6 +63,22 @@
       {{form.address_country}}
     </label>
     {{form.address_country.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      Phone 1 (optional)<br>
+      {{form.phone1}}
+    </label>
+    {{form.phone1.errors}}
+  </div>
+
+  <div class="input-wrapper">
+    <label class="label">
+      Phone 2 (optional)<br>
+      {{form.phone2}}
+    </label>
+    {{form.phone2.errors}}
   </div>
 
   <div class="d-flex align-items-center mt-2">
