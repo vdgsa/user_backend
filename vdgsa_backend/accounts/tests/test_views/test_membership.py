@@ -1,5 +1,6 @@
 import json
 import time
+from django.core import mail
 
 from django.test import TestCase
 from django.urls.base import reverse
@@ -281,21 +282,22 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         MembershipSubscription.objects.create(
             owner=self.user, valid_until=timezone.now(), membership_type=MembershipType.regular)
 
-        family1 = User.objects.create_user(username='family1@wat.com')
+        # One user that doesn't exist, one that does.
+        family1_username = 'family1@wat.com'
         family2 = User.objects.create_user(username='family2@wat.com')
 
         self.login_as(self.user)
 
         # Add 2 family members sequentially
         self.selenium.find_element_by_css_selector(
-            '#add-family-member-input-wrapper input').send_keys(family1.username)
+            '#add-family-member-input-wrapper input').send_keys(family1_username)
         self.selenium.find_element_by_css_selector(
             '#add-family-member-input-wrapper button[type=submit]').click()
 
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(1, len(family_member_names))
-        self.assertIn(family1.username, family_member_names[0].text)
+        self.assertIn(family1_username, family_member_names[0].text)
 
         self.selenium.find_element_by_css_selector(
             '#add-family-member-input-wrapper input').send_keys(family2.username)
@@ -305,15 +307,20 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(2, len(family_member_names))
-        self.assertIn(family1.username, family_member_names[0].text)
+        self.assertIn(family1_username, family_member_names[0].text)
         self.assertIn(family2.username, family_member_names[1].text)
+
+        # Make sure an email was sent to family member 1 (the one who didn't
+        # already have an account).
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(f'{self.user.username} has added you', mail.outbox[0].subject)
 
         # Make sure family members are displayed on page load
         self.selenium.refresh()
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(2, len(family_member_names))
-        self.assertIn(family1.username, family_member_names[0].text)
+        self.assertIn(family1_username, family_member_names[0].text)
         self.assertIn(family2.username, family_member_names[1].text)
 
         # Remove both family members
