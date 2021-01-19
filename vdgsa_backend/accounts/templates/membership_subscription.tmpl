@@ -34,7 +34,12 @@
 
   {% if user.subscription.owner == user %}
   <div id="family-members-wrapper" class="mt-3">
-    <div class="mb-1"><b>Family Members</b></div>
+    <div class="mb-1">
+      <b>
+        You can add up to 3 family members to your membership. <br>
+        Please enter their email addresses below.
+      </b>
+    </div>
     <ul id="family-member-list">
       {% for member in user.subscription.family_members.all %}
       <li class="family-member">

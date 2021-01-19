@@ -75,6 +75,11 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
         self.assertEqual(new_email, self.user.email)
 
     def test_membership_secretary_change_other_user_email(self) -> None:
+        # The membership secretary should always see the full page regardless
+        # of whether the user has a subscription.
+        assert self.user.subscription is not None
+        self.user.subscription.delete()
+
         membership_secretary = User.objects.create_user(
             username='waluigi@time.com', password='password')
         membership_secretary.user_permissions.add(

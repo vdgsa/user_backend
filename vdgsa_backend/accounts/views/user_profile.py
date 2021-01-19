@@ -73,7 +73,6 @@ class UserProfileForm(ModelForm):
         self.fields['last_name'].required = True
 
         self.fields['address_line_1'].required = True
-        self.fields['address_line_2'].required = True
         self.fields['address_city'].required = True
         self.fields['address_state'].required = True
         self.fields['address_postal_code'].required = True
