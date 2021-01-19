@@ -1,5 +1,6 @@
 import json
 import time
+from vdgsa_backend.accounts.views.subscription import MAX_NUM_FAMILY_MEMBERS
 
 from django.core import mail
 from django.test import TestCase
@@ -26,6 +27,9 @@ class MembershipUITestCase(SeleniumTestCaseBase):
 
         with self.assertRaises(NoSuchElementException):
             self.selenium.find_element_by_id('user-profile-form')
+
+        with self.assertRaises(NoSuchElementException):
+            self.selenium.find_element_by_id('family-members-wrapper')
 
         self.assertIn(
             'Pay For Your Membership',
@@ -393,6 +397,39 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             '.family-member .family-member-name')
         self.assertEqual(1, len(family_member_names))
         self.assertIn(family.username, family_member_names[0].text)
+
+
+class MaxNumFamilyMembersTestCase(TestCase):
+    def test_error_when_adding_too_many_family_members(self) -> None:
+        user = User.objects.create_user(username='user@user.com', password='password')
+        subscription = MembershipSubscription.objects.create(
+            owner=user, valid_until=timezone.now(), membership_type=MembershipType.regular)
+
+        family_members = [
+            User.objects.create_user(username=f'family{i}@wat.com')
+            for i in range(MAX_NUM_FAMILY_MEMBERS + 1)
+        ]
+
+        self.client.force_login(user)
+        for family in family_members[:-1]:
+            response = self.client.post(
+                reverse('add-family-member', kwargs={'pk': subscription.pk}),
+                {'username': family.username}
+            )
+            self.assertEqual(200, response.status_code)
+            self.assertEqual('success', json.loads(response.content.decode())['status'])
+
+        response = self.client.post(
+            reverse('add-family-member', kwargs={'pk': user.pk}),
+            {'username': family_members[-1].username}
+        )
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content.decode())
+        self.assertEqual('other_error', data['status'])
+        self.assertEqual(
+            f'You cannot add more than {MAX_NUM_FAMILY_MEMBERS} to a membership.',
+            data['extra_data']['error_msg']
+        )
 
 
 class MembershipFormsPermissionTestCase(TestCase):

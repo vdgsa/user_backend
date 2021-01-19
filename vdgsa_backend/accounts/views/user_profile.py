@@ -13,7 +13,7 @@ from django.views.generic.edit import UpdateView
 
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.change_email import ChangeEmailForm
-from vdgsa_backend.accounts.views.subscription import AddFamilyMemberForm, PurchaseSubscriptionForm
+from vdgsa_backend.accounts.views.subscription import AddFamilyMemberForm, MAX_NUM_FAMILY_MEMBERS, PurchaseSubscriptionForm
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 
 from .permissions import is_requested_user_or_membership_secretary
@@ -91,6 +91,7 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        context['MAX_NUM_FAMILY_MEMBERS'] = MAX_NUM_FAMILY_MEMBERS
         context['edit_profile_form'] = context.pop('form')
 
         context['change_email_form'] = ChangeEmailForm(self.requested_user)
