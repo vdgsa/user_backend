@@ -88,11 +88,11 @@
 </fieldset>
 
 <fieldset class="mt-3">
-  <legend>Affiliations and Commercial</legend>
+  <legend>Please check or fill in all that apply to you</legend>
   <div class="input-wrapper mb-3">
     <label class="label">
       {{form.is_young_player}}
-      Do you identify as a young player?
+      I identify as a young player
     </label>
     {{form.is_young_player.errors}}
   </div>
@@ -100,38 +100,40 @@
   <div class="input-wrapper">
     <label class="label">
       {{form.is_teacher}}
-      Are you a teacher?
+      I am a teaching member
     </label>
     {{form.is_teacher.errors}}
   </div>
 
-  <div class="input-wrapper">
-    <label class="label">
-      Brief Description
-      (<span id="teacher-description-num-chars-used">
-      </span>/{{form.fields.teacher_description.max_length}} chars) <br>
-      {{form.teacher_description}}
-    </label>
-    {{form.teacher_description.errors}}
-  </div>
+  <div class="ms-3">
+    <div class="input-wrapper">
+      <label class="label">
+        {{form.is_remote_teacher}}
+        I am willing to teach online
+      </label>
+      {{form.is_remote_teacher.errors}}
+    </div>
 
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.is_remote_teacher}}
-      Do you teach remotely?
-    </label>
-    {{form.is_remote_teacher.errors}}
+    <div class="input-wrapper">
+      <label class="label">
+        Briefly describe who and what you teach
+        (<span id="teacher-description-num-chars-used">
+        </span>/{{form.fields.teacher_description.max_length}} chars) <br>
+        {{form.teacher_description}}
+      </label>
+      {{form.teacher_description.errors}}
+    </div>
   </div>
 
   <div class="input-wrapper mt-3">
     <label class="label">
-      What educational institution are you affiliated with? <br>
+      If you are affiliated with an educational institution, please list it here <br>
       {{form.educational_institution_affiliation}}
     </label>
     {{form.educational_institution_affiliation.errors}}
   </div>
 
-  <div class="mt-3">Are you a commercial member? (Select all that apply)</div>
+  <div class="mt-3">I am a commercial member (select all that apply)</div>
   <div class="ms-1">
     <div class="input-wrapper">
       <label class="label">
@@ -149,9 +151,17 @@
     </div>
     <div class="input-wrapper">
       <label class="label">
-        Other Commercial Type (Please Specify) <br>
-        {{form.other_commercial}}
+        <input
+          type="checkbox"
+          {% if user.other_commercial %}
+          checked
+          {% endif %}
+        >
+        Other (please specify) <br>
       </label>
+      <div class="ms-3">
+        {{form.other_commercial}}
+      </div>
       {{form.other_commercial.errors}}
     </div>
   </div>
@@ -168,12 +178,15 @@
   <div class="input-wrapper">
     <label class="label">
       {{form.do_not_email}}
-      Do not email me
+      Do not email me ever (We email members very rarely with important announcements)
     </label>
     {{form.do_not_email.errors}}
   </div>
 
-  <div class="mt-2">Include the following in the <b>membership directory</b>:</div>
+  <div class="mt-2">
+    Include the following in the <b>membership directory</b>
+    (available only to members):
+  </div>
   <div class="ms-1">
     <div class="input-wrapper">
       <label class="label">
@@ -239,6 +252,16 @@
       {{form.include_phone_in_mailing_list.errors}}
     </div>
   </div>
+
+  <p class="mt-3">
+    The VdGSA is committed to protecting your privacy. <br>
+    The information we collect is for the purpose of providing you with the goods and
+    services we offer. <br>
+    You can change these settings at any time. <br>
+    <a href="https://public.vdgsa.org/privacy-policy">
+      Read our full privacy policy here.
+    </a>
+  </p>
 </fieldset>
 
 <script>

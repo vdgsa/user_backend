@@ -109,7 +109,7 @@
   <form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
     {% csrf_token %}
     <div class='form-body-wrapper'>
-      {% include 'user_profile/edit_profile_form.tmpl' with form=edit_profile_form %}
+      {% include 'user_profile/edit_profile_form.tmpl' with user=object form=edit_profile_form %}
     </div>
 
     <div class="d-flex align-items-center mt-2">
