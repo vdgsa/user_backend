@@ -29,7 +29,7 @@ class UserRegistrationView(View):
             self._render_form(form)
 
         email = form.cleaned_data['email']
-        user, created = User.objects.get_or_create(
+        user, created = User.objects.update_or_create(
             username=email,
             defaults={
                 'first_name': form.cleaned_data['first_name'],

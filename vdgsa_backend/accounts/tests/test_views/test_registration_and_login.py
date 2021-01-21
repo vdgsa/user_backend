@@ -72,6 +72,43 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
         self.assertEqual(user.address_postal_code, address_postal_code)
         self.assertEqual(user.address_country, address_country)
 
+    def test_name_and_address_populated_even_if_user_obj_already_exests(self) -> None:
+        # This scenario happens when a user is added as a family member before
+        # they create an account.
+        user = User.objects.create(username='person@waa.com')
+
+        first_name = 'noewfitanwf'
+        last_name = 'nwfoiet'
+        address_line_1 = 'zvorhsul'
+        address_line_2 = 'nothief'
+        address_city = 'nfieo'
+        address_state = 'MU'
+        address_postal_code = '1234234AA'
+        address_country = 'noieftmwnf'
+
+        self.selenium.get(f'{self.live_server_url}/accounts/register/')
+        self.selenium.find_element_by_id('id_email').send_keys(user.username)
+        self.selenium.find_element_by_id('id_first_name').send_keys(first_name)
+        self.selenium.find_element_by_id('id_last_name').send_keys(last_name)
+        self.selenium.find_element_by_id('id_address_line_1').send_keys(address_line_1)
+        self.selenium.find_element_by_id('id_address_line_2').send_keys(address_line_2)
+        self.selenium.find_element_by_id('id_address_city').send_keys(address_city)
+        self.selenium.find_element_by_id('id_address_state').send_keys(address_state)
+        self.selenium.find_element_by_id('id_address_postal_code').send_keys(address_postal_code)
+        self.selenium.find_element_by_id('id_address_country').send_keys(address_country)
+
+        self.selenium.find_element_by_css_selector('button[type=submit]').click()
+        user.refresh_from_db()
+
+        self.assertEqual(user.first_name, first_name)
+        self.assertEqual(user.last_name, last_name)
+        self.assertEqual(user.address_line_1, address_line_1)
+        self.assertEqual(user.address_line_2, address_line_2)
+        self.assertEqual(user.address_city, address_city)
+        self.assertEqual(user.address_state, address_state)
+        self.assertEqual(user.address_postal_code, address_postal_code)
+        self.assertEqual(user.address_country, address_country)
+
     def test_username_taken(self) -> None:
         email = 'batman@bat.man'
         User.objects.create_user(username=email, email=email, password='password')
