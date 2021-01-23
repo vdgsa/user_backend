@@ -1,0 +1,27 @@
+- "managers" (used for site access, but we will remove), "renters" and "storers" in db: "storers"="custodian"?
+- "ScanFiles" in database but nowhere on site afaik--remove?
+- Do viol custodians have to be society members? (yes is easier)
+    - Waiting list: do they have to be members? (yes is easier)
+    - Probable answer: They just need an account (which is free), then the
+      rental manager can check their membership on the memsec page
+- How do you add someone to the waiting list?
+- How detailed event history do we need?
+    - Rented out: yes
+    - Returned: yes
+    - Reserved: do we care about this?
+    - Made available: do we care about this? is this "unreserving"
+- What really is the difference between "rented" and "reserved"? Whether they have to pay money for it?
+
+TODOS:
+- Allow rental_manager users to access read-only memsec directory
+- James: set up filesystem image storage
+- "Viols" pages
+- "Cases" pages
+- Waiting list
+- List of current renters
+- Add "reserved_for" one to one from Viol to User
+- Add "is_retired" field to bow, case, viol
+- "Rent out" form (create RentalHistory view)
+- "Make available" endpoint/"event"
+- Make "event" in rental history use TextChoices
+
