@@ -1,6 +1,13 @@
 from __future__ import annotations
 from django.db import models
+from django.db.models.enums import TextChoices
 from django.utils import timezone
+
+
+class RentalProgramChoices(TextChoices):
+    regular = 'regular'
+    select_reserve = 'select_reserve'
+    consort_loan = 'consort_loan'
 
 
 class Bow(models.Model):
@@ -20,10 +27,12 @@ class Bow(models.Model):
     )
     storer = models.IntegerField(blank=True, null=True)
 
-    program = models.ForeignKey(
-        'Program', db_column='program',
-        on_delete=models.PROTECT, blank=True, null=True
-    )
+    program = models.TextField(
+        choices=RentalProgramChoices.choices, default=RentalProgramChoices.regular)
+    # program = models.ForeignKey(
+    #     'Program', db_column='program',
+    #     on_delete=models.PROTECT, blank=True, null=True
+    # )
 
     def __str__(self) -> str:
         return (
@@ -264,3 +273,20 @@ class RentalHistory(models.Model):
 
     class Meta:
         managed = True
+
+
+# See https://stackoverflow.com/a/37988537
+# This class is used to define our custom permissions.
+class RentalPermissions(models.Model):
+    class Meta:
+        # No database table creation or deletion
+        # operations will be performed for this model.
+        managed = False
+        # disable "add", "change", "delete"
+        # and "view" default permissions
+        default_permissions = ()
+
+        # Our custom permissions.
+        permissions = (
+            ('rental_manager', 'Rental Manager'),
+        )
