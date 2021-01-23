@@ -98,6 +98,7 @@ class Image(models.Model):
         managed = True
 
 
+# DELETE
 class Manager(models.Model):
     entry_num = models.AutoField(primary_key=True)
     login_name = models.CharField(max_length=50)
@@ -112,6 +113,7 @@ class Manager(models.Model):
         managed = True
 
 
+# DELETE
 class Program(models.Model):
     prog_num = models.AutoField(primary_key=True)
     prog_name = models.TextField()
@@ -125,6 +127,7 @@ class Program(models.Model):
         managed = True
 
 
+# DELETE (change relations to User)
 class Renter(models.Model):
     renter_num = models.AutoField(primary_key=True)
     lastname = models.CharField(max_length=50, blank=True, null=True)
@@ -159,6 +162,7 @@ class ScanFiles(models.Model):
         managed = True
 
 
+# DELETE (change relations to User)
 class Storer(models.Model):
     lastname = models.CharField(max_length=50, blank=True, null=True)
     firstname = models.CharField(max_length=50, blank=True, null=True)
