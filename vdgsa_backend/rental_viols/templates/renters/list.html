@@ -1,0 +1,30 @@
+{% extends 'base.html' %} {% block content %} Renters
+<table id="viol-table" class="table table-striped">
+  <thead>
+    <tr>
+      <td>VdGSA number</td>
+      <td>Size</td>
+      <td># Strings</td>
+      <td>Maker</td>
+      <td>Program</td>
+      <td>State</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in object_list %}
+    <tr>
+      {% comment %}
+      <td>
+        <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+      </td>
+      <td>{{item.size}}</td>
+      <td>{{item.strings}}</td>
+      <td>{{item.maker}}</td>
+      <td>{{item.program}}</td>
+      <td>{{item.state}}</td>
+      {% endcomment %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -28,14 +28,14 @@ class RentalItemBase(models.Model):
     class Meta:
         abstract = True
 
-    vdgsa_number = models.IntegerField()
-    maker = models.CharField(max_length=50)
-    size = models.TextField(choices=ViolSize.choices)
+    vdgsa_number = models.IntegerField(blank=True, null=True)
+    maker = models.CharField(max_length=50, null=True)
+    size = models.TextField(choices=ViolSize.choices, default=ViolSize.bass)
     state = models.CharField(max_length=10, blank=True, null=True)
-    value = models.DecimalField(max_digits=8, decimal_places=2)
+    value = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     provenance = models.TextField(blank=True)
     description = models.TextField(blank=True)
-    accession_date = models.DateField(blank=True)
+    accession_date = models.DateField(blank=True, null=True)
     notes = models.TextField(blank=True)
     storer = models.ForeignKey(
         User, blank=True, null=True, default=None, on_delete=models.SET_NULL, related_name='+')
@@ -78,7 +78,7 @@ class Bow(RentalItemBase):
         )
 
 
-class Case(models.Model):
+class Case(RentalItemBase):
     case_num = models.AutoField(primary_key=True)
 
     viol_num = models.ForeignKey(
