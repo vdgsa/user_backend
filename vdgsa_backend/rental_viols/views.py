@@ -16,7 +16,7 @@ class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
 
 
 class RentalHomeView(RentalViewBase, TemplateView):
-    template_name = 'rentals.html'
+    template_name = 'home.html'
 
 
 class BowForm(ModelForm):

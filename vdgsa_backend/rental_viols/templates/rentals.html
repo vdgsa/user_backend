@@ -1,27 +1,14 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+{% block subNav %}
+<style>
+  .fixed-top-2 {
+    margin-top: 10px;
+    margin-left: 125px;
+    margin-right: 25px;
+}
 
-<h1>VdGSA Rental Viol Database</h1>
+</style>
 
-<div class="mb-2">
-  <a id="viols-link" href="{% url 'list-viols' %}">Viols</a>
-</div>
-<div class="mb-2">
-  <a id="bows-link" href="{% url 'list-bows' %}">Bows</a>
-</div>
-<div class="mb-2">
-  <a id="cases-link" href="{% url 'list-cases' %}">Cases</a>
-</div>
+{% include 'rental_menu.tmpl' %}
 
-<div class="mb-2">
-  <a id="renters-link" href="{% url 'list-renters' %}">Renters</a>
-</div>
-<div class="mb-2">
-  <a id="waiting-link" href="{% url 'list-waiting' %}">Waiting List</a>
-</div>
-
-{% comment %} Viols Show available viols Show rented and reserved viols Show all
-other viols Show all viols Add a viol Bows Show unattached bows Show attached
-bows Show all bows Add a bow Cases Show unattached cases Show attached cases
-Show all cases Add a case Waiting List Show waiting list Renters Show all
-renters Add a renter Custodians Show all custodians Add a custodian Admin Backup
-Log out {% endcomment %} {% endblock %}
+{% endblock %}

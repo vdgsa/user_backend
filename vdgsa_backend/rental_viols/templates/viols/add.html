@@ -1,4 +1,6 @@
-{% extends 'base.html' %} {% block content %}
+{% extends '../rentals.html' %}
+
+{% block content %}
 
 <form id="add-viol-form" method="post" action="{% url 'add-viol' %}">
   {% csrf_token %} {% include 'utils/form_body.tmpl' with form=form %}
