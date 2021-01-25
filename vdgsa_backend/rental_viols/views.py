@@ -1,12 +1,15 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.forms import ModelForm
 from django.shortcuts import render
+
+from django.views.generic.base import View
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.base import TemplateView
 
 from vdgsa_backend.rental_viols.models import Bow, Case, Viol
+from vdgsa_backend.rental_viols.managers.InstrumentManager import InstrumentManager
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 
 
@@ -17,6 +20,12 @@ class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
 
 class RentalHomeView(RentalViewBase, TemplateView):
     template_name = 'home.html'
+
+
+class ViolsMultiListView(RentalViewBase, ListView):
+    template_name = 'viols/list.html'
+    queryset = Viol.objects.get_available()
+    #queryset = Viol.objects.get_rented()
 
 
 class BowForm(ModelForm):

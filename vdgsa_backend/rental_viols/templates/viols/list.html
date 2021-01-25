@@ -1,6 +1,31 @@
 {% extends '../rentals.html' %}
 
 {% block content %}
+<script>
+function filter_instruments() {
+  let rented = $('#instrument-filter-rented').val().toLowerCase();
+
+}
+</script>
+<script>
+function filter_instruments() {
+  let filter_instruments = $('#nstrument-filter-rented').val().trim().toLowerCase();
+ 
+  });
+}
+</script>
+<form>
+  <div class="form-group">
+    {% comment %} <label for="instrument-filter-rented">Status</label> {% endcomment %}
+    <select class="form-control" id="instrument-filter-rented" onselect="filter_instruments">
+      <option>Rented</option>
+      <option>Available</option>
+    </select>
+  </div>
+</div>
+</form>
+
+
 <table id="viol-table" class="table table-striped">
   <thead>
     <tr>

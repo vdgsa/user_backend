@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models.enums import TextChoices
 
 from vdgsa_backend.accounts.models import User
+from vdgsa_backend.rental_viols.managers.InstrumentManager import InstrumentManager
 
 
 class RentalProgram(TextChoices):
@@ -54,6 +55,8 @@ class Viol(RentalItemBase):
 
     renter = models.ForeignKey(
         User, on_delete=models.SET_NULL, blank=True, null=True, default=None, related_name='+')
+
+    objects = InstrumentManager()
 
     def __str__(self) -> str:
         return (

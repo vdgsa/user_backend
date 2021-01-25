@@ -13,7 +13,7 @@ urlpatterns = [
     path('cases/<int:pk>/', views.CaseDetailView.as_view(), name='case-detail'),
     path('cases/add/', views.AddCaseView.as_view(), name='add-case'),
 
-    path('viols/', views.ListViolsView.as_view(), name='list-viols'),
+    path('viols/', views.ViolsMultiListView.as_view(), name='list-viols'),
     path('viols/<int:pk>/', views.ViolDetailView.as_view(), name='viol-detail'),
     path('viols/add/', views.AddViolView.as_view(), name='add-viol'),
 
