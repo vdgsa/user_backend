@@ -1,28 +1,17 @@
 {% extends '../rentals.html' %}
 
 {% block content %}
-<script>
-function filter_instruments() {
-  let rented = $('#instrument-filter-rented').val().toLowerCase();
 
-}
-</script>
-<script>
-function filter_instruments() {
-  let filter_instruments = $('#nstrument-filter-rented').val().trim().toLowerCase();
- 
-  });
-}
-</script>
-<form>
+
+<form method="get" action="{% url 'list-viols' %}">
   <div class="form-group">
     {% comment %} <label for="instrument-filter-rented">Status</label> {% endcomment %}
-    <select class="form-control" id="instrument-filter-rented" onselect="filter_instruments">
-      <option>Rented</option>
-      <option>Available</option>
+    
+    <select class="form-control" name="filter" id="filter" onchange="javascript:this.form.submit()">
+      <option value='rented' {% ifequal 'rented' request.GET.filter  %}selected{% endifequal %}>Rented</option>
+      <option value="available"{% ifequal 'available' request.GET.filter  %}selected{% endifequal %}>Available</option>
     </select>
   </div>
-</div>
 </form>
 
 

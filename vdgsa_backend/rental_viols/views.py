@@ -1,3 +1,5 @@
+from typing import Any, Literal
+
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.forms import ModelForm
 from django.shortcuts import render
@@ -24,8 +26,14 @@ class RentalHomeView(RentalViewBase, TemplateView):
 
 class ViolsMultiListView(RentalViewBase, ListView):
     template_name = 'viols/list.html'
-    queryset = Viol.objects.get_available()
-    #queryset = Viol.objects.get_rented()
+
+    def get_queryset(self, *args: Any, **kwargs: Any):
+        filter = self.request.GET.get('filter', 'available')
+        if filter == 'available':
+            queryset = Viol.objects.get_available()
+        else:
+            queryset = Viol.objects.get_rented()
+        return queryset
 
 
 class BowForm(ModelForm):

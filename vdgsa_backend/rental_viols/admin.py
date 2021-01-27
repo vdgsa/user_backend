@@ -26,7 +26,8 @@ class CaseAdmin(admin.ModelAdmin):  # type: ignore
 
 
 class ViolAdmin(admin.ModelAdmin):  # type: ignore
-    pass
+    list_filter = ['size','state','program']
+    search_fields = ['maker']
 
 
 class WaitingListAdmin(admin.ModelAdmin):  # type: ignore
