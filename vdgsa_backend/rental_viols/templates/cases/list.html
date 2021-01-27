@@ -2,6 +2,7 @@
 
 {% block content %}
 
+ <button class="btn btn-success" onclick="location.href='{% url 'add-case' %}'">Add Case</button>
 <table id="viol-table" class="table table-striped">
   <thead>
     <tr>
@@ -17,7 +18,7 @@
     {% for item in object_list %}
     <tr>
       <td>
-        <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+        <a href="{% url 'case-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
       </td>
       <td>{{item.size}}</td>
       <td>{{item.strings}}</td>

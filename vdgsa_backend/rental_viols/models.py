@@ -64,6 +64,9 @@ class Viol(RentalItemBase):
             f'{self.description}'
         )
 
+    def get_absolute_url(self):
+        return u'/rentals/viols/%d' % self.viol_num
+
 
 class Bow(RentalItemBase):
     bow_num = models.AutoField(primary_key=True)
@@ -80,6 +83,9 @@ class Bow(RentalItemBase):
             f'{self.description}'
         )
 
+    def get_absolute_url(self):
+        return u'/rentals/bows/%d' % self.bow_num
+
 
 class Case(RentalItemBase):
     case_num = models.AutoField(primary_key=True)
@@ -94,6 +100,9 @@ class Case(RentalItemBase):
         return (
             f'{self.case_num} : {self.size} {self.maker} '
         )
+
+    def get_absolute_url(self):
+        return u'/rentals/cases/%d' % self.case_num
 
 
 class Image(models.Model):

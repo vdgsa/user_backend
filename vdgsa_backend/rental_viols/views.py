@@ -5,7 +5,7 @@ from django.forms import ModelForm
 from django.shortcuts import render
 
 from django.views.generic.base import View
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.base import TemplateView
@@ -61,6 +61,12 @@ class AddBowView(RentalViewBase, CreateView):
     template_name = 'bows/add_bow.html'
 
 
+class UpdateBowView(RentalViewBase, UpdateView):
+    model = Bow
+    form_class = BowForm
+    template_name = 'bows/add.html'
+
+
 class ListBowsView(RentalViewBase, ListView):
     model = Bow
     template_name = 'bows/list_bows.html'
@@ -93,6 +99,12 @@ class AddCaseView(RentalViewBase, CreateView):
     model = Case
     form_class = CaseForm
 
+    template_name = 'cases/add.html'
+
+
+class UpdateCaseView(RentalViewBase, UpdateView):
+    model = Case
+    form_class = CaseForm
     template_name = 'cases/add.html'
 
 
@@ -129,7 +141,12 @@ class ViolForm(ModelForm):
 class AddViolView(RentalViewBase, CreateView):
     model = Viol
     form_class = ViolForm
+    template_name = 'viols/add.html'
 
+
+class UpdateViolView(RentalViewBase, UpdateView):
+    model = Viol
+    form_class = ViolForm
     template_name = 'viols/add.html'
 
 

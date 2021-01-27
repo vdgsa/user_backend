@@ -1,2 +1,5 @@
 {% extends '../rentals.html' %}
-{{object}}
+{% block content %}
+<p>Bow detail</p>
+ <button class="btn btn-success" onclick="location.href='{% url 'bow-update' object.bow_num %}'">Update</button>
+{{object}} {% endblock %}

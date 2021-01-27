@@ -2,18 +2,20 @@
 
 {% block content %}
 
-
+<div>
 <form method="get" action="{% url 'list-viols' %}">
-  <div class="form-group">
-    {% comment %} <label for="instrument-filter-rented">Status</label> {% endcomment %}
-    
-    <select class="form-control" name="filter" id="filter" onchange="javascript:this.form.submit()">
-      <option value='rented' {% ifequal 'rented' request.GET.filter  %}selected{% endifequal %}>Rented</option>
-      <option value="available"{% ifequal 'available' request.GET.filter  %}selected{% endifequal %}>Available</option>
-    </select>
+  <div class="form-row">
+    <div class="form-group col-md-6">
+      <select class="form-control" name="filter" id="filter" onchange="javascript:this.form.submit()">
+        <option value="available"{% ifequal 'available' request.GET.filter  %}selected{% endifequal %}>Available</option>
+        <option value='rented' {% ifequal 'rented' request.GET.filter  %}selected{% endifequal %}>Rented</option>
+      </select>
+    </div>
+
   </div>
 </form>
-
+</div>
+ <button class="btn btn-success" onclick="location.href='{% url 'add-viol' %}'">Add</button>
 
 <table id="viol-table" class="table table-striped">
   <thead>
