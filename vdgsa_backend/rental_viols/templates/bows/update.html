@@ -1,0 +1,15 @@
+{% extends '../rentals.html' %}
+
+ 
+{% block content %}
+
+<form id="update-bow-form" method="post" action="{% url 'bow-update' object.bow_num%}">
+  {% csrf_token %}
+  {% include 'utils/form_body.tmpl' with form=form %}
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-success">Update</button>
+  </div>
+</form>
+
+{% endblock %}

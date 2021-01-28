@@ -1,7 +1,7 @@
 {% extends '../rentals.html' %}
 
 {% block content %}
-<form id="add-viol-form" method="post" action="{% url 'add-viol' %}">
+<form id="add-case-form" method="post" action="{% url 'add-viol' %}">
   {% csrf_token %} {% include 'utils/form_body.tmpl' with form=form %}
 
   <div class="mt-2">
