@@ -6,21 +6,50 @@
 
   {% load static %}
   <link rel="stylesheet" href="{% static 'base.css' %}">
+  <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
     rel="stylesheet"
     integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
     crossorigin="anonymous">
+
+  <style>
+    @font-face {
+      font-family: Avenir;
+      src: url("{% static 'fonts/Avenir/Avenir.ttc' %}");
+    }
+
+    @font-face {
+      font-family: Amphion;
+      src: url("{% static 'fonts/Amphion/amph.ttf' %}");
+    }
+
+    @font-face {
+      font-family: Amphion;
+      src: url("{% static 'fonts/Amphion/amphb.ttf' %}");
+      font-weight: bold;
+    }
+
+    @font-face {
+      font-family: Amphion;
+      src: url("{% static 'fonts/Amphion/amphi.ttf' %}");
+      font-style: italic;
+    }
+
+    body {
+      font-family: Avenir;
+    }
+  </style>
+
   {% block page_style %}{% endblock %}
 
   <title>VdGSA</title>
 </head>
 <body>
-  <nav id="nav-links" class="navbar navbar-expand-md navbar-light bg-light">
+  <nav id="nav-links" class="navbar navbar-light navbar-expand-md">
     <div class="container-fluid">
       <a id="logo" class="navbar-brand" href="http://public.vdgsa.org">
         VdGSA
-        <!-- <img src="{% static 'vdgsa_logo.gif' %}" alt="VdGSA"> -->
       </a>
       <button
         class="navbar-toggler"

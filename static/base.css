@@ -1,15 +1,27 @@
-body {
-    font-family: sans-serif, Arial, Helvetica;
+/* Note: Fonts are loaded and set globally in base.html */
+
+#nav-links {
+    background-color: hsl(47, 96%, 63%);
+}
+
+#logo {
+    font-family: Amphion;
+    color: rgb(128, 128, 128);
+    font-weight: bold;
 }
 
 #nav-links .nav-item {
     padding: .25rem .625rem;
 }
 
+#nav-links .nav-item .nav-link {
+    color: rgb(158, 33, 40);
+    font-weight: bold;
+}
+
 #page-body {
     margin: 1rem;
 }
-
 
 /* Used in forms */
 
@@ -20,7 +32,7 @@ body {
    Instead, us this .input-wrapper class on a div wrapping input and textarea
    tags. */
 .input-wrapper {
-    margin: .125rem 0;
+    margin: .25rem 0;
 }
 
 .input-wrapper input {

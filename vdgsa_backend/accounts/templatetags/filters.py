@@ -54,7 +54,7 @@ def format_date(*args: Any, **kwargs: Any) -> str:
 
 
 def format_date_impl(
-    datetime_: timezone.datetime,
+    datetime_: Optional[timezone.datetime],
     timezone_str: str = 'America/New_York',
     *,
     none_ok: bool = False

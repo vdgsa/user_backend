@@ -49,7 +49,9 @@ class User(AbstractUser):
     is_teacher = models.BooleanField(default=False)
     is_remote_teacher = models.BooleanField(default=False)
     teacher_description = models.TextField(max_length=250, blank=True)
-    is_builder = models.BooleanField(default=False)
+    is_instrument_maker = models.BooleanField(default=False)
+    is_bow_maker = models.BooleanField(default=False)
+    is_repairer = models.BooleanField(default=False)
     is_publisher = models.BooleanField(default=False)
     other_commercial = models.CharField(max_length=255, blank=True)
     educational_institution_affiliation = models.CharField(max_length=255, blank=True)
@@ -65,6 +67,11 @@ class User(AbstractUser):
     include_email_in_mailing_list = models.BooleanField(default=True)
     include_address_in_mailing_list = models.BooleanField(default=True)
     include_phone_in_mailing_list = models.BooleanField(default=True)
+
+    # MEMBERSHIP SECRETARY ONLY
+    is_deceased = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+    # \MEMBERSHIP SECRETARY ONLY
 
     last_modified = models.DateTimeField(auto_now=True)
 
@@ -114,6 +121,8 @@ class MembershipType(models.TextChoices):
     student = 'student', f'Student (${STUDENT_MEMBERSHIP_PRICE})'
     international = 'international', f'International (${INTERNATIONAL_MEMBERSHIP_PRICE})'
     lifetime = 'lifetime'
+    complementary = 'complementary'
+    organization = 'organization'
 
 
 class PendingMembershipSubscriptionPurchase(_CreatedAndUpdatedTimestamps, models.Model):

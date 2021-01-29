@@ -1,10 +1,11 @@
 import json
 from functools import cached_property
-from typing import Any, Dict, Final, List
+from typing import Any, Dict, Final, List, Sequence, cast
 
 import stripe  # type: ignore
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.http.request import HttpRequest
@@ -58,23 +59,57 @@ def stripe_webhook_view(request: HttpRequest, *args: Any, **kwargs: Any) -> Http
 
 
 class PurchaseSubscriptionForm(forms.Form):
-    def __init__(self, user: User, *args: Any, **kwargs: Any):
+    def __init__(
+        self,
+        *args: Any,
+        requested_user: User,
+        authenticated_user: User,
+        **kwargs: Any
+    ):
         super().__init__(*args, **kwargs)
-        self.user = user
+        self.show_all_membership_choices = (
+            is_membership_secretary(authenticated_user) and authenticated_user != requested_user
+        )
 
-    membership_type = forms.ChoiceField(
-        choices=[
-            (MembershipType.regular.value, MembershipType.regular.label),
-            (MembershipType.student.value, MembershipType.student.label),
-            (MembershipType.international.value, MembershipType.international.label),
-        ]
-    )
+        if self.show_all_membership_choices:
+            self.fields['membership_type'] = forms.ChoiceField(choices=MembershipType.choices)
+        else:
+            self.fields['membership_type'] = forms.ChoiceField(
+                choices=[
+                    (MembershipType.regular.value, MembershipType.regular.label),
+                    (MembershipType.student.value, MembershipType.student.label),
+                    (MembershipType.international.value, MembershipType.international.label),
+                ]
+            )
+
     donation = forms.IntegerField(required=False, min_value=0)
+
+    _public_membership_types: Final[Sequence[MembershipType]] = [
+        MembershipType.regular,
+        MembershipType.student,
+        MembershipType.international,
+    ]
+
+    def clean(self) -> Dict[str, Any]:
+        cleaned_fields = super().clean()
+        membership_type = cleaned_fields['membership_type']
+        if (not self.show_all_membership_choices
+                and membership_type not in self._public_membership_types):
+            raise ValidationError(
+                'Only the membership secretary can select '
+                f'the "{membership_type}" membership type'
+            )
+
+        return cleaned_fields
 
 
 class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        form = PurchaseSubscriptionForm(self.requested_user, request.POST)
+        form = PurchaseSubscriptionForm(
+            request.POST,
+            requested_user=self.requested_user,
+            authenticated_user=cast(User, self.request.user),
+        )
         if not form.is_valid():
             return get_ajax_form_response(
                 'form_validation_error',
@@ -183,7 +218,7 @@ def create_or_renew_subscription(
         subscription = MembershipSubscription.objects.create(
             owner=user, valid_until=valid_until,
             membership_type=membership_type,
-            years_renewed=[valid_until.year]
+            years_renewed=[now.year]
         )
 
         return subscription

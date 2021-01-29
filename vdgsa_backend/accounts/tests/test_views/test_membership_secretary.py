@@ -9,6 +9,7 @@ from django.urls.base import reverse
 from django.utils import timezone
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
 from selenium.webdriver.remote.webelement import WebElement  # type: ignore
+from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
@@ -46,6 +47,7 @@ def _test_data_init(test_obj: _TestData) -> None:
         owner=test_obj.users[0],
         membership_type=MembershipType.regular,
         valid_until=timezone.now() - timezone.timedelta(hours=1),
+        years_renewed=[2020]
     )
     test_obj.users[0].refresh_from_db()
 
@@ -53,6 +55,7 @@ def _test_data_init(test_obj: _TestData) -> None:
         owner=test_obj.users[4],
         membership_type=MembershipType.student,
         valid_until=timezone.now() + timezone.timedelta(days=30),
+        years_renewed=[2020]
     )
     test_obj.users[4].refresh_from_db()
 
@@ -60,6 +63,7 @@ def _test_data_init(test_obj: _TestData) -> None:
         owner=test_obj.users[7],
         membership_type=MembershipType.lifetime,
         valid_until=None,
+        years_renewed=[2020]
     )
     test_obj.users[7].refresh_from_db()
 
@@ -78,7 +82,7 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
         _test_data_init(self)
 
     def test_table_content(self) -> None:
-        self.login_as(self.membership_secretary, dest_url='/accounts/directory/')
+        self.login_as(self.membership_secretary, dest_url='/accounts/directory/?all_users=true')
         user_rows = self.selenium.find_elements_by_class_name('user-row')
         self.assertEqual(len(self.users), len(user_rows))
 
@@ -90,55 +94,88 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
 
         user0_subscription_cells = user_rows[0].find_elements_by_css_selector('td')
         self.assertIn('subscription-not-current', user_rows[0].get_attribute('class').split())
-        self.assertEqual('regular', user0_subscription_cells[3].text)  # membership type
+        self.assertEqual('regular', user0_subscription_cells[4].text)  # membership type
         assert self.users[0].subscription is not None
         self.assertEqual(
             format_datetime_impl(self.users[0].subscription.valid_until),
-            user0_subscription_cells[4].text  # membership expires
+            user0_subscription_cells[5].text  # membership expires
         )
-        self.assertNotEqual('', user0_subscription_cells[4].text)  # membership expires
+        self.assertNotEqual('', user0_subscription_cells[5].text)  # membership expires
 
         user4_subscription_cells = user_rows[4].find_elements_by_css_selector('td')
         self.assertNotIn('subscription-not-current', user_rows[4].get_attribute('class').split())
-        self.assertEqual('student', user4_subscription_cells[3].text)  # membership type
+        self.assertEqual('student', user4_subscription_cells[4].text)  # membership type
         assert self.users[4].subscription is not None
         self.assertEqual(
             format_datetime_impl(self.users[4].subscription.valid_until),
-            user4_subscription_cells[4].text  # membership expires
+            user4_subscription_cells[5].text  # membership expires
         )
-        self.assertNotEqual('', user4_subscription_cells[4].text)  # membership expires
+        self.assertNotEqual('', user4_subscription_cells[5].text)  # membership expires
 
         user7_subscription_cells = user_rows[7].find_elements_by_css_selector('td')
-        self.assertEqual('lifetime', user7_subscription_cells[3].text)  # membership type
-        self.assertEqual('', user7_subscription_cells[4].text)  # membership expires
+        self.assertEqual('lifetime', user7_subscription_cells[4].text)  # membership type
+        self.assertEqual('', user7_subscription_cells[5].text)  # membership expires
+
+    def test_active_users_only(self) -> None:
+        self.fail()
+
+    def test_navigation_between_all_and_active_users(self) -> None:
+        self.fail()
 
     def test_filter_text(self) -> None:
-        self.login_as(self.membership_secretary, dest_url='/accounts/directory/')
+        self.login_as(self.membership_secretary, dest_url='/accounts/directory/?all_users=true')
         user_rows = self.selenium.find_elements_by_class_name('user-row')
         self.assertEqual(len(self.users), len(user_rows))
 
+        wait = WebDriverWait(self.selenium, 5)
+
         self.selenium.find_element_by_id('user-filter-input').send_keys(' regular')
+        wait.until(
+            lambda _: self.num_visible_elements(
+                self.selenium.find_elements_by_class_name('user-row')
+            ) == 1
+        )
         self.assertEqual(
             1, self.num_visible_elements(self.selenium.find_elements_by_class_name('user-row')))
 
         self.selenium.find_element_by_id('user-filter-input').clear()
         # Should ignore case
         self.selenium.find_element_by_id('user-filter-input').send_keys('lasty 4  ')
+        wait.until(
+            lambda _: self.num_visible_elements(
+                self.selenium.find_elements_by_class_name('user-row')
+            ) == 1
+        )
         self.assertEqual(
             1, self.num_visible_elements(self.selenium.find_elements_by_class_name('user-row')))
 
         self.selenium.find_element_by_id('user-filter-input').clear()
         self.selenium.find_element_by_id('user-filter-input').send_keys('Firsty 5')
+        wait.until(
+            lambda _: self.num_visible_elements(
+                self.selenium.find_elements_by_class_name('user-row')
+            ) == 1
+        )
         self.assertEqual(
             1, self.num_visible_elements(self.selenium.find_elements_by_class_name('user-row')))
 
         self.selenium.find_element_by_id('user-filter-input').clear()
         self.selenium.find_element_by_id('user-filter-input').send_keys('nositenoriast')
+        wait.until(
+            lambda _: self.num_visible_elements(
+                self.selenium.find_elements_by_class_name('user-row')
+            ) == 0
+        )
         self.assertEqual(
             0, self.num_visible_elements(self.selenium.find_elements_by_class_name('user-row')))
 
         self.selenium.find_element_by_id('user-filter-input').clear()
         self.selenium.find_element_by_id('user-filter-input').send_keys('  ')
+        wait.until(
+            lambda _: self.num_visible_elements(
+                self.selenium.find_elements_by_class_name('user-row')
+            ) == self.num_users
+        )
         self.assertEqual(
             self.num_users,
             self.num_visible_elements(self.selenium.find_elements_by_class_name('user-row'))
@@ -150,7 +187,7 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
         )
 
     def test_board_members_can_view_but_not_edit(self) -> None:
-        self.login_as(self.make_board_member(), dest_url='/accounts/directory/')
+        self.login_as(self.make_board_member(), dest_url='/accounts/directory/?all_users=true')
         self.selenium.find_element_by_id('user-table')
         with self.assertRaises(NoSuchElementException):
             self.selenium.find_element_by_id('download-members-csv')
@@ -179,7 +216,7 @@ class DownloadMembersSpreadsheetTestCase(TestCase):
 
     def test_download_all(self) -> None:
         self.client.force_login(self.membership_secretary)
-        response = self.client.get(reverse('all-users-csv'))
+        response = self.client.get(reverse('all-users-csv') + '?all_users=true')
         with tempfile.TemporaryFile('w+') as f:
             f.write(response.content.decode())
             f.seek(0)
@@ -209,6 +246,9 @@ class DownloadMembersSpreadsheetTestCase(TestCase):
 
         self.assertEqual('lifetime', grid[7][3])  # membership type
         self.assertEqual('', grid[7][4])  # membership expires
+
+    def test_download_active_only(self) -> None:
+        self.fail()
 
     def test_download_all_non_membership_secretary_permission_denied(self) -> None:
         self.client.force_login(self.users[0])

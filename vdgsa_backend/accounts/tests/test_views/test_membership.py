@@ -1,6 +1,5 @@
 import json
 import time
-from vdgsa_backend.accounts.views.subscription import MAX_NUM_FAMILY_MEMBERS
 
 from django.core import mail
 from django.test import TestCase
@@ -13,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
 from vdgsa_backend.accounts.tests.test_views.selenium_test_base import SeleniumTestCaseBase
+from vdgsa_backend.accounts.views.subscription import MAX_NUM_FAMILY_MEMBERS
 
 
 class MembershipUITestCase(SeleniumTestCaseBase):
@@ -420,7 +420,7 @@ class MaxNumFamilyMembersTestCase(TestCase):
             self.assertEqual('success', json.loads(response.content.decode())['status'])
 
         response = self.client.post(
-            reverse('add-family-member', kwargs={'pk': user.pk}),
+            reverse('add-family-member', kwargs={'pk': subscription.pk}),
             {'username': family_members[-1].username}
         )
         self.assertEqual(200, response.status_code)

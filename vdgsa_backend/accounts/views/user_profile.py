@@ -1,8 +1,9 @@
-from typing import Any, Dict, Optional, cast
+from typing import Any, Dict, Final, Optional, Sequence, cast
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import ValidationError
 from django.forms import BaseModelForm, ModelForm, Textarea
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
@@ -13,10 +14,12 @@ from django.views.generic.edit import UpdateView
 
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.change_email import ChangeEmailForm
-from vdgsa_backend.accounts.views.subscription import AddFamilyMemberForm, MAX_NUM_FAMILY_MEMBERS, PurchaseSubscriptionForm
+from vdgsa_backend.accounts.views.subscription import (
+    MAX_NUM_FAMILY_MEMBERS, AddFamilyMemberForm, PurchaseSubscriptionForm
+)
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 
-from .permissions import is_requested_user_or_membership_secretary
+from .permissions import is_membership_secretary, is_requested_user_or_membership_secretary
 
 
 @login_required
@@ -44,7 +47,9 @@ class UserProfileForm(ModelForm):
             'is_teacher',
             'teacher_description',
             'is_remote_teacher',
-            'is_builder',
+            'is_instrument_maker',
+            'is_bow_maker',
+            'is_repairer',
             'is_publisher',
             'other_commercial',
             'educational_institution_affiliation',
@@ -60,14 +65,20 @@ class UserProfileForm(ModelForm):
             'include_email_in_mailing_list',
             'include_address_in_mailing_list',
             'include_phone_in_mailing_list',
+
+            # MEMBERSHIP SECRETARY ONLY
+            'is_deceased',
+            'notes',
         ]
 
         widgets = {
             'teacher_description': Textarea(attrs={'rows': 5, 'cols': None}),
+            'notes': Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
-    def __init__(self, *args: Any, **kwargs: Any):
+    def __init__(self, authorized_user: User, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
+        self.authorized_user = authorized_user
 
         self.fields['first_name'].required = True
         self.fields['last_name'].required = True
@@ -77,6 +88,27 @@ class UserProfileForm(ModelForm):
         self.fields['address_state'].required = True
         self.fields['address_postal_code'].required = True
         self.fields['address_country'].required = True
+
+    _membership_secretary_only_fields: Final[Sequence[str]] = [
+        'is_deceased',
+        'notes',
+    ]
+
+    def clean(self) -> Dict[str, Any]:
+        cleaned_fields = super().clean()
+        if is_membership_secretary(self.authorized_user):
+            return cleaned_fields
+
+        illegal_fields = set(
+            self._membership_secretary_only_fields
+        ).intersection(set(cleaned_fields))
+        if len(illegal_fields) != 0:
+            raise ValidationError(
+                "Only the membership secretary can edit "
+                f"the field(s) {', '.join(illegal_fields)}"
+            )
+
+        return cleaned_fields
 
 
 class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -89,6 +121,11 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def requested_user(self) -> User:
         return cast(User, self.get_object())
 
+    def get_form_kwargs(self) -> Dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs['authorized_user'] = self.requested_user
+        return kwargs
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['MAX_NUM_FAMILY_MEMBERS'] = MAX_NUM_FAMILY_MEMBERS
@@ -96,7 +133,10 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
         context['change_email_form'] = ChangeEmailForm(self.requested_user)
         context['change_password_form'] = PasswordChangeForm(self.requested_user)
-        context['membership_renewal_form'] = PurchaseSubscriptionForm(self.requested_user)
+        context['membership_renewal_form'] = PurchaseSubscriptionForm(
+            requested_user=self.requested_user,
+            authenticated_user=cast(User, self.request.user)
+        )
         context['add_family_member_form'] = AddFamilyMemberForm()
 
         context['current_authenticated_user'] = self.request.user
