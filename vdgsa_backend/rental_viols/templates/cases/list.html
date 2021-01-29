@@ -8,10 +8,11 @@
     <tr>
       <td>VdGSA number</td>
       <td>Size</td>
-      <td># Strings</td>
+      <td>Value</td>
       <td>Maker</td>
       <td>Program</td>
       <td>State</td>
+      <td>Storer</td>
     </tr>
   </thead>
   <tbody>
@@ -21,10 +22,11 @@
         <a href="{% url 'case-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
       </td>
       <td>{{item.size}}</td>
-      <td>{{item.strings}}</td>
+      <td>{{item.value}}</td>
       <td>{{item.maker}}</td>
       <td>{{item.program}}</td>
       <td>{{item.state}}</td>
+      <td>{{item.storer}}</td>
     </tr>
     {% endfor %}
   </tbody>

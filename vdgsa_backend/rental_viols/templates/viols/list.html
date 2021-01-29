@@ -9,9 +9,9 @@
       <select class="form-control" name="filter" id="filter" onchange="javascript:this.form.submit()">
         <option value="available"{% ifequal 'available' request.GET.filter  %}selected{% endifequal %}>Available</option>
         <option value='rented' {% ifequal 'rented' request.GET.filter  %}selected{% endifequal %}>Rented</option>
+        <option value='all' {% ifequal 'all' request.GET.filter  %}selected{% endifequal %}>All</option>
       </select>
     </div>
-
   </div>
 </form>
 </div>

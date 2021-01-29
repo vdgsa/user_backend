@@ -2,6 +2,8 @@ from __future__ import annotations
 from django.db import models
 from django.db.models.enums import TextChoices
 
+from django.utils import timezone
+
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.rental_viols.managers.InstrumentManager import InstrumentManager
 
@@ -10,6 +12,11 @@ class RentalProgram(TextChoices):
     regular = 'regular'
     select_reserve = 'select_reserve'
     consort_loan = 'consort_loan'
+
+
+class RecordStatus(TextChoices):
+    active = 'active'
+    deleted = 'deleted'
 
 
 class ViolSize(TextChoices):
@@ -41,6 +48,9 @@ class RentalItemBase(models.Model):
     storer = models.ForeignKey(
         User, blank=True, null=True, default=None, on_delete=models.SET_NULL, related_name='+')
     program = models.TextField(choices=RentalProgram.choices, default=RentalProgram.regular)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+    status = models.TextField(choices=RecordStatus.choices, default=RecordStatus.active)
 
 
 class Viol(RentalItemBase):

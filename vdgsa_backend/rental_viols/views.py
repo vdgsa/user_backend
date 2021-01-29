@@ -45,8 +45,10 @@ class ViolsMultiListView(RentalViewBase, ListView):
         filter = self.request.GET.get('filter', 'available')
         if filter == 'available':
             queryset = Viol.objects.get_available()
-        else:
+        elif filter == 'rented':
             queryset = Viol.objects.get_rented()
+        else:
+            queryset = Viol.objects.all()
         return queryset
 
 
