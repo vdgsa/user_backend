@@ -60,7 +60,10 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
         self.assertIn('Pay', self.selenium.find_element_by_id('membership-header').text)
 
         self.selenium.refresh()
-        self.assertEqual(self.selenium.find_element_by_id('current-username').text, email)
+        self.assertEqual(
+            self.selenium.find_element_by_id('current-username').get_attribute('value'),
+            email
+        )
 
         # Name and address fields should have been set
         self.assertEqual(user.first_name, first_name)
@@ -171,7 +174,10 @@ class RegistrationAndLoginUITestCase(SeleniumTestCaseBase):
         self.selenium.find_element_by_id('id_password').send_keys(password)
         self.selenium.find_element_by_css_selector('button[type=submit]').click()
 
-        self.assertEqual(self.selenium.find_element_by_id('current-username').text, email)
+        self.assertEqual(
+            self.selenium.find_element_by_id('current-username').get_attribute('value'),
+            email
+        )
 
     def _fill_name_and_address(self) -> None:
         """

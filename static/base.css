@@ -20,6 +20,11 @@
     font-weight: bold;
 }
 
+.form-field-errors {
+    font-weight: bold;
+    color: hsl(357, 65%, 37%);
+}
+
 /* Bootstrap overrides ----------------------------------------------------- */
 
 a:link,

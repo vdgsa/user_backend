@@ -301,7 +301,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(1, len(family_member_names))
-        self.assertIn(family1_username, family_member_names[0].text)
+        self.assertIn(family1_username, family_member_names[0].get_attribute('value'))
 
         self.selenium.find_element_by_css_selector(
             '#add-family-member-input-wrapper input').send_keys(family2.username)
@@ -311,8 +311,8 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(2, len(family_member_names))
-        self.assertIn(family1_username, family_member_names[0].text)
-        self.assertIn(family2.username, family_member_names[1].text)
+        self.assertIn(family1_username, family_member_names[0].get_attribute('value'))
+        self.assertIn(family2.username, family_member_names[1].get_attribute('value'))
 
         # Make sure an email was sent to family member 1 (the one who didn't
         # already have an account).
@@ -324,8 +324,8 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(2, len(family_member_names))
-        self.assertIn(family1_username, family_member_names[0].text)
-        self.assertIn(family2.username, family_member_names[1].text)
+        self.assertIn(family1_username, family_member_names[0].get_attribute('value'))
+        self.assertIn(family2.username, family_member_names[1].get_attribute('value'))
 
         # Remove both family members
         remove_buttons = self.selenium.find_elements_by_css_selector(
@@ -340,7 +340,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(1, len(family_member_names))
-        self.assertIn(family2.username, family_member_names[0].text)
+        self.assertIn(family2.username, family_member_names[0].get_attribute('value'))
 
         remove_buttons = self.selenium.find_elements_by_css_selector(
             '.remove-family-member-form button[type=submit]')
@@ -377,7 +377,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(1, len(family_member_names))
-        self.assertIn(family.username, family_member_names[0].text)
+        self.assertIn(family.username, family_member_names[0].get_attribute('value'))
 
     def test_membership_secretary_add_remove_family_members(self) -> None:
         MembershipSubscription.objects.create(
@@ -396,7 +396,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         family_member_names = self.selenium.find_elements_by_css_selector(
             '.family-member .family-member-name')
         self.assertEqual(1, len(family_member_names))
-        self.assertIn(family.username, family_member_names[0].text)
+        self.assertIn(family.username, family_member_names[0].get_attribute('value'))
 
 
 class MaxNumFamilyMembersTestCase(TestCase):

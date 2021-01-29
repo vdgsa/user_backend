@@ -23,4 +23,8 @@
   {% endif %}
 </label>
 {{field | add_classes:"form-control"}}
+
+<div class="form-field-errors mt-1">
+  {{field.errors}}
+</div>
 {% endif %}
