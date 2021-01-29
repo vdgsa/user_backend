@@ -8,6 +8,7 @@
     font-family: Amphion;
     color: rgb(128, 128, 128);
     font-weight: bold;
+    font-size: 1.5rem;
 }
 
 #nav-links .nav-item {
@@ -15,46 +16,53 @@
 }
 
 #nav-links .nav-item .nav-link {
-    color: rgb(158, 33, 40);
+    color: hsl(357, 65%, 37%);
     font-weight: bold;
 }
 
-#page-body {
-    margin: 1rem;
+/* Bootstrap overrides ----------------------------------------------------- */
+
+a:link,
+a:visited,
+a:hover {
+    color: hsl(357, 65%, 37%)!important;
 }
 
-/* Used in forms */
-
-/* The way we use Django to generate form html makes it harder to apply
-   bootstrap classes to form inputs. Additionally, bootstrap's "form-control"
-   class makes inputs take up the full width, which would then force us to
-   use the grid to shrink them down.
-   Instead, us this .input-wrapper class on a div wrapping input and textarea
-   tags. */
-.input-wrapper {
-    margin: .25rem 0;
+a:active {
+    color: hsl(357, 65%, 45%)!important;
 }
 
-.input-wrapper input {
-    color: #212529;
-    border: 1px solid #ced4da;
-    border-radius: 2px;
+.btn {
+    border-radius: 0!important;
 }
 
-.input-wrapper input[type="text"],
-.input-wrapper input[type="password"],
-.input-wrapper input[type="email"],
-.input-wrapper input[type="number"],
-.input-wrapper textarea {
-    padding: .25rem .5rem;
+.btn-primary {
+    background-color: hsl(47, 96%, 70%)!important;
+    border-color: hsl(47, 96%, 70%)!important;
+    color: black!important;
 }
 
-.input-wrapper textarea {
-    /* Together with width 100% on label, this will make
-       textareas take up the fill width on smaller screens but not get too
-       large on bigger ones. */
-    max-width: 500px;
-    width: 100%;
+.btn-primary:hover {
+    background-color: hsl(47, 96%, 63%)!important;
+    border-color: hsl(47, 96%, 63%)!important;
 }
 
-/* \Used in forms */
+.btn-danger {
+    background-color: hsl(357, 65%, 70%)!important;
+    border-color: hsl(357, 65%, 70%)!important;
+    color: black!important;
+}
+
+.btn-danger:hover {
+    background-color: hsl(357, 65%, 65%)!important;
+    border-color: hsl(357, 65%, 65%)!important;
+}
+
+.cancel-button {
+    border: 1px solid #aaaaaa!important;
+    color: black;
+}
+
+.form-control {
+    border-radius: 0!important;
+}

@@ -1,35 +1,12 @@
 {% extends 'base.html' %}
 
-{% block page_style %}
-<style>
-  .remove-family-member-form {
-    display: inline-block;
-  }
-
-  #valid-until-timestamp {
-    color: seagreen;
-    font-weight: bold;
-  }
-
-  #add-family-member-input-wrapper {
-    display: flex;
-    align-items: center;
-  }
-
-  #add-family-member-input-wrapper input {
-    margin-right: .25rem;
-    font-size: .875rem;
-  }
-</style>
-{% endblock %}
-
 {% block content %}
 
 {% load filters %}
 
 {% if perms.accounts.membership_secretary %}
 <div class="mb-2">
-  <a id="all-users-link" href="{% url 'membership-secretary' %}">&lt All Users</a>
+  <a id="all-users-link" href="{% url 'membership-secretary' %}">&lt Directory</a>
 </div>
 {% endif %}
 
@@ -43,18 +20,22 @@
 {% if object.subscription is not None or perms.accounts.membership_secretary %}
 
 <div class="mt-4" id="login-info-wrapper">
-  <h3>Login Info</h3>
+  <h2>Login Info</h2>
   <div><b>Email</b></div>
-  <div class="input-group input-group-sm mb-2">
-    <span id="current-username" class="input-group-text">{{object.username}}</span>
-    <button type="button" class="btn btn-primary"
-      id="show-change-email-form"
-      data-bs-toggle="collapse"
-      data-bs-target="#change-email-form"
-      aria-expanded="false"
-      aria-controls="change-email-form"
-    >Change</button>
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <div class="input-group input-group-sm">
+        <input disabled id="current-username" class="form-control" value="{{object.username}}">
+      </div>
+    </div>
   </div>
+
+  <a href="#change-email-form"
+    id="show-change-email-form"
+    data-bs-toggle="collapse"
+    aria-expanded="false"
+    aria-controls="change-email-form"
+  >Change Email</a>
 
   <form
     id="change-email-form"
@@ -67,11 +48,11 @@
 
     <div id="email-in-use-msg"></div>
 
-    <div class="mt-2">
+    <div class="mt-2 mb-3">
       <button type="submit" class="btn btn-primary">Submit</button>
       <button
         id="change-email-cancel-button"
-        class="btn btn-light"
+        class="btn cancel-button"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#change-email-form"
@@ -86,22 +67,22 @@
 
   {% if object == current_authenticated_user %}
   <!-- See https://getbootstrap.com/docs/5.0/utilities/spacing/ -->
-  <div class="my-3">
+  <div class="my-2">
     <a id="password-change-link" href="{% url 'password_change' %}">Change Password</a>
   </div>
   {% endif %}
 </div>
 
 <div class="mt-4">
-  <h3>Profile</h3>
+  <h2>Profile</h2>
   <form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
     {% csrf_token %}
     <div class='form-body-wrapper'>
       {% include 'user_profile/edit_profile_form.tmpl' with user=object form=edit_profile_form %}
     </div>
 
-    <div class="d-flex align-items-center mt-2">
-      <button type="submit" class="btn btn-success">Save</button>
+    <div class="d-flex align-items-center mt-3">
+      <button type="submit" class="btn btn-primary">Save</button>
       <div class="last-saved ms-2"></div>
     </div>
   </form>
@@ -285,4 +266,13 @@ function setup_ajax_submit(
 }
 </script>
 
+{% endblock %}
+
+{% block page_style %}
+<style>
+  #valid-until-timestamp {
+    color: seagreen;
+    font-weight: bold;
+  }
+</style>
 {% endblock %}

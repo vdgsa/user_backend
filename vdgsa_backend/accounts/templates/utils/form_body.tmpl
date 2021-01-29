@@ -17,27 +17,10 @@ default selector used in update_form_body (JS)
 {% endcomment %}
 <div class="form-body-wrapper">
 {% for field in form %}
-
-  <div id="{{field.auto_id}}_wrapper" class="input-wrapper input-group">
-    <label class="label">
-    {% if field.field.widget.input_type == 'checkbox' %}
-      {{field}} {{field.label}}
-    {% else %}
-      {% comment %} No label tag if label is empty. {% endcomment %}
-      {% if field.label %}
-      {{field.label}} <br>
-      {% endif %}
-      {{field}}
-    {% endif %}
-    </label>
-  </div>
-
-  {% if field.help_text %}
-  <!-- <p class="help">{{ field.help_text }}</p> -->
-  {% endif %}
-
-  <div class="form-field-errors">
-    {{field.errors}}
+  <div id="{{field.auto_id}}_wrapper" class="row mt-2">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=field %}
+    </div>
   </div>
 {% endfor %}
 

@@ -1,12 +1,23 @@
 from typing import Any, Optional
+from django.utils.safestring import SafeText
 
 import pytz
 from django import template
+from django.forms import BoundField
 from django.utils import timezone
 
 from vdgsa_backend.accounts.models import User
 
 register = template.Library()
+
+
+def introspect(obj: object) -> object:
+    """
+    Used for debugging. Prints the type and attributes of "obj".
+    """
+    print(type(obj))
+    print(dir(obj))
+    return obj
 
 
 def show_name(user: User) -> str:
@@ -21,6 +32,14 @@ def show_name_and_email(user: User) -> str:
         return f'{user.first_name} {user.last_name} ({user.username})'
 
     return user.username
+
+
+def add_classes(field: BoundField, classes: str) -> SafeText:
+    """
+    Adds "classes" (a space-separated string of classes) to "field".
+    Example usage: {{form.some_field | add_classes:"form-control"}}
+    """
+    return field.as_widget(attrs={'class': field.css_classes(classes)})  # type: ignore
 
 
 @register.simple_tag
@@ -75,3 +94,5 @@ def format_date_impl(
 
 register.filter('show_name', show_name)
 register.filter('show_name_and_email', show_name_and_email)
+register.filter('introspect', introspect)
+register.filter('add_classes', add_classes)

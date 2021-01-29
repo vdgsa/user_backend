@@ -1,22 +1,19 @@
+{% load filters %}
+
 {% if perms.accounts.membership_secretary %}
 <fieldset>
   <legend>Secret Membership Secretary Fields</legend>
 
-  <div class="input-wrapper">
-    <label class="label">Notes </label><br>
-    {{form.notes}}
-    {{form.notes.errors}}
+  <div>
+    {% include 'utils/form_field.tmpl' with field=form.notes %}
   </div>
 
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.is_deceased}}
-      Is deceased
-    </label>
+  <div class="mt-3">
+    {% include 'utils/form_field.tmpl' with field=form.is_deceased %}
   </div>
 
-  <div class="d-flex align-items-center mt-2">
-    <button type="submit" class="btn btn-success">Save</button>
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary">Save</button>
     <div class="last-saved ms-2"></div>
   </div>
 </fieldset>
@@ -25,187 +22,87 @@
 <fieldset class="mt-3">
   <legend>Contact Info</legend>
 
-  <div class="input-wrapper">
-    <label class="label">
-      First Name <br>
-      {{form.first_name}}
-    </label>
-    {{form.first_name.errors}}
+  {% include 'required_contact_info_form.tmpl' with form=form %}
+
+  <div class="row mt-4">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.phone1 label='Phone 1 (Optional)'%}
+    </div>
   </div>
 
-  <div class="input-wrapper">
-    <label class="label">
-      Last Name <br>
-      {{form.last_name}}
-    </label>
-    {{form.last_name.errors}}
-  </div>
-
-  <div class="input-wrapper mt-3">
-    <label class="label">
-      Address Line 1 <br>
-      {{form.address_line_1}}
-    </label>
-    {{form.address_line_1.errors}}
-  </div>
-
-  <div class="input-wrapper">
-    <label class="label">
-      Address Line 2 (Optional)<br>
-      {{form.address_line_2}}
-    </label>
-    {{form.address_line_2.errors}}
-  </div>
-
-  <div class="input-wrapper">
-    <label class="label">
-      City <br>
-      {{form.address_city}}
-    </label>
-    {{form.address_city.errors}}
-  </div>
-
-  <div class="input-wrapper">
-    <label class="label">
-      State <br>
-      {{form.address_state}}
-    </label>
-    {{form.address_state.errors}}
-  </div>
-
-  <div class="input-wrapper">
-    <label class="label">
-      ZIP/Postal Code <br>
-      {{form.address_postal_code}}
-    </label>
-    {{form.address_postal_code.errors}}
-  </div>
-
-  <div class="input-wrapper">
-    <label class="label">
-      Country <br>
-      {{form.address_country}}
-    </label>
-    {{form.address_country.errors}}
-  </div>
-
-  <div class="input-wrapper mt-3">
-    <label class="label">
-      Phone 1 (optional)<br>
-      {{form.phone1}}
-    </label>
-    {{form.phone1.errors}}
-  </div>
-
-  <div class="input-wrapper">
-    <label class="label">
-      Phone 2 (optional)<br>
-      {{form.phone2}}
-    </label>
-    {{form.phone2.errors}}
+  <div class="row mt-2">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.phone2 label='Phone 2 (Optional)'%}
+    </div>
   </div>
 
   <div class="d-flex align-items-center mt-3">
-    <button type="submit" class="btn btn-success">Save</button>
+    <button type="submit" class="btn btn-primary">Save</button>
     <div class="last-saved ms-2"></div>
   </div>
 </fieldset>
 
 <fieldset class="mt-3">
   <legend>Please check or fill in all that apply to you</legend>
-  <div class="input-wrapper mb-3">
-    <label class="label">
-      {{form.is_young_player}}
-      I identify as a young player
-    </label>
-    {{form.is_young_player.errors}}
+  <div class="input-group mb-3">
+    {% include 'utils/form_field.tmpl' with field=form.is_young_player label='I identify as a young player' %}
   </div>
 
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.is_teacher}}
-      I am a teaching member
-    </label>
-    {{form.is_teacher.errors}}
+  <div class="input-group">
+    {% include 'utils/form_field.tmpl' with field=form.is_teacher label='I am a teaching member' %}
   </div>
 
-  <div class="ms-3">
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.is_remote_teacher}}
-        I am willing to teach online
-      </label>
-      {{form.is_remote_teacher.errors}}
-    </div>
+  <div class="ms-4">
+    {% include 'utils/form_field.tmpl' with field=form.is_remote_teacher label='I am willing to teach online' %}
 
-    <div class="input-wrapper">
-      <label class="label">
+    <div class="mt-2">
+      <label for="{{form.teacher_description.id_for_label}}" class="form-label">
         Briefly describe who and what you teach
         (<span id="teacher-description-num-chars-used">
         </span>/{{form.fields.teacher_description.max_length}} chars)
-      </label><br>
-      {{form.teacher_description}}
+      </label>
+      {{form.teacher_description | add_classes:"form-control"}}
       {{form.teacher_description.errors}}
     </div>
   </div>
 
-  <div class="input-wrapper mt-3">
-    <label class="label">
+  <div class="mt-3">
+    <label for="{{form.educational_institution_affiliation.id_for_label}}" class="form-label">
       If you are affiliated with an educational institution, please list it here <br>
-      {{form.educational_institution_affiliation}}
     </label>
+    {{form.educational_institution_affiliation | add_classes:"form-control"}}
     {{form.educational_institution_affiliation.errors}}
   </div>
 
   <div class="mt-3">I am a commercial member (select all that apply)</div>
   <div class="ms-1">
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.is_instrument_maker}}
-        Instrument Maker
-      </label>
-      {{form.is_instrument_maker.errors}}
-    </div>
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.is_bow_maker}}
-        Bow Maker
-      </label>
-      {{form.is_bow_maker.errors}}
-    </div>
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.is_repairer}}
-        Repairer
-      </label>
-      {{form.is_repairer.errors}}
-    </div>
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.is_publisher}}
-        Publisher
-      </label>
-      {{form.is_publisher.errors}}
-    </div>
-    <div class="input-wrapper">
-      <label class="label">
+    {% include 'utils/form_field.tmpl' with field=form.is_instrument_maker label='Instrument Maker' %}
+    {% include 'utils/form_field.tmpl' with field=form.is_bow_maker label='Bow Maker' %}
+    {% include 'utils/form_field.tmpl' with field=form.is_repairer label='Repairer' %}
+    {% include 'utils/form_field.tmpl' with field=form.is_publisher label='Publisher' %}
+    <div>
+      <div class="form-check">
+        <!-- This checkbox is just for show. -->
         <input
+          class="form-check-input"
           type="checkbox"
           {% if user.other_commercial %}
           checked
           {% endif %}
         >
-        Other (please specify) <br>
-      </label>
-      <div class="ms-3">
-        {{form.other_commercial}}
+        <label class="form-check-label">
+          Other (please specify)
+        </label>
+      </div>
+      <div class="ms-4">
+        {{form.other_commercial | add_classes:"form-control"}}
       </div>
       {{form.other_commercial.errors}}
     </div>
   </div>
 
   <div class="d-flex align-items-center mt-3">
-    <button type="submit" class="btn btn-success">Save</button>
+    <button type="submit" class="btn btn-primary">Save</button>
     <div class="last-saved ms-2"></div>
   </div>
 </fieldset>
@@ -213,11 +110,11 @@
 <fieldset class="mt-3">
   <legend>Privacy</legend>
 
-  <div class="input-wrapper">
-    <label class="label">
-      {{form.do_not_email}}
+  <div class="form-check">
+    <label class="form-check-label">
       Do not send me society emails (We email members very rarely with important announcements)
     </label>
+    {{form.do_not_email | add_classes:"form-check-input"}}
     {{form.do_not_email.errors}}
   </div>
 
@@ -226,37 +123,37 @@
     (available only to members):
   </div>
   <div class="ms-1">
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.include_name_in_membership_directory}}
+    <div class="form-check">
+      <label class="form-check-label">
         Name
       </label>
+      {{form.include_name_in_membership_directory | add_classes:"form-check-input"}}
       {{form.include_name_in_membership_directory.errors}}
     </div>
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.include_email_in_membership_directory}}
+    <div class="form-check">
+      <label class="form-check-label">
         Email
       </label>
+      {{form.include_email_in_membership_directory | add_classes:"form-check-input"}}
       {{form.include_email_in_membership_directory.errors}}
     </div>
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.include_address_in_membership_directory}}
+    <div class="form-check">
+      <label class="form-check-label">
         Address
       </label>
+      {{form.include_address_in_membership_directory | add_classes:"form-check-input"}}
       {{form.include_address_in_membership_directory.errors}}
     </div>
-    <div class="input-wrapper">
-      <label class="label">
-        {{form.include_phone_in_membership_directory}}
+    <div class="form-check">
+      <label class="form-check-label">
         Phone number
       </label>
+      {{form.include_phone_in_membership_directory | add_classes:"form-check-input"}}
       {{form.include_phone_in_membership_directory.errors}}
     </div>
   </div>
 
-  <p class="mt-3">
+  <div class="mt-3">
     The VdGSA is committed to protecting your privacy. <br>
     The information we collect is for the purpose of providing you with the goods and
     services we offer. <br>
@@ -264,7 +161,7 @@
     <a href="https://public.vdgsa.org/privacy-policy" target="_blank">
       Read our full privacy policy here.
     </a>
-  </p>
+  </div>
 </fieldset>
 
 <script>

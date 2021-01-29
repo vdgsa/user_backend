@@ -11,7 +11,14 @@
 
 <form method="post">
   {% csrf_token %}
-  {% include 'utils/form_body.tmpl' with form=form %}
+
+  <div class="row mt-3">
+    <div class="col-sm-6">
+      {% include 'utils/form_field.tmpl' with field=form.email label='Email'%}
+    </div>
+  </div>
+
+  {% include 'required_contact_info_form.tmpl' with form=form %}
 
   {% if username_taken %}
   <div id="username-taken-msg">

@@ -1,0 +1,37 @@
+<div class="row">
+  <div class="col-sm mt-2">
+    {% include 'utils/form_field.tmpl' with field=form.first_name label='First Name' %}
+  </div>
+
+  <div class="col-sm mt-2">
+    {% include 'utils/form_field.tmpl' with field=form.last_name label='Last Name' %}
+  </div>
+</div>
+
+<div class="mt-4">
+  {% include 'utils/form_field.tmpl' with field=form.address_line_1 label='Address Line 1' %}
+</div>
+
+<div class="mt-2">
+  {% include 'utils/form_field.tmpl' with field=form.address_line_2 label='Address Line 2 (Optional)' %}
+</div>
+
+<div class="row">
+  <div class="col-sm mt-2">
+    {% include 'utils/form_field.tmpl' with field=form.address_city label='City' %}
+  </div>
+
+  <div class="col-sm mt-2">
+    {% include 'utils/form_field.tmpl' with field=form.address_state label='State/Province' %}
+  </div>
+
+  <div class="col-sm mt-2">
+    {% include 'utils/form_field.tmpl' with field=form.address_postal_code label='ZIP/Postal Code' %}
+  </div>
+</div>
+
+<div class="row mt-2">
+  <div class="col-sm-4">
+    {% include 'utils/form_field.tmpl' with field=form.address_country label='Country' %}
+  </div>
+</div>

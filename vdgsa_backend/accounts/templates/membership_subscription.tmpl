@@ -1,11 +1,11 @@
 {% load filters %}
 
-<h3 id="membership-header">
+<h2 id="membership-header">
   {% if user.subscription is None %}
   Pay For Your
   {% endif %}
   Membership
-</h3>
+</h2>
 
 {% if user.subscription is not None and user.subscription.owner != user %}
 <div id="family-member-msg">
@@ -62,7 +62,7 @@
   {% csrf_token %}
   {% include 'utils/form_body.tmpl' with form=form %}
 
-  <div class="redirect-info-msg mb-2">
+  <div class="redirect-info-msg my-2">
     Clicking "Checkout" will redirect you to Stripe. <br>
     Please enter your payment info there.
   </div>
@@ -71,7 +71,7 @@
   <button
     id="hide-purchase-subscription"
     type="button"
-    class="btn btn-light"
+    class="btn cancel-button"
     data-bs-toggle="collapse"
     data-bs-target="#purchase-subscription-form"
     aria-controls="purchase-subscription-form"
@@ -100,11 +100,17 @@
         {% csrf_token %}
         <input type="hidden" value="{{member.username}}" name="username">
 
-        <div class="input-group input-group-sm mb-2">
-          <span class="input-group-text family-member-name">
-            {{member | show_name_and_email}}
-          </span>
-          <button type="submit" class="btn btn-danger">Remove</button>
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+              <input
+                disabled
+                class="form-control family-member-name"
+                value="{{member | show_name_and_email}}"
+              >
+              <button type="submit" class="btn btn-danger">Remove</button>
+            </div>
+          </div>
         </div>
       </form>
     </li>
@@ -117,16 +123,21 @@
         action="{% url 'add-family-member' pk=user.subscription.pk %}"
       >
         {% csrf_token %}
-        <div id="add-family-member-input-wrapper" class="input-wrapper">
-          <input
-            type="email"
-            name="username"
-            type="email"
-            required
-            autocomplete="off"
-            placeholder="Email"
-          >
-          <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        <div id="add-family-member-input-wrapper" class="row">
+          <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+              <input
+                type="email"
+                name="username"
+                type="email"
+                class="form-control"
+                required
+                autocomplete="off"
+                placeholder="Email"
+              >
+              <button type="submit" class="btn btn-primary btn-sm">Add</button>
+            </div>
+          </div>
         </div>
       </form>
     </li>
