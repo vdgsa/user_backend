@@ -75,7 +75,7 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
         self.login_as(self.membership_secretary, dest_url=f'/accounts/profile/{self.user.pk}/')
         self.assertEqual(
             self.user.username,
-            self.selenium.find_element_by_id('current-username').text
+            self.selenium.find_element_by_id('current-username').get_attribute('value')
         )
 
     def test_non_membership_secretary_cannot_view_other_users_profile(self) -> None:
@@ -96,7 +96,7 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
 
         self.login_as(self.user, password=new_password)
         self.assertEqual(
-            self.selenium.find_element_by_id('current-username').text,
+            self.selenium.find_element_by_id('current-username').get_attribute('value'),
             self.user.username
         )
 
@@ -114,7 +114,7 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
 
         self.login_as(self.membership_secretary, password=new_password)
         self.assertEqual(
-            self.selenium.find_element_by_id('current-username').text,
+            self.selenium.find_element_by_id('current-username').get_attribute('value'),
             self.membership_secretary.username
         )
 

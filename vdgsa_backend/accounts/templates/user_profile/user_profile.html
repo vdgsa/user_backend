@@ -115,7 +115,7 @@ $().ready(function() {
       }
 
       if (response_data.extra_data.new_username) {
-        $('#current-username').text(response_data.extra_data.new_username);
+        $('#current-username').val(response_data.extra_data.new_username);
       }
 
       $('#id_new_email').val('');
@@ -271,7 +271,7 @@ function setup_ajax_submit(
 {% block page_style %}
 <style>
   #valid-until-timestamp {
-    color: seagreen;
+    color: hsl(357, 65%, 37%);
     font-weight: bold;
   }
 </style>

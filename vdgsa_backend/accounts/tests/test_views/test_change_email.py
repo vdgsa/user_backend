@@ -6,6 +6,7 @@ from django.core import mail
 from django.test import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
+from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import (
     ChangeEmailRequest, MembershipSubscription, MembershipType, User
@@ -69,7 +70,10 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
         self.selenium.get(change_email_confirm_url)
 
         # Redirected to user profile page, check that email was changed
-        self.assertEqual(self.selenium.find_element_by_id('current-username').text, new_email)
+        self.assertEqual(
+            self.selenium.find_element_by_id('current-username').get_attribute('value'),
+            new_email
+        )
         self.user.refresh_from_db()
         self.assertEqual(new_email, self.user.username)
         self.assertEqual(new_email, self.user.email)
@@ -97,7 +101,10 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
         ).click()
 
         # Email change happens immediately
-        self.assertEqual(self.selenium.find_element_by_id('current-username').text, new_email)
+        self.assertEqual(
+            self.selenium.find_element_by_id('current-username').get_attribute('value'),
+            new_email
+        )
         self.user.refresh_from_db()
         self.assertEqual(new_email, self.user.username)
         self.assertEqual(new_email, self.user.email)
