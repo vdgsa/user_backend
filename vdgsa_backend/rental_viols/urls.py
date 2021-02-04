@@ -17,9 +17,11 @@ urlpatterns = [
 
     path('viols/', views.ViolsMultiListView.as_view(), name='list-viols'),
     path('viols/add/', views.AddViolView.as_view(), name='add-viol'),
+    path('viol/attach/', views.AttachToViolView.as_view(), name='viol-attach'),
+    path('viol/detach/', views.DetachFromViolView.as_view(), name='viol-detach'),
     path('viols/<int:pk>/', views.ViolDetailView.as_view(), name='viol-detail'),
-    path('viol/<int:pk>/', views.UpdateViolView.as_view(), name='viol-update'),
+    path('viol/update/<int:pk>/', views.UpdateViolView.as_view(), name='viol-update'),
 
-    path('renters/', views.RentalHomeView.as_view(), name='list-renters'),
-    path('waiting/', views.RentalHomeView.as_view(), name='list-waiting'),
+    path('renters/', views.ListRentersView.as_view(), name='list-renters'),
+    path('waiting/', views.ListWaitingView.as_view(), name='list-waiting'),
 ]

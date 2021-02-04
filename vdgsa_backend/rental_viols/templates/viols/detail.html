@@ -1,9 +1,100 @@
 {% extends '../rentals.html' %}
-
+{% load rental_tags %}
 {% block content %}
 
-<p>Viol detail</p>
- <button class="btn btn-success" onclick="location.href='{% url 'viol-update' object.viol_num%}'">Update</button>
-{{object}} 
+
+<div class="card">
+<div class="card-body">
+  <div className="buttonbar-ctr d-flex justify-content-around ">
+    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Rent out</a> 
+    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Reserve</a> 
+    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Retire</a> 
+    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Renew rental</a> 
+    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Return from rental</a> 
+    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" > Make available</a> 
+    <a href="{% url 'viol-update' object.viol_num %}" class="btn btn-success" >Edit</a> 
+ </div> </div> </div>
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      <p class="h3">{{object}}</p>
+    </div>
+  </div>
+
+  
+
+  {% instrument_detail object %}
+  <div class="row">
+    <div class="col">
+     
+     {% if not object.cases.all %}
+      <a href="{% url 'viol-attach' %}?viol_num={{ object.viol_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+     {% endif%}
+     {% for case in object.cases.all %}
+      <div>
+        <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Case</h5>
+          <p class="card-text">
+            <a href="{% url 'case-detail' case.case_num %}"> {{ case }} </a>
+          </p>
+          <a href="{% url 'viol-detach' %}?case_num={{ case.case_num }}&viol_num={{ object.viol_num }}" class="btn btn-outline-danger btn-sm float-end" >Detach from viol</a> 
+    
+        </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+    <div class="col">
+      {% if not object.bows.all %}
+        <a href="{% url 'viol-attach' %}?viol_num={{ object.viol_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
+      {% endif%}
+      {% for bow in object.bows.all %}
+      <div>
+          <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Bow</h5>
+            <p class="card-text">
+              <a href="{% url 'bow-detail' bow.bow_num %}"> {{ bow }} </a>
+            </p>
+            <a href="{% url 'viol-detach' %}?bow_num={{ bow.bow_num }}&viol_num={{ object.viol_num }}" class="btn btn-outline-danger btn-sm float-end" >Detach from viol</a> 
+    
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+  </div>
+
+
+{% comment %} 
+  <div class="row">
+    <div class="col">
+      1 of 3
+    </div>
+    <div class="col">
+      2 of 3
+    </div>
+    <div class="col">
+      3 of 3
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <p class="h3"></p>
+    </div>
+  </div>
+   {% endcomment %}
+</div>
+
+
+
+
+
+
+
+{% history_table object.history %}
 
 {% endblock %}

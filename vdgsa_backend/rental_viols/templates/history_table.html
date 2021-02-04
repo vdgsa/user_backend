@@ -1,0 +1,32 @@
+<div class="card mt-3">
+<div class="card-body"> 
+  History
+  {% if history.all %}
+
+  <table class="table">
+  <tr>
+    <th>Event</th>
+    <th>Viol</th>
+    <th>Bow</th>
+    <th>Case</th>
+    <th>Renter</th>
+    <th>Rental Start</th>
+    <th>Rental End</th>
+  </tr>
+  {% for event in history.all %}
+  <tr>
+    <td>{{ event.event }}</td>
+    <td>{{ event.viol_num }}</td>
+    <td>{{ event.bow_num }}</td>
+    <td>{{ event.case_num }}</td>
+    <td>{{ event.renter_num }}</td>
+    <td>{{ event.rental_start }}</td>
+    <td>{{ event.rental_end }}</td>
+  </tr>
+  {% endfor %}
+  </table>
+  {% else %}
+  None found
+  {% endif  %}
+</div>
+</div>

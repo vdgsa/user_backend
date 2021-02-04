@@ -1,6 +1,8 @@
 {% extends '../rentals.html' %}
 
 {% block content %}
+
+<p>Case update</p>
 <form id="add-vsdr-form" method="post" action="{% url 'case-update' object.case_num %}">
   {% csrf_token %} {% include 'utils/form_body.tmpl' with form=form %}
 

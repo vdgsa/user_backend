@@ -1,5 +1,33 @@
 {% extends '../rentals.html' %}
+{% load rental_tags %}
 {% block content %}
 <p>Bow detail</p>
- <button class="btn btn-success" onclick="location.href='{% url 'bow-update' object.bow_num %}'">Update</button>
-{{object}} {% endblock %}
+
+<div>
+    {% if object.viol_num %}
+    <a href="{% url 'viol-detach' %}?bow_num={{ object.bow_num }}&viol_num={{ object.viol_num.viol_num }}" class="btn btn-success" >Detach from viol</a> 
+    {% else %}
+    <a href="{% url 'viol-attach' %}?bow_num={{ object.bow_num }}" class="btn btn-success" >Attach to viol</a> 
+    {% endif %}
+    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" disabled>Retire</a> 
+    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" disabled>Unretire</a> 
+    <a href="{% url 'case-update' object.bow_num %}" class="btn btn-success" >Edit</a> 
+</div>
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      <p class="h3">{{object}}</p>
+    </div>
+  </div>
+
+  
+
+  {% instrument_detail object %}
+</div>
+<div>
+    Attached to Viol: {{object.viol_num}} 
+</div>
+
+{% history_table object.history %}
+
+{% endblock %}

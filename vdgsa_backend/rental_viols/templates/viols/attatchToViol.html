@@ -1,0 +1,35 @@
+{% extends '../rentals.html' %}
+
+{% block content %}
+
+
+
+{% if case %}<div>{{ case }}</div>{% endif %}
+{% if bow %}<div>{{ bow }}</div>{% endif %}
+
+<hr>
+
+<p>Select Viol </p>
+<form method="post" action="{% url 'viol-attach' %}">
+  {% csrf_token %}
+  <input type='hidden' name="bow_num" value="{{ bow.bow_num }}"/>
+  <input type='hidden' name="case_num" value="{{ case.case_num }}"/>
+  <div class="form-row">
+    <div class="form-group col-md-6">
+      <select class="form-control" name="viol_num" id="filter">
+        {% for v in viols %}
+        <option value="{{v.pk}}">{{v}}</option>
+        {% endfor %}
+   
+      </select>
+    </div>
+  </div>
+</div>
+<div class="form-row">    
+  <input  class="btn btn-success"  type="submit" value="Attach">
+</div>
+</form>
+
+
+
+{% endblock %}

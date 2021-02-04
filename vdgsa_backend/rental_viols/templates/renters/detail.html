@@ -1,5 +1,11 @@
 {% extends '../rentals.html' %}
-
+{% load rental_tags %}
 {% block content %}
 <p>Viol detail</p>
-{{object}} {% endblock %}
+<div>Edit | Add to waiting list | Deactivate</div>
+
+{{object}} 
+
+{% history_table object.history %}
+
+{% endblock %}

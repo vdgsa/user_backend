@@ -1,11 +1,9 @@
 from __future__ import annotations
 from django.db import models
 from django.db.models.enums import TextChoices
-
 from django.utils import timezone
-
 from vdgsa_backend.accounts.models import User
-from vdgsa_backend.rental_viols.managers.InstrumentManager import InstrumentManager
+from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
 
 
 class RentalProgram(TextChoices):
@@ -19,6 +17,18 @@ class RecordStatus(TextChoices):
     deleted = 'deleted'
 
 
+class RentalEvent(TextChoices):
+    attached = 'attached'
+    detached = 'detached'
+    reserved = 'reserved_for'
+    rented = 'rented'
+    retired = 'retired'
+    returned = 'returned'
+
+    # shipped = 'shipped; ?
+    # invoiced = 'invoiced' ? if we integrate stripe payment
+
+
 class ViolSize(TextChoices):
     pardessus = 'pardessus'
     treble = 'treble'
@@ -30,6 +40,18 @@ class ViolSize(TextChoices):
 
 
 class RentalItemBase(models.Model):
+    """
+    Contains common fields for database hygiene
+    """
+    class Meta:
+        abstract = True
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+    status = models.TextField(choices=RecordStatus.choices, default=RecordStatus.active)
+
+
+class RentalItemInstrument(RentalItemBase):
     """
     Contains common fields used in Viol, Case, and Bow
     """
@@ -48,67 +70,57 @@ class RentalItemBase(models.Model):
     storer = models.ForeignKey(
         User, blank=True, null=True, default=None, on_delete=models.SET_NULL, related_name='+')
     program = models.TextField(choices=RentalProgram.choices, default=RentalProgram.regular)
-    created_at = models.DateTimeField(auto_now_add=True)
-    last_modified = models.DateTimeField(auto_now=True)
-    status = models.TextField(choices=RecordStatus.choices, default=RecordStatus.active)
 
 
-class Viol(RentalItemBase):
+class Viol(RentalItemInstrument):
     viol_num = models.AutoField(primary_key=True)
-
     strings = models.PositiveIntegerField(blank=True)
-
-    # TODO: Either 1) convert the legacy data to use the inherited "value" field
-    # or 2) after populating the legacy data, copy from "inst_value" to "value" and
-    # then remove "inst_value"
-    inst_value = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-
     renter = models.ForeignKey(
         User, on_delete=models.SET_NULL, blank=True, null=True, default=None, related_name='+')
 
-    objects = InstrumentManager()
+    objects = ViolManager()
 
     def __str__(self) -> str:
         return (
-            f'Viol {self.viol_num}: {self.size}, {self.maker} '
-            f'{self.description}'
+            f'Viol {self.vdgsa_number}: {self.size}, by: {self.maker} '
         )
 
     def get_absolute_url(self):
         return u'/rentals/viols/%d' % self.viol_num
 
 
-class Bow(RentalItemBase):
+class Bow(RentalItemInstrument):
     bow_num = models.AutoField(primary_key=True)
-
     viol_num = models.ForeignKey(
         'Viol', db_column='viol_num',
         on_delete=models.SET_NULL, blank=True, null=True, default=None,
         related_name='bows'
     )
 
+    objects = AccessoryManager()
+
     def __str__(self) -> str:
         return (
-            f'Viol {self.viol_num}: {self.size}, {self.maker} '
-            f'{self.description}'
+            f'Bow: {self.vdgsa_number}: {self.size}, by:  {self.maker} '
         )
 
     def get_absolute_url(self):
         return u'/rentals/bows/%d' % self.bow_num
 
 
-class Case(RentalItemBase):
+class Case(RentalItemInstrument):
     case_num = models.AutoField(primary_key=True)
-
     viol_num = models.ForeignKey(
         'Viol', db_column='viol_num',
         on_delete=models.SET_NULL, blank=True, null=True, default=None,
         related_name='cases'
     )
 
+    objects = AccessoryManager()
+
     def __str__(self) -> str:
         return (
-            f'{self.case_num} : {self.size} {self.maker} '
+            f'Case: {self.vdgsa_number} : {self.size}, by:  {self.maker} '
         )
 
     def get_absolute_url(self):
@@ -142,9 +154,9 @@ class RentalContract(models.Model):
     original_name = models.CharField(max_length=100, blank=True, null=True)
 
 
-class WaitingList(models.Model):
+class WaitingList(RentalItemBase):
     class Meta:
-        ordering = ('entry_num',)
+        ordering = ('-entry_num',)
 
     entry_num = models.AutoField(primary_key=True)
     renter_num = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -161,23 +173,28 @@ class WaitingList(models.Model):
         )
 
 
-class RentalHistory(models.Model):
+class RentalHistory(RentalItemBase):
     entry_num = models.AutoField(primary_key=True)
     viol_num = models.ForeignKey(
         Viol, db_column='viol_num',
-        on_delete=models.SET_NULL, blank=True, null=True
+        on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='history'
     )
     bow_num = models.ForeignKey(
         Bow, db_column='bow_num',
-        on_delete=models.SET_NULL, blank=True, null=True
+        on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='history'
     )
     case_num = models.ForeignKey(
         Case, db_column='case_num',
-        on_delete=models.SET_NULL, blank=True, null=True
+        on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='history'
     )
-    renter_num = models.ForeignKey(User, on_delete=models.PROTECT)
-    event = models.TextField(blank=True, null=True)
-    date = models.DateField(blank=True, null=True)
+    renter_num = models.ForeignKey(User, blank=True, null=True,
+                                   default=None, on_delete=models.SET_NULL, related_name='+')
+
+    event = models.TextField(choices=RentalEvent.choices)
+    # date = models.DateField(blank=True, null=True) in RentalItemBase
     notes = models.TextField(blank=True, null=True)
     rental_start = models.DateField(blank=True, null=True)
     rental_end = models.DateField(blank=True, null=True)
@@ -185,22 +202,5 @@ class RentalHistory(models.Model):
 
     def __str__(self) -> str:
         return (
-            f'{self.entry_num}: {self.renter_num.lastname}, {self.viol_num.maker} '
-        )
-
-
-# See https://stackoverflow.com/a/37988537
-# This class is used to define our custom permissions.
-class RentalPermissions(models.Model):
-    class Meta:
-        # No database table creation or deletion
-        # operations will be performed for this model.
-        managed = False
-        # disable "add", "change", "delete"
-        # and "view" default permissions
-        default_permissions = ()
-
-        # Our custom permissions.
-        permissions = (
-            ('rental_manager', 'Rental Manager'),
+            f'{self.entry_num}: {self.event} '
         )

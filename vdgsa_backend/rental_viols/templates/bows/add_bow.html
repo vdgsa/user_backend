@@ -3,6 +3,7 @@
  
 {% block content %}
 
+<p>Add Bows</p>
 <form id="add-bow-form" method="post" action="{% url 'add-bow' %}">
   {% csrf_token %}
   {% include 'utils/form_body.tmpl' with form=form %}
