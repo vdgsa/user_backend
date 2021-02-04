@@ -1,0 +1,43 @@
+{% block rental_nav %}
+<nav class="navbar bg-light">
+   <ul class="navbar-nav">
+      <li class="nav-item mx-2"><a class="nav-link" id="viols-link" href="{% url 'list-viols' %}">Viols</a></li>
+      <li class="nav-item mx-2"><a class="nav-link" id="bows-link" href="{% url 'list-bows' %}">Bows</a></li>
+      <li class="nav-item mx-2"><a class="nav-link" id="cases-link" href="{% url 'list-cases' %}">Cases</a></li>
+      
+      <li class="nav-item mx-2"><a class="nav-link" id="renters-link" href="{% url 'list-renters' %}">Renters</a></li>
+      <li class="nav-item mx-2"><a class="nav-link" id="waiting-link" href="{% url 'list-waiting' %}">Waiting List</a></li>
+    </ul>
+</nav>
+{% comment %} 
+--Original application menu
+Viols
+  Show available viols
+  Show rented and reserved viols
+  Show all other viols
+  Show all viols
+  Add a viol
+Bows
+  Show unattached bows
+  Show attached bows
+  Show all bows
+  Add a bow
+Cases
+  Show unattached cases
+  Show attached cases
+  Show all cases
+  Add a case
+Waiting List
+  Show waiting list
+Renters
+  Show all renters
+  Add a renter
+Custodians
+  Show all custodians
+  Add a custodian
+Admin
+  Backup
+  Log out
+{% endcomment %} 
+
+{% endblock %}

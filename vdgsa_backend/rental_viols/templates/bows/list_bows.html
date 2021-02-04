@@ -1,0 +1,32 @@
+{% extends '../rentals.html' %}
+
+{% block content %}
+
+ <button class="btn btn-success" onclick="location.href='{% url 'add-bow' %}'">Add Bow</button>
+<table id="bow-table" class="table table-striped">
+  <thead>
+    <tr>
+      <td>Bow VdGSA number</td>
+      <td>Size</td>
+      <td>Maker</td>
+      <td>Bow Program</td>
+      <td>Attached to (viol)</td>
+      <td>Viol Program</td>
+      <td>State</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for bow in object_list %}
+    <tr>
+      <td><a href="{% url 'bow-detail' pk=bow.pk %}">{{bow.vdgsa_number}}</a></td>
+      <td>{{bow.size}}</td>
+      <td>{{bow.maker}}</td>
+      <td>{{bow.program}}</td>
+      <td>{{bow.viol_num}}</td>
+      <td>{{bow.viol_num.program | default_if_none:""}}</td>
+      <td>{{bow.state}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

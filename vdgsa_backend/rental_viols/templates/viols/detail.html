@@ -1,0 +1,9 @@
+{% extends '../rentals.html' %}
+
+{% block content %}
+
+<p>Viol detail</p>
+ <button class="btn btn-success" onclick="location.href='{% url 'viol-update' object.viol_num%}'">Update</button>
+{{object}} 
+
+{% endblock %}

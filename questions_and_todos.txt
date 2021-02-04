@@ -1,0 +1,40 @@
+- "managers" (used for site access, but we will remove), "renters" and "storers" in db: "storers"="custodian"?
+
+- Do viol custodians have to be society members? (yes is easier)
+    - Waiting list: do they have to be members? (yes is easier)
+    - Probable answer: They just need an account (which is free), then the
+      rental manager can check their membership on the memsec page
+- How do you add someone to the waiting list?
+- How detailed event history do we need?
+    - Rented out: yes
+    - Returned: yes
+    - Reserved: do we care about this?
+    - Made available: do we care about this? is this "unreserving"
+- What really is the difference between "rented" and "reserved"? Whether they have to pay money for it?
+- What is "select reserve"?
+- What does it mean for a renter to be "active"?
+- Are business rules different for consort loan? (probably not)
+
+TODOS:
+- Allow rental_manager users to access read-only memsec directory
+- James: set up filesystem image storage
+- "Viols" pages
+- "Cases" pages
+- Waiting list
+- List of current renters
+- Add "reserved_for" one to one from Viol to User
+- Add "is_retired" field to bow, case, viol
+- "Rent out" form (create RentalHistory view)
+- "Make available" endpoint/"event"
+- Make "event" in rental history use TextChoices
+- "ScanFiles" (rename) is a scan the rental contract
+    - first opportunity to upload after submitting the rental
+    - Can't figure out where to add the contract later
+        - Make contract required part of the "rent out" form?
+
+OTHER
+- On current site, adding to waiting list for specific viol doesn't work (always does "any")
+    - Just have one button, make the specific viol list nullable, with null option displayed as "any"
+
+Nice things
+- way to go straight from waiting list to rental

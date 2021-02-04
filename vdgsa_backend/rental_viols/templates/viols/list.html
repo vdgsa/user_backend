@@ -1,0 +1,46 @@
+{% extends '../rentals.html' %}
+
+{% block content %}
+
+<div>
+<form method="get" action="{% url 'list-viols' %}">
+  <div class="form-row">
+    <div class="form-group col-md-6">
+      <select class="form-control" name="filter" id="filter" onchange="javascript:this.form.submit()">
+        <option value="available"{% ifequal 'available' request.GET.filter  %}selected{% endifequal %}>Available</option>
+        <option value='rented' {% ifequal 'rented' request.GET.filter  %}selected{% endifequal %}>Rented</option>
+        <option value='all' {% ifequal 'all' request.GET.filter  %}selected{% endifequal %}>All</option>
+      </select>
+    </div>
+  </div>
+</form>
+</div>
+ <button class="btn btn-success" onclick="location.href='{% url 'add-viol' %}'">Add</button>
+
+<table id="viol-table" class="table table-striped">
+  <thead>
+    <tr>
+      <td>VdGSA number</td>
+      <td>Size</td>
+      <td># Strings</td>
+      <td>Maker</td>
+      <td>Program</td>
+      <td>State</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in object_list %}
+    <tr>
+      <td>
+        <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+      </td>
+      <td>{{item.size}}</td>
+      <td>{{item.strings}}</td>
+      <td>{{item.maker}}</td>
+      <td>{{item.program}}</td>
+      <td>{{item.state}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

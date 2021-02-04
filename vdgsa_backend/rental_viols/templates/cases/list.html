@@ -1,0 +1,34 @@
+{% extends '../rentals.html' %}
+
+{% block content %}
+
+ <button class="btn btn-success" onclick="location.href='{% url 'add-case' %}'">Add Case</button>
+<table id="viol-table" class="table table-striped">
+  <thead>
+    <tr>
+      <td>VdGSA number</td>
+      <td>Size</td>
+      <td>Value</td>
+      <td>Maker</td>
+      <td>Program</td>
+      <td>State</td>
+      <td>Storer</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in object_list %}
+    <tr>
+      <td>
+        <a href="{% url 'case-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+      </td>
+      <td>{{item.size}}</td>
+      <td>{{item.value}}</td>
+      <td>{{item.maker}}</td>
+      <td>{{item.program}}</td>
+      <td>{{item.state}}</td>
+      <td>{{item.storer}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

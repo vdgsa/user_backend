@@ -1,0 +1,6 @@
+{% extends '../rentals.html' %}
+
+{% block content %}
+<p>Case detail</p>
+ <button class="btn btn-success" onclick="location.href='{% url 'case-update' object.case_num %}'">Update</button>
+{{object}} {% endblock %}
