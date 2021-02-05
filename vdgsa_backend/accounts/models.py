@@ -49,12 +49,14 @@ class User(AbstractUser):
     is_teacher = models.BooleanField(default=False)
     is_remote_teacher = models.BooleanField(default=False)
     teacher_description = models.TextField(max_length=250, blank=True)
+    educational_institution_affiliation = models.CharField(max_length=255, blank=True)
+    website = models.CharField(max_length=255, blank=True)
     is_instrument_maker = models.BooleanField(default=False)
     is_bow_maker = models.BooleanField(default=False)
     is_repairer = models.BooleanField(default=False)
     is_publisher = models.BooleanField(default=False)
     other_commercial = models.CharField(max_length=255, blank=True)
-    educational_institution_affiliation = models.CharField(max_length=255, blank=True)
+    commercial_description = models.CharField(max_length=50, blank=True)
 
     do_not_email = models.BooleanField(default=False)
 
