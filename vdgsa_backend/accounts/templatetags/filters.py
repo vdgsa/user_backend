@@ -1,10 +1,12 @@
 from typing import Any, Optional
-from django.utils.safestring import SafeText
 
 import pytz
 from django import template
 from django.forms import BoundField
+from django.http.request import HttpRequest
+from django.urls.base import reverse
 from django.utils import timezone
+from django.utils.safestring import SafeText
 
 from vdgsa_backend.accounts.models import User
 
@@ -40,6 +42,10 @@ def add_classes(field: BoundField, classes: str) -> SafeText:
     Example usage: {{form.some_field | add_classes:"form-control"}}
     """
     return field.as_widget(attrs={'class': field.css_classes(classes)})  # type: ignore
+
+
+def current_page_is_my_account_page(request: HttpRequest) -> bool:
+    return request.path == reverse('user-profile', kwargs={'pk': request.user.pk})
 
 
 @register.simple_tag
@@ -96,3 +102,4 @@ register.filter('show_name', show_name)
 register.filter('show_name_and_email', show_name_and_email)
 register.filter('introspect', introspect)
 register.filter('add_classes', add_classes)
+register.filter('current_page_is_my_account_page', current_page_is_my_account_page)
