@@ -1,4 +1,5 @@
 from unittest.case import skip
+
 from django.test import LiveServerTestCase, TestCase
 
 
