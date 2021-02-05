@@ -20,6 +20,7 @@ from .selenium_test_base import SeleniumTestCaseBase
 class _TestData(Protocol):
     users: List[User]
     num_users: int
+    num_active_users: int
     membership_secretary: User
 
     user0_expired_subscription: MembershipSubscription
@@ -29,6 +30,8 @@ class _TestData(Protocol):
 
 def _test_data_init(test_obj: _TestData) -> None:
     test_obj.num_users = 10
+    # UPDATE ME if you change the MembershipSubscription objects
+    test_obj.num_active_users = 2
     test_obj.users = [
         User.objects.create_user(
             username=f'user{i}@waa.com',
@@ -71,6 +74,7 @@ def _test_data_init(test_obj: _TestData) -> None:
 class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
     users: List[User]
     num_users: int
+    num_active_users: int
     membership_secretary: User
 
     user0_expired_subscription: MembershipSubscription
@@ -117,10 +121,50 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
         self.assertEqual('', user7_subscription_cells[5].text)  # membership expires
 
     def test_active_users_only(self) -> None:
-        self.fail()
+        self.login_as(self.membership_secretary, dest_url='/accounts/directory/')
+        user_rows = self.selenium.find_elements_by_class_name('user-row')
+        self.assertEqual(self.num_active_users, len(user_rows))
+
+        cells = user_rows[0].find_elements_by_css_selector('td')
+        self.assertEqual(self.users[4].last_name, cells[0].text)  # last name
+        self.assertEqual(self.users[4].first_name, cells[1].text)  # first name
+        self.assertEqual(self.users[4].username, cells[2].text)  # email
+
+        cells = user_rows[1].find_elements_by_css_selector('td')
+        self.assertEqual(self.users[7].last_name, cells[0].text)  # last name
+        self.assertEqual(self.users[7].first_name, cells[1].text)  # first name
+        self.assertEqual(self.users[7].username, cells[2].text)  # email
 
     def test_navigation_between_all_and_active_users(self) -> None:
-        self.fail()
+        self.login_as(self.membership_secretary, dest_url='/accounts/directory/')
+        user_rows = self.selenium.find_elements_by_class_name('user-row')
+        self.assertEqual(self.num_active_users, len(user_rows))
+
+        wait = WebDriverWait(self.selenium, 5)
+
+        self.selenium.find_element_by_id('all-users-toggle-link').click()
+        wait.until(
+            lambda _: (
+                len(self.selenium.find_elements_by_class_name('user-row'))
+                == self.num_users
+            )
+        )
+
+        self.selenium.find_element_by_id('all-users-toggle-link').click()
+        wait.until(
+            lambda _: (
+                len(self.selenium.find_elements_by_class_name('user-row'))
+                == self.num_active_users
+            )
+        )
+
+        self.selenium.find_element_by_id('all-users-toggle-link').click()
+        wait.until(
+            lambda _: (
+                len(self.selenium.find_elements_by_class_name('user-row'))
+                == self.num_users
+            )
+        )
 
     def test_filter_text(self) -> None:
         self.login_as(self.membership_secretary, dest_url='/accounts/directory/?all_users=true')
@@ -204,6 +248,7 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
 class DownloadMembersSpreadsheetTestCase(TestCase):
     users: List[User]
     num_users: int
+    num_active_users: int
     membership_secretary: User
 
     user0_expired_subscription: MembershipSubscription
@@ -248,7 +293,22 @@ class DownloadMembersSpreadsheetTestCase(TestCase):
         self.assertEqual('', grid[7][4])  # membership expires
 
     def test_download_active_only(self) -> None:
-        self.fail()
+        self.client.force_login(self.membership_secretary)
+        response = self.client.get(reverse('all-users-csv'))
+
+        with tempfile.TemporaryFile('w+') as f:
+            f.write(response.content.decode())
+            f.seek(0)
+            reader = csv.reader(f)
+            grid = [row[1:] for row in list(reader)[1:]]
+
+        self.assertEqual(self.users[4].last_name, grid[0][0])  # last name
+        self.assertEqual(self.users[4].first_name, grid[0][1])  # first name
+        self.assertEqual(self.users[4].username, grid[0][2])  # email
+
+        self.assertEqual(self.users[7].last_name, grid[1][0])  # last name
+        self.assertEqual(self.users[7].first_name, grid[1][1])  # first name
+        self.assertEqual(self.users[7].username, grid[1][2])  # email
 
     def test_download_all_non_membership_secretary_permission_denied(self) -> None:
         self.client.force_login(self.users[0])
