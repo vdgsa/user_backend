@@ -83,6 +83,6 @@ a:active {
     color: black;
 }
 
-.form-control {
+.form-control, .form-control-sm, .form-control-lg {
     border-radius: 0!important;
 }

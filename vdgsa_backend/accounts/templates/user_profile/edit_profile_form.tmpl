@@ -43,30 +43,10 @@
 </fieldset>
 
 <fieldset class="mt-3">
-  <legend>Please check or fill in all that apply to you</legend>
-  <div class="input-group mb-3">
-    {% include 'utils/form_field.tmpl' with field=form.is_young_player label='I identify as a young player' %}
-  </div>
+  <legend>Affiliations</legend>
+  {% include 'utils/form_field.tmpl' with field=form.is_young_player label='I identify as a young player' %}
 
-  <div class="input-group">
-    {% include 'utils/form_field.tmpl' with field=form.is_teacher label='I am a teaching member' %}
-  </div>
-
-  <div class="ms-4">
-    {% include 'utils/form_field.tmpl' with field=form.is_remote_teacher label='I am willing to teach online' %}
-
-    <div class="mt-2">
-      <label for="{{form.teacher_description.id_for_label}}" class="form-label">
-        Briefly describe who and what you teach
-        (<span id="teacher-description-num-chars-used">
-        </span>/{{form.fields.teacher_description.max_length}} chars)
-      </label>
-      {{form.teacher_description | add_classes:"form-control"}}
-      {{form.teacher_description.errors}}
-    </div>
-  </div>
-
-  <div class="mt-3">
+  <div class="mt-2">
     <label for="{{form.educational_institution_affiliation.id_for_label}}" class="form-label">
       If you are affiliated with an educational institution, please list it here <br>
     </label>
@@ -74,13 +54,44 @@
     {{form.educational_institution_affiliation.errors}}
   </div>
 
-  <div class="mt-3">I am a commercial member (select all that apply)</div>
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <div class="last-saved ms-2"></div>
+  </div>
+</fieldset>
+
+<fieldset class="mt-3">
+  <legend>Teachers</legend>
+
+  {% include 'utils/form_field.tmpl' with field=form.is_teacher label='I am a teaching member' %}
+  {% include 'utils/form_field.tmpl' with field=form.is_remote_teacher label='I am willing to teach online' %}
+
+  <div class="mt-2">
+    <label for="{{form.teacher_description.id_for_label}}" class="form-label">
+      Briefly describe who and what you teach
+      (<span id="teacher-description-num-chars-used">
+      </span>/{{form.fields.teacher_description.max_length}} chars)
+    </label>
+    {{form.teacher_description | add_classes:"form-control"}}
+    {{form.teacher_description.errors}}
+  </div>
+
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <div class="last-saved ms-2"></div>
+  </div>
+</fieldset>
+
+<fieldset class="mt-3">
+  <legend>Commercial Members</legend>
+
+  <div class="mt-3">Business categories (select all that apply)</div>
   <div class="ms-1">
     {% include 'utils/form_field.tmpl' with field=form.is_instrument_maker label='Instrument Maker' %}
     {% include 'utils/form_field.tmpl' with field=form.is_bow_maker label='Bow Maker' %}
     {% include 'utils/form_field.tmpl' with field=form.is_repairer label='Repairer' %}
     {% include 'utils/form_field.tmpl' with field=form.is_publisher label='Publisher' %}
-    <div>
+    <div class="d-flex align-items-center">
       <div class="form-check">
         <!-- This checkbox is just for show. -->
         <input
@@ -94,10 +105,19 @@
           Other (please specify)
         </label>
       </div>
-      <div class="ms-4">
-        {{form.other_commercial | add_classes:"form-control"}}
+      <div class="ms-2">
+        {{form.other_commercial | add_classes:"form-control form-control-sm"}}
       </div>
       {{form.other_commercial.errors}}
+    </div>
+    <div class="mt-1">
+      <label for="{{form.commercial_description.id_for_label}}" class="form-label">
+        Briefly describe your business
+        (<span id="commercial-description-num-chars-used">
+        </span>/{{form.fields.commercial_description.max_length}} chars)
+      </label>
+      {{form.commercial_description | add_classes:"form-control"}}
+      {{form.commercial_description.errors}}
     </div>
   </div>
 
@@ -165,11 +185,16 @@
 </fieldset>
 
 <script>
-$().ready(function() {
-  $('#teacher-description-num-chars-used').text($('#id_teacher_description').val().length);
+function add_char_counter(count_text_selector, input_selector) {
+  $(count_text_selector).text($(input_selector).val().length);
 
-  $('#id_teacher_description').on('input', function() {
-    $('#teacher-description-num-chars-used').text($(this).val().length);
+  $(input_selector).on('input', function() {
+    $(count_text_selector).text($(this).val().length);
   });
+}
+
+$().ready(function() {
+  add_char_counter('#teacher-description-num-chars-used', '#id_teacher_description');
+  add_char_counter('#commercial-description-num-chars-used', '#id_commercial_description');
 });
 </script>

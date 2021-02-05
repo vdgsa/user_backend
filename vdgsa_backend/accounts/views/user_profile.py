@@ -46,13 +46,15 @@ class UserProfileForm(ModelForm):
             'is_young_player',
             'is_teacher',
             'teacher_description',
+            'educational_institution_affiliation',
+            'website',
             'is_remote_teacher',
             'is_instrument_maker',
             'is_bow_maker',
             'is_repairer',
             'is_publisher',
             'other_commercial',
-            'educational_institution_affiliation',
+            'commercial_description',
 
             'do_not_email',
 
