@@ -19,6 +19,15 @@
             <td>{{item.program}}</td>
             </tr>
 
+          {% if  item.get_cname == 'Viol' %}
+            <tr>
+            <th scope="row"># Strings</th>
+            <td>{{item.strings}} </td>
+            <th scope="row">Renter</th>
+            <td>{{item.renter}}</td>
+            </tr>
+          {% endif %}
+
 
             <tr>
             <th scope="row">Size</th>

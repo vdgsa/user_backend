@@ -5,6 +5,12 @@ from . import views
 urlpatterns = [
     path('', views.RentalHomeView.as_view(), name='rentals'),
 
+
+    path('viol/rentOut/', views.RentOutView.as_view(), name='viol-rentOut'),
+    path('rental/create/', views.RentalCreateView.as_view(), name='rental-create'),
+    path('rental/submit/', views.RentalSubmitView.as_view(), name='rental-submit'),
+
+
     path('bows/', views.ListBowsView.as_view(), name='list-bows'),
     path('bows/add/', views.AddBowView.as_view(), name='add-bow'),
     path('bows/<int:pk>/', views.BowDetailView.as_view(), name='bow-detail'),
@@ -21,6 +27,8 @@ urlpatterns = [
     path('viol/detach/', views.DetachFromViolView.as_view(), name='viol-detach'),
     path('viols/<int:pk>/', views.ViolDetailView.as_view(), name='viol-detail'),
     path('viol/update/<int:pk>/', views.UpdateViolView.as_view(), name='viol-update'),
+
+
 
     path('renters/', views.ListRentersView.as_view(), name='list-renters'),
     path('waiting/', views.ListWaitingView.as_view(), name='list-waiting'),

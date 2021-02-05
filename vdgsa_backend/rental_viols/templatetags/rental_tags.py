@@ -9,7 +9,7 @@ register = template.Library()
 @register.inclusion_tag("history_table.html")
 def history_table(history):
     return {
-        "history": history,
+        "history": history.all().order_by('-created_at'),
 
     }
 

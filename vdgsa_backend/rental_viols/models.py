@@ -85,6 +85,10 @@ class Viol(RentalItemInstrument):
             f'Viol {self.vdgsa_number}: {self.size}, by: {self.maker} '
         )
 
+    def get_cname(self):
+        class_name = 'Viol'
+        return class_name
+
     def get_absolute_url(self):
         return u'/rentals/viols/%d' % self.viol_num
 
@@ -104,6 +108,10 @@ class Bow(RentalItemInstrument):
             f'Bow: {self.vdgsa_number}: {self.size}, by:  {self.maker} '
         )
 
+    def get_cname(self):
+        class_name = 'Bow'
+        return class_name
+
     def get_absolute_url(self):
         return u'/rentals/bows/%d' % self.bow_num
 
@@ -122,6 +130,10 @@ class Case(RentalItemInstrument):
         return (
             f'Case: {self.vdgsa_number} : {self.size}, by:  {self.maker} '
         )
+
+    def get_cname(self):
+        class_name = 'Case'
+        return class_name
 
     def get_absolute_url(self):
         return u'/rentals/cases/%d' % self.case_num

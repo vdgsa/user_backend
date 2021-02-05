@@ -1,6 +1,5 @@
 from functools import cached_property
-from typing import Any, Literal
-
+from typing import Any, Dict, Iterable, Literal
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -120,25 +119,52 @@ class DetachFromViolView(RentalViewBase, View):
 class RentalHomeView(RentalViewBase, TemplateView):
     template_name = 'home.html'
 
-# Rental Actions = Rent Out | Reserve (waitingList) | Return | Renew
-
 
 class RentOutView(RentalViewBase, View):
-    """get to select Renter Post to submit"""
+    """get to select Rental User"""
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
         if self.request.GET.get('viol_num'):
-            context['viol'] = Viol.objects.get(pk=viol_num)
-            context['users'] = Viol.objects.get(pk=viol_num)
+            context['viol'] = Viol.objects.get(pk=self.request.GET.get('viol_num'))
+            context['users'] = User.objects.all()
+        return render(request, 'renters/rentOut.html', context)
 
-        return render(request, 'rental/rentOut.html')
+
+class RentalCreateView(RentalViewBase, View):
+    """Create Renatal Agreement"""
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        context = {}
+        if self.request.POST.get('viol_num'):
+            context['viol'] = Viol.objects.get(pk=self.request.POST['viol_num'])
+            context['user'] = User.objects.get(pk=self.request.POST['user_id'])
+
+        return render(request, 'renters/createAgreement.html', context)
+
+
+class RentalSubmitView(RentalViewBase, View):
+    """Create Renatal Agreement"""
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
         if self.request.POST.get('viol_num'):
             viol = Viol.objects.get(pk=self.request.POST['viol_num'])
+            user = User.objects.get(pk=self.request.POST['user_id'])
 
-        return render(request, 'rental/rentOut.html')
+            print('user', user.id)
+            viol.renter = user
+            viol.save()
+            print('viol.cases.all()[0].case_num', viol.cases.all()[0].case_num)
+            ###
+            history = RentalHistoryForm(
+                {"event": RentalEvent.rented, "viol_num": viol.viol_num, "case_num": viol.cases.first().case_num,
+                 "bow_num": viol.bows.first().bow_num, "renter_num": user.id})
+            history.save()
+            print(history)
+            messages.add_message(self.request, messages.SUCCESS, 'Rented!')
+            # RentalContract scan of signed contract
+
+        return reverse('list-renters')
 
 
 # LIST VIEWS

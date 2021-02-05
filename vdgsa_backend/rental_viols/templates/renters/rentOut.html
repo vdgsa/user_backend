@@ -1,0 +1,96 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}{% load filters %}
+{% block content %}
+<p>To Rent Out 
+    {{viol}} , please select a user</p>
+
+<form id="rental-create-form" method="post" action="{% url 'rental-create' %}">
+  {% csrf_token %} 
+
+    <input type='hidden' name="viol_num" value="{{ viol.viol_num }}"/>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+        <select class="form-control" name="user_id" id="user_id">
+            {% for user in users %}
+            <option value="{{user.pk}}">{{user.username}}</option>
+            {% endfor %}
+        </select>
+        </div>
+    </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
+
+{% endblock %}
+
+{% comment %} <div id="user-table-wrapper" class="table-responsive">
+  <table id="user-table" class="table table-striped">
+    <thead>
+      <tr>
+        <td>Last Name</td>
+        <td>First Name</td>
+        <td>Email</td>
+        <td>Year Joined</td>
+        <td>Membership Type</td>
+        <td>Membership Expires</td>
+        <td>Membership is Current</td>
+        <td>Address</td>
+        <td>Phone</td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr
+        class="
+          user-row
+          {% if not user.subscription_is_current %}
+            subscription-not-current
+          {% endif %}
+          {% if not perms.accounts.membership_secretary %}
+            readonly
+          {% endif %}
+        "
+        {% if perms.accounts.membership_secretary %}
+        onclick="window.location = '{% url 'user-profile' pk=user.pk %}'"
+        {% endif %}
+      >
+        <td>{{user.last_name}}</td>
+        <td>{{user.first_name}}</td>
+        <td>{{user.username}}</td>
+        <td>{{user.subscription.years_renewed.0}}</td>
+        {% if user.subscription is not None %}
+        <td>{{user.subscription.membership_type}}</td>
+        <td class="valid-until-cell">
+          {% format_datetime user.subscription.valid_until none_ok=True %}
+        </td>
+        {% else %}
+        <td></td>
+        <td class="valid-until-cell"></td>
+        {% endif %}
+
+        <td class="subscription-is-current-cell">{{user.subscription_is_current}}</td>
+        <td>
+          {{user.address_line_1}} <br>
+          {% if user.address_line_2 %}
+          {{user.address_line_2}} <br>
+          {% endif %}
+          {{user.address_city}}, {{user.address_state}} {{user.address_postal_code}} <br>
+          {{user.address_country}}
+        </td>
+
+        <td>
+          {{user.phone1}}
+          {% if user.phone2 %}
+          <br> {{user.phone2}}
+          {{phone2}}
+          {% endif %}
+        </td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div> {% endcomment %}
+
