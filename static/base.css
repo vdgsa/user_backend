@@ -1,14 +1,25 @@
 /* Note: Fonts are loaded and set globally in base.html */
 
 #nav-links {
-    background-color: hsl(47, 96%, 63%);
+    /* This gradient gives us a fixed-height yellow stripe at the bottom of the navbar */
+    background-image: linear-gradient(
+        to top,
+        hsl(47, 96%, 63%) .5rem, /* Start w/ yellow at bottom, continue for .5rem */
+        0, /* Change to white immediately */
+        white
+    );
 }
 
 #logo {
     font-family: Amphion;
-    color: rgb(128, 128, 128);
+    color: rgb(128, 128, 128)!important;
     font-weight: bold;
-    font-size: 1.5rem;
+    font-size: 3rem;
+    line-height: 1;
+}
+
+#nav-links-container {
+    background-color: white;
 }
 
 #nav-links .nav-item {
@@ -18,6 +29,10 @@
 #nav-links .nav-item .nav-link {
     color: hsl(357, 65%, 37%);
     font-weight: bold;
+}
+
+.current-tab .nav-link {
+    border-bottom: 1px solid hsl(357, 65%, 37%);
 }
 
 .form-field-errors {

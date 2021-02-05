@@ -47,7 +47,7 @@
 </head>
 <body>
   <nav id="nav-links" class="navbar navbar-light navbar-expand-md">
-    <div class="container-fluid">
+    <div id="nav-links-container" class="container-fluid">
       <a id="logo" class="navbar-brand" href="http://public.vdgsa.org">
         VdGSA
       </a>
@@ -67,12 +67,28 @@
           <li class="nav-item">
             <a class="nav-link" href="http://members.vdgsa.org">Members Area</a>
           </li>
-          <li class="nav-item">
+          <li
+            class="
+              {% url 'user-profile' pk=user.pk as url %}
+              {% if request.path == url %}
+                current-tab
+              {% endif %}
+              nav-item
+            "
+          >
             <a class="nav-link" href="{% url 'current-user-profile' %}">My Account</a>
           </li>
 
           {% if perms.accounts.membership_secretary or perms.accounts.board_member %}
-          <li class="nav-item">
+          <li
+            class="
+              {% url 'membership-secretary' as url %}
+              {% if request.path == url %}
+                current-tab
+              {% endif %}
+              nav-item
+            "
+          >
             <a class="nav-link" href="{% url 'membership-secretary' %}">Directory</a>
           </li>
           {% endif %}
