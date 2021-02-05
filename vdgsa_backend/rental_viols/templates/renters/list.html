@@ -5,27 +5,45 @@
 <table id="viol-table" class="table table-striped">
   <thead>
     <tr>
-      <td>VdGSA Renters</td>
-      <td>Size</td>
-      <td># Strings</td>
-      <td>Maker</td>
-      <td>Program</td>
-      <td>State</td>
+      <td></td>
+      <td>Viol</td>
+      <td>Bow</td>
+      <td>Case</td>
+      <td>Rental Start</td>
+      <td>Rental End</td>
     </tr>
   </thead>
   <tbody>
     {% for item in object_list %}
     <tr>
-      {% comment %}
       <td>
-        <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+        <a href="{% url 'renters-detail' pk=item.pk %}">{{item.event}}</a>
       </td>
-      <td>{{item.size}}</td>
-      <td>{{item.strings}}</td>
-      <td>{{item.maker}}</td>
-      <td>{{item.program}}</td>
-      <td>{{item.state}}</td>
-      {% endcomment %}
+      <td>
+      {% if item.viol_num %}
+        <a href="{% url 'viol-detail' item.viol_num.viol_num %}">{{item.viol_num}}</a>
+      {% else  %}
+        {{item.viol_num}}
+      {% endif  %}
+      </td>
+      <td>
+      {% if item.bow_num %}
+        <a href="{% url 'bow-detail' item.bow_num.bow_num %}">{{item.bow_num}}</a>
+      {% else  %}
+        {{item.bow_num}}
+      {% endif  %}
+      </td>
+      <td>
+      {% if item.case_num %}
+        <a href="{% url 'case-detail' item.case_num.case_num %}">{{item.case_num}}</a>
+      {% else  %}
+        {{item.case_num}}
+      {% endif  %}
+      </td>
+
+
+    <td>{{ item.rental_start }}</td>
+    <td>{{ item.rental_end }}</td>
     </tr>
     {% endfor %}
   </tbody>

@@ -19,7 +19,7 @@ from vdgsa_backend.accounts.models import User
 from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
 from vdgsa_backend.rental_viols.managers.RentalActionsManager import RentalActionsManager
 from vdgsa_backend.rental_viols.models import (
-    Bow, Case, RentalEvent, RentalHistory, Viol, WaitingList
+    Bow, Case, RentalEvent, RentalHistory, Viol, WaitingList, RentalEvent
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 
@@ -162,10 +162,14 @@ class RentalSubmitView(RentalViewBase, View):
             history.save()
             print(history)
             messages.add_message(self.request, messages.SUCCESS, 'Rented!')
-            # RentalContract scan of signed contract
 
         return reverse('list-renters')
 
+# TODO: Rental Actions
+# RentalContract scan of signed contract
+# Return Rental
+# Renew Rental
+# Make Available (not sure what happens in DB)
 
 # LIST VIEWS
 
@@ -197,13 +201,9 @@ class ListCasesView(RentalViewBase, ListView):
 class ListRentersView(RentalViewBase, ListView):
 
     def get_queryset(self, *args: Any, **kwargs: Any):
-        filter = self.request.GET.get('filter', 'available')
-        if filter == 'available':
-            queryset = RentalHistory.objects.all()
-        elif filter == 'rented':
-            queryset = RentalHistory.objects.all()
-        else:
-            queryset = RentalHistory.objects.all()
+
+        queryset = RentalHistory.objects.all().filter(event=RentalEvent.rented)
+        print(queryset)
         return queryset
 
     template_name = 'renters/list.html'
@@ -366,3 +366,8 @@ class ViolDetailView(RentalViewBase, DetailView):
         print('context', context)
         context['now'] = timezone.now()
         return context
+
+
+class RentersDetailView(RentalViewBase, DetailView):
+    model = RentalHistory
+    template_name = 'renters/detail.html'

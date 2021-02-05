@@ -28,8 +28,8 @@ urlpatterns = [
     path('viols/<int:pk>/', views.ViolDetailView.as_view(), name='viol-detail'),
     path('viol/update/<int:pk>/', views.UpdateViolView.as_view(), name='viol-update'),
 
-
-
     path('renters/', views.ListRentersView.as_view(), name='list-renters'),
+    path('renter/<int:pk>/', views.RentersDetailView.as_view(), name='renters-detail'),
+
     path('waiting/', views.ListWaitingView.as_view(), name='list-waiting'),
 ]
