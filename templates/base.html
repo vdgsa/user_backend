@@ -69,14 +69,14 @@
           </li>
           <li
             class="
-              {% url 'user-profile' pk=user.pk as url %}
+              {% url 'user-account' pk=user.pk as url %}
               {% if request.path == url %}
                 current-tab
               {% endif %}
               nav-item
             "
           >
-            <a class="nav-link" href="{% url 'current-user-profile' %}">My Account</a>
+            <a class="nav-link" href="{% url 'current-user-account' %}">My Account</a>
           </li>
 
           {% if perms.accounts.membership_secretary or perms.accounts.board_member %}

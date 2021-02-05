@@ -1,3 +1,8 @@
+"""
+Contains forms and views involved with the user changing their login
+email address.
+"""
+
 from functools import cached_property
 from typing import Any, Optional, cast
 
@@ -83,7 +88,7 @@ The VdGSA Web Team
 
         return get_ajax_form_response('success', None, extra_data={
             'change_pending_msg': render_to_string(
-                'change_email/change_email_pending.tmpl',
+                'user_account/change_email/change_email_pending.tmpl',
                 request=request,
                 context={'new_email': change_request.new_email}
             )
@@ -111,7 +116,7 @@ def change_email_confirm(request: HttpRequest, id: str) -> HttpResponse:
         user.save()
         change_request.delete()
 
-    return redirect(reverse('current-user-profile'))
+    return redirect(reverse('current-user-account'))
 
 
 @login_required

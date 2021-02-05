@@ -5,7 +5,7 @@ from selenium.common.exceptions import NoSuchElementException  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 
-from .selenium_test_base import SeleniumTestCaseBase
+from ..selenium_test_base import SeleniumTestCaseBase
 
 
 class AccountsProfileUITestCase(SeleniumTestCaseBase):
@@ -71,14 +71,14 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
         self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])
 
     def test_membership_secretary_view_other_users_profile(self) -> None:
-        self.login_as(self.membership_secretary, dest_url=f'/accounts/profile/{self.user.pk}/')
+        self.login_as(self.membership_secretary, dest_url=f'/accounts/{self.user.pk}/')
         self.assertEqual(
             self.user.username,
             self.selenium.find_element_by_id('current-username').get_attribute('value')
         )
 
     def test_non_membership_secretary_cannot_view_other_users_profile(self) -> None:
-        self.login_as(self.user, dest_url=f'/accounts/profile/{self.membership_secretary.pk}/')
+        self.login_as(self.user, dest_url=f'/accounts/{self.membership_secretary.pk}/')
         self.assertIn('Forbidden', self.selenium.find_element_by_css_selector('body').text)
 
     def test_regular_user_change_password(self) -> None:
@@ -118,6 +118,6 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
         )
 
     def test_membership_secretary_cannot_change_other_user_password(self) -> None:
-        self.login_as(self.membership_secretary, dest_url=f'/accounts/profile/{self.user.pk}/')
+        self.login_as(self.membership_secretary, dest_url=f'/accounts/{self.user.pk}/')
         with self.assertRaises(NoSuchElementException):
             self.selenium.find_element_by_id('password-change-link')

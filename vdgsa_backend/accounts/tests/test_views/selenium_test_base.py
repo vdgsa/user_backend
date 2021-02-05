@@ -1,12 +1,17 @@
+from typing import Any, List, Optional, Union
+
 from django.contrib.auth.models import Permission
 from django.test import LiveServerTestCase
+from selenium.common.exceptions import NoSuchElementException  # type: ignore
 from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore
+from selenium.webdriver.support.wait import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import User
 
 
 class SeleniumTestCaseBase(LiveServerTestCase):
     selenium: WebDriver
+    wait: WebDriverWait
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -19,10 +24,14 @@ class SeleniumTestCaseBase(LiveServerTestCase):
         cls.selenium.quit()
         super().tearDownClass()
 
+    def setUp(self) -> None:
+        super().setUp()
+        self.wait = WebDriverWait(self.selenium, 5)
+
     def login_as(
         self,
         user: User,
-        dest_url: str = '/accounts/profile/',
+        dest_url: str = '/accounts/',
         password: str = 'password'
     ) -> None:
         """
@@ -51,3 +60,31 @@ class SeleniumTestCaseBase(LiveServerTestCase):
             Permission.objects.get(codename='board_member')
         )
         return board_member
+
+    def find(self, selector: str) -> Optional[Any]:
+        """
+        Returns the element identified by selector.
+        If no such element exists, returns None.
+        """
+        try:
+            return self.selenium.find_element_by_css_selector(selector)
+        except NoSuchElementException:
+            return None
+
+    def find_all(self, selector: str) -> Union[List[Any], Any]:
+        """
+        Alias for self.selenium.find_elements_by_css_selector('selector')
+        """
+        return self.selenium.find_elements_by_css_selector(selector)
+
+    def exists(self, selector: str) -> bool:
+        """
+        Returns True if the element identified by selector exists.
+        """
+        return self.find(selector) is not None
+
+    # def get_value(self, selector: str) -> str:
+    #     """
+    #     Returns the "value" attribute of the element identified by selector.
+    #     """
+    #     return self.find(selector).val

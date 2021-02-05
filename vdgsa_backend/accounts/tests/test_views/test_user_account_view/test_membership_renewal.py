@@ -1,18 +1,18 @@
 import json
 import time
 
+from django.conf import settings
 from django.core import mail
 from django.test import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore
-from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
-from vdgsa_backend.accounts.tests.test_views.selenium_test_base import SeleniumTestCaseBase
-from vdgsa_backend.accounts.views.subscription import MAX_NUM_FAMILY_MEMBERS
+
+from ..selenium_test_base import SeleniumTestCaseBase
 
 
 class MembershipUITestCase(SeleniumTestCaseBase):
@@ -40,8 +40,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             '#purchase-subscription-form button[type=submit]'
         ).click()
 
-        wait = WebDriverWait(self.selenium, 5)
-        wait.until(
+        self.wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
             '$35.00',
@@ -61,8 +60,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             '#purchase-subscription-form button[type=submit]'
         ).click()
 
-        wait = WebDriverWait(self.selenium, 5)
-        wait.until(
+        self.wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
             '$20.00',
@@ -80,8 +78,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             '#purchase-subscription-form button[type=submit]'
         ).click()
 
-        wait = WebDriverWait(self.selenium, 5)
-        wait.until(
+        self.wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
             '$40.00',
@@ -100,8 +97,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             '#purchase-subscription-form button[type=submit]'
         ).click()
 
-        wait = WebDriverWait(self.selenium, 5)
-        wait.until(
+        self.wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
             '$45.00',
@@ -137,8 +133,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             '#purchase-subscription-form button[type=submit]'
         ).click()
 
-        wait = WebDriverWait(self.selenium, 5)
-        wait.until(
+        self.wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
             '$35.00',
@@ -237,7 +232,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
 
     def test_membership_secretary_purchase_and_renew_subscription_for_other_user(self) -> None:
         membership_secretary = self.make_membership_secretary()
-        self.login_as(membership_secretary, f'/accounts/profile/{self.user.pk}/')
+        self.login_as(membership_secretary, f'/accounts/{self.user.pk}/')
         # When the membership secretary purchases a membership, it skips the Stripe flow.
         self.selenium.find_element_by_css_selector(
             '#purchase-subscription-form button[type=submit]'
@@ -331,8 +326,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         remove_buttons = self.selenium.find_elements_by_css_selector(
             '.remove-family-member-form button[type=submit]')
         remove_buttons[0].click()
-        wait = WebDriverWait(self.selenium, 5)
-        wait.until(EC.alert_is_present())
+        self.wait.until(EC.alert_is_present())
         alert = self.selenium.switch_to.alert
         alert.accept()
         time.sleep(2)
@@ -346,7 +340,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             '.remove-family-member-form button[type=submit]')
         remove_buttons[0].click()
         time.sleep(1)
-        wait.until(EC.alert_is_present())
+        self.wait.until(EC.alert_is_present())
         alert = self.selenium.switch_to.alert
         alert.accept()
         time.sleep(2)
@@ -385,7 +379,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
 
         family = User.objects.create_user(username='family1@wat.com')
 
-        self.login_as(self.make_membership_secretary(), f'/accounts/profile/{self.user.pk}/')
+        self.login_as(self.make_membership_secretary(), f'/accounts/{self.user.pk}/')
 
         # Add 2 family members sequentially
         self.selenium.find_element_by_css_selector(
@@ -407,7 +401,7 @@ class MaxNumFamilyMembersTestCase(TestCase):
 
         family_members = [
             User.objects.create_user(username=f'family{i}@wat.com')
-            for i in range(MAX_NUM_FAMILY_MEMBERS + 1)
+            for i in range(settings.MAX_NUM_FAMILY_MEMBERS + 1)
         ]
 
         self.client.force_login(user)
@@ -427,7 +421,7 @@ class MaxNumFamilyMembersTestCase(TestCase):
         data = json.loads(response.content.decode())
         self.assertEqual('other_error', data['status'])
         self.assertEqual(
-            f'You cannot add more than {MAX_NUM_FAMILY_MEMBERS} to a membership.',
+            f'You cannot add more than {settings.MAX_NUM_FAMILY_MEMBERS} to a membership.',
             data['extra_data']['error_msg']
         )
 

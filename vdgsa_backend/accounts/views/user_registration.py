@@ -1,3 +1,7 @@
+"""
+Contains forms and views involved in user account creation.
+"""
+
 from django import forms
 from django.contrib.auth.forms import PasswordResetForm
 from django.http.request import HttpRequest

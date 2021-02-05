@@ -47,5 +47,5 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('', include('django.contrib.auth.urls')),
 
-    re_path('^$', lambda request: redirect(reverse('current-user-profile'))),
+    re_path('^$', lambda request: redirect(reverse('current-user-account'))),
 ]

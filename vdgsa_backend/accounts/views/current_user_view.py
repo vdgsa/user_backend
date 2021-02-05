@@ -1,13 +1,13 @@
-from typing import cast
+"""
+Contains an API endpoint that returns basic info about the currently
+authenticated user.
+"""
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AnonymousUser
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, JsonResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.base import View
-
-from ..models import User
 
 
 class CurrentUserView(View):

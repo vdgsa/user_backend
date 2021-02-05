@@ -1,3 +1,8 @@
+"""
+Contains views for the membership secretary dashboard (referred to as
+"Directory" in the navbar).
+"""
+
 import csv
 from typing import Any, Dict, Iterable, Literal
 

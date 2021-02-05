@@ -1,9 +1,15 @@
+"""
+Contains forms, views, and a stripe webhook endpoint used for
+purchasing and renewing membership subscriptions.
+"""
+
 import json
 from functools import cached_property
 from typing import Any, Dict, Final, List, Sequence, cast
 
 import stripe  # type: ignore
 from django import forms
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
@@ -114,7 +120,7 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
             return get_ajax_form_response(
                 'form_validation_error',
                 form,
-                form_template='membership_subscription.tmpl',
+                form_template='user_account/membership_renewal.tmpl',
                 form_context={'user': self.requested_user, 'form': form}
             )
 
@@ -125,7 +131,7 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
             return get_ajax_form_response(
                 'success',
                 form,
-                form_template='membership_subscription.tmpl',
+                form_template='user_account/membership_renewal.tmpl',
                 form_context={'user': self.requested_user, 'form': form}
             )
 
@@ -247,9 +253,6 @@ class AddFamilyMemberForm(forms.Form):
     username = forms.EmailField(label='')
 
 
-MAX_NUM_FAMILY_MEMBERS: Final[int] = 3
-
-
 class AddFamilyMemberView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         form = AddFamilyMemberForm(request.POST)
@@ -258,9 +261,10 @@ class AddFamilyMemberView(LoginRequiredMixin, UserPassesTestMixin, View):
                 'error_msg': 'Please enter a valid email address.'
             })
 
-        if self.subscription.family_members.count() == MAX_NUM_FAMILY_MEMBERS:
+        if self.subscription.family_members.count() == settings.MAX_NUM_FAMILY_MEMBERS:
             return get_ajax_form_response('other_error', None, extra_data={
-                'error_msg': f'You cannot add more than {MAX_NUM_FAMILY_MEMBERS} to a membership.'
+                'error_msg': f'You cannot add more than {settings.MAX_NUM_FAMILY_MEMBERS} '
+                             'to a membership.'
             })
 
         username = form.cleaned_data['username']
