@@ -1,6 +1,5 @@
 import time
 
-from django.contrib.auth.models import Permission
 from django.utils import timezone
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
 
@@ -41,7 +40,7 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
         navlinks = self.selenium.find_elements_by_css_selector('nav a')
         expected_navlinks_text = [
             'VdGSA',
-            'Members Area',
+            "Members' Area",
             'My Account',
             'Logout',
         ]
@@ -52,7 +51,7 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
         navlinks = self.selenium.find_elements_by_css_selector('nav a')
         expected_navlinks_text = [
             'VdGSA',
-            'Members Area',
+            "Members' Area",
             'My Account',
             'Directory',
             'Logout',
@@ -64,7 +63,7 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
         navlinks = self.selenium.find_elements_by_css_selector('nav a')
         expected_navlinks_text = [
             'VdGSA',
-            'Members Area',
+            "Members' Area",
             'My Account',
             'Directory',
             'Logout',
