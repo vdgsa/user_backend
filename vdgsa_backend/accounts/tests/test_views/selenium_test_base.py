@@ -1,9 +1,12 @@
-from typing import Any, List, Optional, Union
+from typing import Any, List, Union
 
 from django.contrib.auth.models import Permission
 from django.test import LiveServerTestCase
-from selenium.common.exceptions import NoSuchElementException  # type: ignore
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By  # type: ignore
 from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore
+from selenium.webdriver.support import expected_conditions as EC  # type: ignore
 from selenium.webdriver.support.wait import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import User
@@ -61,15 +64,11 @@ class SeleniumTestCaseBase(LiveServerTestCase):
         )
         return board_member
 
-    def find(self, selector: str) -> Optional[Any]:
+    def find(self, selector: str) -> Any:
         """
-        Returns the element identified by selector.
-        If no such element exists, returns None.
+        Alias for self.selenium.find_element_by_css_selector('selector')
         """
-        try:
-            return self.selenium.find_element_by_css_selector(selector)
-        except NoSuchElementException:
-            return None
+        return self.selenium.find_element_by_css_selector(selector)
 
     def find_all(self, selector: str) -> Union[List[Any], Any]:
         """
@@ -81,10 +80,17 @@ class SeleniumTestCaseBase(LiveServerTestCase):
         """
         Returns True if the element identified by selector exists.
         """
-        return self.find(selector) is not None
+        try:
+            self.selenium.find_element_by_css_selector(selector)
+            return True
+        except NoSuchElementException:
+            return False
 
-    # def get_value(self, selector: str) -> str:
-    #     """
-    #     Returns the "value" attribute of the element identified by selector.
-    #     """
-    #     return self.find(selector).val
+    def get_value(self, selector: str) -> Any:
+        """
+        Returns the "value" attribute of the element identified by selector.
+        """
+        return self.find(selector).get_attribute('value')
+
+    def click_on(self, element: Any) -> None:
+        ActionChains(self.selenium).move_to_element(element).click().perform()

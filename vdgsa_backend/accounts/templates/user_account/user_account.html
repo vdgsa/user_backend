@@ -4,12 +4,6 @@
 
 {% load filters %}
 
-{% if perms.accounts.membership_secretary %}
-<div class="mb-2">
-  <a id="all-users-link" href="{% url 'membership-secretary' %}">&lt Directory</a>
-</div>
-{% endif %}
-
 <div id="membership-subscription-wrapper">
   {% with user=object form=membership_renewal_form MAX_NUM_FAMILY_MEMBERS=MAX_NUM_FAMILY_MEMBERS %}
   {% include 'user_account/membership_renewal.tmpl' %}

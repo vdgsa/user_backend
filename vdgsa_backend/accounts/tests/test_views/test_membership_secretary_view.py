@@ -85,6 +85,11 @@ class MembershipSecretaryDashboardUITestCase(SeleniumTestCaseBase):
         super().setUp()
         _test_data_init(self)
 
+    def test_navigate_from_table_to_user_account(self) -> None:
+        self.login_as(self.membership_secretary, dest_url='/accounts/directory/?all_users=true')
+        self.click_on(self.find_all('.user-row')[3])
+        self.assertEqual(self.users[3].username, self.get_value('#current-username'))
+
     def test_table_content(self) -> None:
         self.login_as(self.membership_secretary, dest_url='/accounts/directory/?all_users=true')
         user_rows = self.selenium.find_elements_by_class_name('user-row')
