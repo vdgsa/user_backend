@@ -1,0 +1,19 @@
+    <div class="row">
+      <div class="col-sm-2">
+        <div id="page-subNav">
+          {% include 'rental_menu.tmpl' %}
+        </div>
+      </div>
+      <div class="col-sm-10">
+        <div id="page-body">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+
+
+
+    {% load rental_tags %}
+{% load django_bootstrap_icons %}
+
+{% include_bootstrap_icons %}

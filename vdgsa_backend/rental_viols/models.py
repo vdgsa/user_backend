@@ -4,29 +4,13 @@ from django.db.models.enums import TextChoices
 from django.utils import timezone
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import RentalItemBaseManager, RentalEvent
 
 
 class RentalProgram(TextChoices):
     regular = 'regular'
     select_reserve = 'select_reserve'
     consort_loan = 'consort_loan'
-
-
-class RecordStatus(TextChoices):
-    active = 'active'
-    deleted = 'deleted'
-
-
-class RentalEvent(TextChoices):
-    attached = 'attached'
-    detached = 'detached'
-    reserved = 'reserved_for'
-    rented = 'rented'
-    retired = 'retired'
-    returned = 'returned'
-
-    # shipped = 'shipped; ?
-    # invoiced = 'invoiced' ? if we integrate stripe payment
 
 
 class ViolSize(TextChoices):
@@ -48,7 +32,12 @@ class RentalItemBase(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
-    status = models.TextField(choices=RecordStatus.choices, default=RecordStatus.active)
+    status = models.TextField(choices=RentalEvent.choices, default=RentalEvent.new)
+
+    objects = RentalItemBaseManager()
+
+    def get_fields(obj):
+        return obj._meta.get_fields()
 
 
 class RentalItemInstrument(RentalItemBase):
@@ -89,6 +78,10 @@ class Viol(RentalItemInstrument):
         class_name = 'Viol'
         return class_name
 
+    def get_pk_name(self):
+        primary_key_name = 'viol_num'
+        return primary_key_name
+
     def get_absolute_url(self):
         return u'/rentals/viols/%d' % self.viol_num
 
@@ -112,6 +105,10 @@ class Bow(RentalItemInstrument):
         class_name = 'Bow'
         return class_name
 
+    def get_pk_name(self):
+        primary_key_name = 'bow_num'
+        return primary_key_name
+
     def get_absolute_url(self):
         return u'/rentals/bows/%d' % self.bow_num
 
@@ -134,6 +131,10 @@ class Case(RentalItemInstrument):
     def get_cname(self):
         class_name = 'Case'
         return class_name
+
+    def get_pk_name(self):
+        primary_key_name = 'case_num'
+        return primary_key_name
 
     def get_absolute_url(self):
         return u'/rentals/cases/%d' % self.case_num
@@ -179,6 +180,10 @@ class WaitingList(RentalItemBase):
     )
     date_req = models.DateField(blank=True, null=True)
 
+    def get_pk_name(self):
+        primary_key_name = 'entry_num'
+        return primary_key_name
+
     def __str__(self) -> str:
         return (
             f'{self.entry_num}: {self.renter_num.lastname}, {self.viol.maker} '
@@ -211,6 +216,10 @@ class RentalHistory(RentalItemBase):
     rental_start = models.DateField(blank=True, null=True)
     rental_end = models.DateField(blank=True, null=True)
     contract_scan = models.IntegerField(blank=True, null=True)
+
+    def get_pk_name(self):
+        primary_key_name = 'entry_num'
+        return primary_key_name
 
     def __str__(self) -> str:
         return (

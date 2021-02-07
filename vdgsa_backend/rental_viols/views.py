@@ -4,9 +4,11 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.apps import apps
 from django.http.request import HttpRequest
-from django.http.response import HttpResponse
-from django.shortcuts import redirect, render
+from django.http.response import HttpResponse, HttpResponseRedirect
+from django.http import Http404
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls.base import reverse
 from django.utils.http import urlencode
 from django.utils import timezone
@@ -17,7 +19,7 @@ from django.views.generic.list import ListView
 
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
-from vdgsa_backend.rental_viols.managers.RentalActionsManager import RentalActionsManager
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import RentalItemBaseManager, RentalEvent
 from vdgsa_backend.rental_viols.models import (
     Bow, Case, RentalEvent, RentalHistory, Viol, WaitingList, RentalEvent
 )
@@ -49,20 +51,27 @@ class AttachToViolView(RentalViewBase, View):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
         if self.request.method == 'GET' and 'viol_num' in self.request.GET:
-            context['viol'] = Viol.objects.get(pk=viol_num)
+            context['viol'] = Viol.objects.get(pk=self.request.GET['viol_num'])
+
+            context['avail_cases'] = Case.objects.get_unattached(context['viol'].size)
+            context['avail_bows'] = Bow.objects.get_unattached(context['viol'].size)
+
             # Get List of available bows and cases
         else:
+            size = ''
             if 'case_num' in self.request.GET:
                 case_num = self.request.GET['case_num']
                 if case_num is not None and case_num != '':
                     context['case'] = Case.objects.get(pk=case_num)
+                    size = context['case'].size
             if 'bow_num' in self.request.GET:
                 bow_num = self.request.GET['bow_num']
                 if bow_num is not None and bow_num != '':
                     context['bow'] = Bow.objects.get(pk=bow_num)
+                    size = context['bow'].size
 
             # Get List of bachelor viols
-            context['viols'] = Viol.objects.get_available
+            context['viols'] = Viol.objects.get_available(size)
 
         return render(
             self.request,
@@ -71,9 +80,11 @@ class AttachToViolView(RentalViewBase, View):
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
         if self.request.POST.get('viol_num'):
-            viol = Viol.objects.get(pk=self.request.POST['viol_num'])
+            viol = Viol.objects.get(pk=self.request.POST.get('viol_num'))
             if self.request.POST.get('bow_num'):
                 bow = Bow.objects.get(pk=self.request.POST['bow_num'])
+                bow.status = RentalEvent.attached
+                bow.save()
                 viol.bows.add(bow)
                 history = RentalHistoryForm(
                     {"event": RentalEvent.attached, "viol_num": viol.viol_num, "bow_num": bow.bow_num})
@@ -82,13 +93,15 @@ class AttachToViolView(RentalViewBase, View):
 
             if self.request.POST.get('case_num'):
                 case = Case.objects.get(pk=self.request.POST['case_num'])
+                case.status = RentalEvent.attached
+                case.save()
                 viol.cases.add(case)
                 history = RentalHistoryForm(
                     {"event": RentalEvent.attached, "viol_num": viol.viol_num, "case_num": case.case_num})
                 history.save()
                 messages.add_message(self.request, messages.SUCCESS, 'Case attached!')
 
-        return render(request, 'viols/attatchToViol.html')
+        return redirect(reverse('viol-detail', args=[self.request.POST.get('viol_num')]))
 
 
 class DetachFromViolView(RentalViewBase, View):
@@ -98,6 +111,7 @@ class DetachFromViolView(RentalViewBase, View):
             if self.request.GET.get('bow_num'):
                 bow = Bow.objects.get(pk=self.request.GET['bow_num'])
                 bow.viol_num = None
+                bow.status = RentalEvent.detached
                 bow.save()
                 history = RentalHistoryForm(
                     {"event": RentalEvent.detached, "viol_num": viol.viol_num, "bow_num": bow.bow_num})
@@ -107,13 +121,14 @@ class DetachFromViolView(RentalViewBase, View):
             if self.request.GET.get('case_num'):
                 case = Case.objects.get(pk=self.request.GET['case_num'])
                 case.viol_num = None
+                case.status = RentalEvent.detached
                 case.save()
                 history = RentalHistoryForm(
                     {"event": RentalEvent.detached, "viol_num": viol.viol_num, "case_num": case.case_num})
                 history.save()
                 messages.add_message(self.request, messages.SUCCESS, 'Case attached!')
 
-        return render(request, 'viols/attatchToViol.html')
+        return redirect(reverse('viol-detail', args=[self.request.GET['viol_num']]))
 
 
 class RentalHomeView(RentalViewBase, TemplateView):
@@ -371,3 +386,25 @@ class ViolDetailView(RentalViewBase, DetailView):
 class RentersDetailView(RentalViewBase, DetailView):
     model = RentalHistory
     template_name = 'renters/detail.html'
+
+
+class SoftDeleteView(RentalViewBase, View):
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        print()
+        print(self.kwargs['class'])
+        print(self.kwargs['pk'])
+
+        try:
+            mymodel = apps.get_model('rental_viols', self.kwargs['class'])
+            obj = mymodel.objects.get(pk=self.kwargs['pk'])
+
+            obj.status = RentalEvent.deleted
+            obj.save()
+
+        except RentalHistory.DoesNotExist:
+            raise Http404("No MyModel matches the given query.")
+
+        print(obj)
+        # return HttpResponseRedirect(self.request.path_info)
+        return redirect(reverse('list-renters'))

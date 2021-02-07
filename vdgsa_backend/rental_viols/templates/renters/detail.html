@@ -1,11 +1,37 @@
 {% extends '../rentals.html' %}
 {% load rental_tags %}
 {% block content %}
-<p>Viol detail</p>
+<p>Renter detail</p>
 <div>Edit | Add to waiting list | Deactivate</div>
 
-{{object}} 
+{{object.fields}}
 
 
+
+{% for field in object.get_fields %}
+    <li><b>{{ field }}:</b> {{ field.data }}</li>
+{% endfor %}
 
 {% endblock %}
+
+
+    {% comment %} 
+    
+
+
+    status
+    entry_num
+    viol_num
+    bow_num
+    case_num
+    renter_num
+    event
+    notes
+    rental_start
+    rental_end
+    contract_scan 
+    
+    created_at
+    last_modified
+
+    {% endcomment %}

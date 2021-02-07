@@ -11,7 +11,7 @@
     {% endif %}
     <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" disabled>Retire</a> 
     <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" disabled>Unretire</a> 
-    <a href="{% url 'case-update' object.bow_num %}" class="btn btn-primary" >Edit</a> 
+    <a href="{% url 'bow-update' object.bow_num %}" class="btn btn-primary" >Edit</a> 
 </div>
 <div class="container border mt-3 mb-3 p-3">
   <div class="row">

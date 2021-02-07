@@ -1,4 +1,5 @@
 {% extends '../rentals.html' %}
+{% load django_bootstrap_icons %}
 
 {% block content %}
 
@@ -11,6 +12,8 @@
       <td>Case</td>
       <td>Rental Start</td>
       <td>Rental End</td>
+      <td></td>
+
     </tr>
   </thead>
   <tbody>
@@ -40,10 +43,11 @@
         {{item.case_num}}
       {% endif  %}
       </td>
-
-
-    <td>{{ item.rental_start }}</td>
-    <td>{{ item.rental_end }}</td>
+      <td>{{ item.rental_start }}</td>
+      <td>{{ item.rental_end }}</td>
+      <td>
+        <a href="{% url 'soft-delete' 'RentalHistory' item.entry_num %}" title="Remove">{% bs_icon 'trash' %}</a>
+      </td>
     </tr>
     {% endfor %}
   </tbody>

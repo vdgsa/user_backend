@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_extensions',
+    'django_bootstrap_icons',
 
     'vdgsa_backend.accounts',
     'vdgsa_backend.api_schema',

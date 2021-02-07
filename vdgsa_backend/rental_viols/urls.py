@@ -32,4 +32,6 @@ urlpatterns = [
     path('renter/<int:pk>/', views.RentersDetailView.as_view(), name='renters-detail'),
 
     path('waiting/', views.ListWaitingView.as_view(), name='list-waiting'),
+
+    path('delete/<str:class>/<int:pk>/', views.SoftDeleteView.as_view(), name='soft-delete'),
 ]
