@@ -48,7 +48,8 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['MAX_NUM_FAMILY_MEMBERS'] = settings.MAX_NUM_FAMILY_MEMBERS
 
-        context['edit_profile_form'] = UserProfileForm(cast(User, self.request.user))
+        context['edit_profile_form'] = UserProfileForm(
+            cast(User, self.request.user), instance=self.requested_user)
         context['change_email_form'] = ChangeEmailForm(self.requested_user)
         context['change_password_form'] = PasswordChangeForm(self.requested_user)
         context['membership_renewal_form'] = PurchaseSubscriptionForm(
@@ -56,8 +57,6 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             authenticated_user=cast(User, self.request.user)
         )
         context['add_family_member_form'] = AddFamilyMemberForm()
-
-        context['current_authenticated_user'] = self.request.user
 
         return context
 

@@ -73,7 +73,15 @@ class UserProfileForm(ModelForm):
         }
 
     def __init__(self, authorized_user: User, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
+        data = kwargs.pop('data', None)
+
+        if data is not None and not is_membership_secretary(authorized_user):
+            data = data.copy()
+            for field in self._membership_secretary_only_fields:
+                if field in data:
+                    data.pop(field)
+
+        super().__init__(*args, data=data, **kwargs)
         self.authorized_user = authorized_user
 
         self.fields['first_name'].required = True
@@ -85,26 +93,11 @@ class UserProfileForm(ModelForm):
         self.fields['address_postal_code'].required = True
         self.fields['address_country'].required = True
 
+
     _membership_secretary_only_fields: Final[Sequence[str]] = [
         'is_deceased',
         'notes',
     ]
-
-    def clean(self) -> Dict[str, Any]:
-        cleaned_fields = super().clean()
-        if is_membership_secretary(self.authorized_user):
-            return cleaned_fields
-
-        illegal_fields = set(
-            self._membership_secretary_only_fields
-        ).intersection(set(cleaned_fields))
-        if len(illegal_fields) != 0:
-            raise ValidationError(
-                "Only the membership secretary can edit "
-                f"the field(s) {', '.join(illegal_fields)}"
-            )
-
-        return cleaned_fields
 
 
 class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -119,7 +112,7 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_form_kwargs(self) -> Dict[str, Any]:
         kwargs = super().get_form_kwargs()
-        kwargs['authorized_user'] = self.requested_user
+        kwargs['authorized_user'] = self.request.user
         return kwargs
 
     def test_func(self) -> Optional[bool]:

@@ -25,16 +25,6 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
             membership_type=MembershipType.regular
         )
 
-    def test_membership_secretary_sees_all_users_link(self) -> None:
-        self.login_as(self.membership_secretary)
-        self.selenium.find_element_by_id('all-users-link').click()
-        self.assertTrue(self.selenium.find_element_by_id('user-table').is_displayed())
-
-    def test_non_membership_secretary_no_all_users_link(self) -> None:
-        self.login_as(self.user)
-        with self.assertRaises(NoSuchElementException):
-            self.selenium.find_element_by_id('all-users-link')
-
     def test_nav_links(self) -> None:
         self.login_as(self.user)
         navlinks = self.selenium.find_elements_by_css_selector('nav a')
@@ -45,6 +35,10 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
             'Logout',
         ]
         self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])
+        self.assertIn(
+            'current-tab',
+            self.find('[data-testid=my_account_link]').get_attribute('class').split()
+        )
 
     def test_membership_secretary_sees_directory_nav_link(self) -> None:
         self.login_as(self.membership_secretary)
@@ -57,8 +51,12 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
             'Logout',
         ]
         self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])
+        self.assertIn(
+            'current-tab',
+            self.find('[data-testid=my_account_link]').get_attribute('class').split()
+        )
 
-    def test_board_member_sees_directory_nav_link(self) -> None:
+    def test_board_member_sees_directory_and_wiki_nav_links(self) -> None:
         self.login_as(self.make_board_member())
         navlinks = self.selenium.find_elements_by_css_selector('nav a')
         expected_navlinks_text = [
@@ -66,6 +64,7 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
             "Members' Area",
             'My Account',
             'Directory',
+            'Wiki',
             'Logout',
         ]
         self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])
@@ -75,6 +74,10 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
         self.assertEqual(
             self.user.username,
             self.selenium.find_element_by_id('current-username').get_attribute('value')
+        )
+        self.assertNotIn(
+            'current-tab',
+            self.find('[data-testid=my_account_link]').get_attribute('class').split()
         )
 
     def test_non_membership_secretary_cannot_view_other_users_profile(self) -> None:

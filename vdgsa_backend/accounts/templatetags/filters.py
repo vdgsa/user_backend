@@ -19,6 +19,7 @@ def introspect(obj: object) -> object:
     """
     print(type(obj))
     print(dir(obj))
+    print(obj)
     return obj
 
 

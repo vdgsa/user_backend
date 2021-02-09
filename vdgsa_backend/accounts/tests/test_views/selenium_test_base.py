@@ -2,8 +2,9 @@ from typing import Any, List, Union
 
 from django.contrib.auth.models import Permission
 from django.test import LiveServerTestCase
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import NoSuchElementException  # type: ignore
+from selenium.webdriver.common.keys import Keys  # type: ignore
+from selenium.webdriver.common.action_chains import ActionChains  # type: ignore
 from selenium.webdriver.common.by import By  # type: ignore
 from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore
@@ -92,5 +93,16 @@ class SeleniumTestCaseBase(LiveServerTestCase):
         """
         return self.find(selector).get_attribute('value')
 
+    def set_value(self, selector: str, text: str) -> None:
+        """
+        Clears the current value and sets the given text using send_keys.
+        """
+        element = self.find(selector)
+        element.clear()
+        element.send_keys(text)
+
     def click_on(self, element: Any) -> None:
-        ActionChains(self.selenium).move_to_element(element).click().perform()
+        try:
+            element.click()
+        except Exception:
+            ActionChains(self.selenium).move_to_element(element).click().perform()

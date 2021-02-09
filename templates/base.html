@@ -68,8 +68,9 @@
             <a class="nav-link" href="http://members.vdgsa.org">Members' Area</a>
           </li>
           <li
+            data-testid="my_account_link"
             class="
-              {% url 'user-account' pk=user.pk as url %}
+              {% url 'user-account' pk=request.user.pk as url %}
               {% if request.path == url %}
                 current-tab
               {% endif %}
@@ -90,6 +91,12 @@
             "
           >
             <a class="nav-link" href="{% url 'membership-secretary' %}">Directory</a>
+          </li>
+          {% endif %}
+
+          {% if perms.accounts.board_member %}
+          <li class="nav-item">
+            <a class="nav-link" href="http://www.notion.so/vdgsa/">Wiki</a>
           </li>
           {% endif %}
 

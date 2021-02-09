@@ -26,7 +26,7 @@ from vdgsa_backend.accounts.models import (
     INTERNATIONAL_MEMBERSHIP_PRICE, REGULAR_MEMBERSHIP_PRICE, STUDENT_MEMBERSHIP_PRICE,
     MembershipSubscription, MembershipType, PendingMembershipSubscriptionPurchase, User
 )
-from vdgsa_backend.accounts.templatetags.filters import show_name
+from vdgsa_backend.accounts.templatetags.filters import show_name, show_name_and_email
 from vdgsa_backend.accounts.views.permissions import (
     is_membership_secretary, is_requested_user_or_membership_secretary
 )
@@ -57,7 +57,14 @@ def stripe_webhook_view(request: HttpRequest, *args: Any, **kwargs: Any) -> Http
                 pending_purchase.user, pending_purchase.membership_type)
             pending_purchase.is_completed = True
             pending_purchase.save()
-            return HttpResponse('Purchase completed')
+        send_mail(
+            subject=f'{show_name_and_email(pending_purchase.user)} has renewed their membership',
+            from_email='webmaster@vdgsa.org',
+            recipient_list=['membership@vdgsa.org'],
+            message=f'{show_name_and_email(pending_purchase.user)} '
+                    f'has renewed their {pending_purchase.membership_type} membership'
+        )
+        return HttpResponse('Purchase completed')
 
     return HttpResponse(
         f'No action taken for "{event.type}" event with transaction type "{transaction_type}"'
