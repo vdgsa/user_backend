@@ -1,7 +1,6 @@
-import time
-from django.utils import timezone
 from django.test import TestCase
 from django.urls.base import reverse
+from django.utils import timezone
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 

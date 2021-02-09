@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Dict, Final, Optional
+from typing import Any, Final, Optional
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields.array import ArrayField

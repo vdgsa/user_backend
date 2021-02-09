@@ -3,9 +3,7 @@ from typing import Any, List, Union
 from django.contrib.auth.models import Permission
 from django.test import LiveServerTestCase
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
-from selenium.webdriver.common.keys import Keys  # type: ignore
 from selenium.webdriver.common.action_chains import ActionChains  # type: ignore
-from selenium.webdriver.common.by import By  # type: ignore
 from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore
 from selenium.webdriver.support.wait import WebDriverWait  # type: ignore

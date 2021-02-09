@@ -7,7 +7,6 @@ page.
 from typing import Any, Dict, Final, Optional, Sequence, cast
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import ValidationError
 from django.forms import BaseModelForm, ModelForm, Textarea
 from django.http.response import HttpResponse
 from django.urls.base import reverse
@@ -81,7 +80,7 @@ class UserProfileForm(ModelForm):
                 if field in data:
                     data.pop(field)
 
-        super().__init__(*args, data=data, **kwargs)
+        super().__init__(data, *args, **kwargs)
         self.authorized_user = authorized_user
 
         self.fields['first_name'].required = True
@@ -92,7 +91,6 @@ class UserProfileForm(ModelForm):
         self.fields['address_state'].required = True
         self.fields['address_postal_code'].required = True
         self.fields['address_country'].required = True
-
 
     _membership_secretary_only_fields: Final[Sequence[str]] = [
         'is_deceased',
