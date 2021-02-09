@@ -1,4 +1,5 @@
 {% extends '../rentals.html' %}
+{% load rental_tags %}
 
 {% block content %}
 <div class="card">
@@ -12,11 +13,11 @@
     <form method="get" action="{% url 'list-viols' %}">
       <div class="form-row">
         <div class="form-group ">
-    <label for="filter">Filter</label>
+    <label for="filter">Filter {{filter}}</label>
           <select class="form-control" name="filter" id="filter" onchange="javascript:this.form.submit()">
-            <option value="available"{% ifequal 'available' request.GET.filter  %}selected{% endifequal %}>Available</option>
-            <option value='rented' {% ifequal 'rented' request.GET.filter  %}selected{% endifequal %}>Rented</option>
-            <option value='all' {% ifequal 'all' request.GET.filter  %}selected{% endifequal %}>All</option>
+            <option value="available"{% ifequal 'available' filter  %}selected{% endifequal %}>Available</option>
+            <option value='rented' {% ifequal 'rented' filter  %}selected{% endifequal %}>Rented</option>
+            <option value='all' {% ifequal 'all' filter  %}selected{% endifequal %}>All</option>
           </select>
         </div>
       </div>
@@ -30,6 +31,7 @@
       <td>Size</td>
       <td># Strings</td>
       <td>Maker</td>
+      <td>Value</td>
       <td>Program</td>
       <td>State</td>
     </tr>
@@ -43,6 +45,7 @@
       <td>{{item.size}}</td>
       <td>{{item.strings}}</td>
       <td>{{item.maker}}</td>
+      <td>{{item.value | currency}}</td>
       <td>{{item.program}}</td>
       <td>{{item.state}}</td>
     </tr>

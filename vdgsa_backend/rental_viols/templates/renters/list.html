@@ -7,6 +7,7 @@
   <thead>
     <tr>
       <td></td>
+      <td>Renter</td>
       <td>Viol</td>
       <td>Bow</td>
       <td>Case</td>
@@ -21,6 +22,9 @@
     <tr>
       <td>
         <a href="{% url 'renters-detail' pk=item.pk %}">{{item.event}}</a>
+      </td>
+      <td>
+        <a href="{% url 'renter-detail' pk=item.renter_num.pk %}">{{item.renter_num}}</a>
       </td>
       <td>
       {% if item.viol_num %}
@@ -46,6 +50,8 @@
       <td>{{ item.rental_start }}</td>
       <td>{{ item.rental_end }}</td>
       <td>
+        <a href="{% url 'rental-return' item.entry_num %}" title="Return">{% bs_icon 'arrow-return-left' %}</a>
+        <a href="{% url 'rental-renew' item.entry_num %}" title="Renew">{% bs_icon 'arrow-clockwise' %}</a>
         <a href="{% url 'soft-delete' 'RentalHistory' item.entry_num %}" title="Remove">{% bs_icon 'trash' %}</a>
       </td>
     </tr>

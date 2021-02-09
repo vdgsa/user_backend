@@ -6,12 +6,15 @@
 <div class="card">
 <div class="card-body">
   <div className="buttonbar-ctr d-flex justify-content-around ">
-    <a href="{% url 'viol-rentOut'%}?viol_num={{ object.viol_num }}" class="btn btn-primary" >Rent out</a> 
-    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Reserve</a> 
-    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Retire</a> 
-    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Renew rental</a> 
-    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Return from rental</a> 
-    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" > Make available</a> 
+    {% if not object.renter %}
+      <a href="{% url 'viol-rentOut'%}?viol_num={{ object.viol_num }}" class="btn btn-primary" >Rent out</a> 
+      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Retire</a> 
+      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Reserve</a> 
+      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" > Make available</a> 
+    {% else %}
+      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Renew rental</a> 
+      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Return from rental</a> 
+    {% endif %}
     <a href="{% url 'viol-update' object.viol_num %}" class="btn btn-primary" >Edit</a> 
  </div> </div> </div>
 

@@ -37,5 +37,5 @@ class ViolManager(models.Manager):
     def get_available(self, size=None):
         return self.get_queryset().get_rented_status(rented=False, size=size)
 
-    def get_rented(self):
-        return self.get_queryset().get_rented_status(rented=True)
+    def get_rented(self, size=None):
+        return self.get_queryset().get_rented_status(rented=True, size=size)

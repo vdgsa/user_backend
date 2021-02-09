@@ -1,4 +1,5 @@
 {% extends '../rentals.html' %}
+{% load rental_tags %}
 
 {% block content %}
 
@@ -9,9 +10,9 @@
       <td>Bow VdGSA number</td>
       <td>Size</td>
       <td>Maker</td>
-      <td>Bow Program</td>
+      <td>Value</td>
       <td>Attached to (viol)</td>
-      <td>Viol Program</td>
+      <td>Program</td>
       <td>State</td>
       <td>Status</td>
     </tr>
@@ -22,9 +23,9 @@
       <td><a href="{% url 'bow-detail' pk=bow.pk %}">{{bow.vdgsa_number}}</a></td>
       <td>{{bow.size}}</td>
       <td>{{bow.maker}}</td>
-      <td>{{bow.program}}</td>
-      <td>{{bow.viol_num}}</td>
-      <td>{{bow.viol_num.program | default_if_none:""}}</td>
+      <td>{{bow.value | currency}}</td>
+      <td>{{bow.viol_num | default_if_none:""}}</td>
+      <td>{{bow.program | default_if_none:""}}</td>
       <td>{{bow.state}}</td>
       <td>{{bow.status}}</td>
     </tr>

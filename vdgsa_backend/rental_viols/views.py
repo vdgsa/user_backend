@@ -147,7 +147,7 @@ class RentOutView(RentalViewBase, View):
 
 
 class RentalCreateView(RentalViewBase, View):
-    """Create Renatal Agreement"""
+    """Create Rental Agreement"""
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
@@ -159,9 +159,10 @@ class RentalCreateView(RentalViewBase, View):
 
 
 class RentalSubmitView(RentalViewBase, View):
-    """Create Renatal Agreement"""
+    """Create Rental Agreement"""
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
+
         if self.request.POST.get('viol_num'):
             viol = Viol.objects.get(pk=self.request.POST['viol_num'])
             user = User.objects.get(pk=self.request.POST['user_id'])
@@ -169,16 +170,19 @@ class RentalSubmitView(RentalViewBase, View):
             print('user', user.id)
             viol.renter = user
             viol.save()
-            print('viol.cases.all()[0].case_num', viol.cases.all()[0].case_num)
+            # print('viol.cases.all()[0].case_num', viol.cases.all()[0].case_num)
             ###
+
             history = RentalHistoryForm(
-                {"event": RentalEvent.rented, "viol_num": viol.viol_num, "case_num": viol.cases.first().case_num,
-                 "bow_num": viol.bows.first().bow_num, "renter_num": user.id})
+                {"event": RentalEvent.rented, "viol_num": viol.viol_num,
+                 "case_num": viol.cases.first().case_num if viol.cases.exists() else None,
+                 "bow_num": viol.bows.first().bow_num if viol.bows.exists() else None,
+                 "renter_num": user.id})
             history.save()
             print(history)
             messages.add_message(self.request, messages.SUCCESS, 'Rented!')
 
-        return reverse('list-renters')
+        return redirect(reverse('list-renters'))
 
 # TODO: Rental Actions
 # RentalContract scan of signed contract
@@ -191,12 +195,26 @@ class RentalSubmitView(RentalViewBase, View):
 
 class ViolsMultiListView(RentalViewBase, ListView):
     template_name = 'viols/list.html'
+    filterSessionName = 'rental_filter'
+    filter = None
+
+    def getFilter(self, **kwargs):
+        filter = self.request.GET.get('filter')
+        if filter == None:
+            filter = self.request.session.get(self.filterSessionName, None)
+        self.request.session[self.filterSessionName] = filter
+        return filter
+
+    def get_context_data(self, **kwargs):
+        context = super(ViolsMultiListView, self).get_context_data(**kwargs)
+        context['filter'] = self.getFilter()
+        return context
 
     def get_queryset(self, *args: Any, **kwargs: Any):
-        filter = self.request.GET.get('filter', 'available')
-        if filter == 'available':
+        print('getFilter()', self.getFilter())
+        if self.getFilter() == 'available':
             queryset = Viol.objects.get_available()
-        elif filter == 'rented':
+        elif self.getFilter() == 'rented':
             queryset = Viol.objects.get_rented()
         else:
             queryset = Viol.objects.all()

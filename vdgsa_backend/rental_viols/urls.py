@@ -7,8 +7,12 @@ urlpatterns = [
 
 
     path('viol/rentOut/', views.RentOutView.as_view(), name='viol-rentOut'),
+
+    path('rental/renew/<int:pk>/', views.RentOutView.as_view(), name='rental-renew'),
+    path('rental/return/<int:pk>/', views.RentOutView.as_view(), name='rental-return'),
     path('rental/create/', views.RentalCreateView.as_view(), name='rental-create'),
     path('rental/submit/', views.RentalSubmitView.as_view(), name='rental-submit'),
+    path('renter/<int:pk>/', views.RentalSubmitView.as_view(), name='renter-detail'),
 
 
     path('bows/', views.ListBowsView.as_view(), name='list-bows'),
