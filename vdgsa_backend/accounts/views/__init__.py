@@ -1,4 +1,5 @@
 from .current_user_view import CurrentUserView as CurrentUserView
+from .membership_secretary_view import AddUserView as AddUserView
 from .membership_secretary_view import AllUsersSpreadsheetView as AllUsersSpreadsheetView
 from .membership_secretary_view import MembershipSecretaryView as MembershipSecretaryView
 from .user_account_view.change_email import ChangeEmailRequestView as ChangeEmailRequestView

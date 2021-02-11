@@ -17,6 +17,118 @@ from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
 from .selenium_test_base import SeleniumTestCaseBase
 
 
+class AddUserTestCase(SeleniumTestCaseBase):
+    def test_membership_secretary_sees_add_user_link(self) -> None:
+        membership_secretary = self.make_membership_secretary()
+        self.login_as(membership_secretary, dest_url='/accounts/directory')
+        self.assertTrue(self.exists('#add-user-link'))
+
+    def test_board_member_does_not_see_add_user_link(self) -> None:
+        board_member = self.make_board_member()
+        self.login_as(board_member, dest_url='/accounts/directory')
+        self.assertFalse(self.exists('#add-user-link'))
+
+    def test_membership_secretary_add_user_required_fields_only(self) -> None:
+        membership_secretary = self.make_membership_secretary()
+        self.login_as(membership_secretary, dest_url='/accounts/add_user')
+
+        self.set_value('#id_username', 'an@user.com')
+        self.set_value('#id_first_name', 'Lonk')
+        self.set_value('#id_last_name', 'Zeldo')
+        self.set_value('#id_address_line_1', '123 Lonk Ln')
+        self.set_value('#id_address_city', 'Castle')
+        self.set_value('#id_address_state', 'Hyrule')
+        self.set_value('#id_address_postal_code', '98798')
+        self.set_value('#id_address_country', 'Zeldoland')
+
+        self.click_on(self.find('button[type=submit]'))
+        self.assertEqual('an@user.com', self.get_value('#current-username'))
+
+        user = User.objects.get(username='an@user.com')
+        self.assertEqual('Lonk', user.first_name)
+        self.assertEqual('Zeldo', user.last_name)
+        self.assertEqual('123 Lonk Ln', user.address_line_1)
+        self.assertEqual('Castle', user.address_city)
+        self.assertEqual('Hyrule', user.address_state)
+        self.assertEqual('98798', user.address_postal_code)
+        self.assertEqual('Zeldoland', user.address_country)
+
+    def test_membership_secretary_add_user_all_fields(self) -> None:
+        membership_secretary = self.make_membership_secretary()
+        self.login_as(membership_secretary, dest_url='/accounts/add_user')
+
+        self.set_value('#id_username', 'sanic@user.com')
+        self.set_value('#id_first_name', 'Lonk')
+        self.set_value('#id_last_name', 'Zeldo')
+        self.set_value('#id_address_line_1', '123 Lonk Ln')
+        self.set_value('#id_address_line_2', 'Apt 7')
+        self.set_value('#id_address_city', 'Castle')
+        self.set_value('#id_address_state', 'Hyrule')
+        self.set_value('#id_address_postal_code', '98798')
+        self.set_value('#id_address_country', 'Zeldoland')
+        self.set_value('#id_phone1', '1231231234')
+        self.set_value('#id_phone2', '7897890789')
+
+        self.click_on(self.find('button[type=submit]'))
+        self.assertEqual('sanic@user.com', self.get_value('#current-username'))
+
+        user = User.objects.get(username='sanic@user.com')
+        self.assertEqual('Lonk', user.first_name)
+        self.assertEqual('Zeldo', user.last_name)
+        self.assertEqual('123 Lonk Ln', user.address_line_1)
+        self.assertEqual('Apt 7', user.address_line_2)
+        self.assertEqual('Castle', user.address_city)
+        self.assertEqual('Hyrule', user.address_state)
+        self.assertEqual('98798', user.address_postal_code)
+        self.assertEqual('Zeldoland', user.address_country)
+        self.assertEqual('1231231234', user.phone1)
+        self.assertEqual('7897890789', user.phone2)
+
+    def test_error_user_already_exists(self) -> None:
+        username = 'waluigi@waa.com'
+        User.objects.create(username=username)
+
+        membership_secretary = self.make_membership_secretary()
+        self.login_as(membership_secretary, dest_url='/accounts/add_user')
+
+        self.set_value('#id_username', username)
+        self.set_value('#id_first_name', 'Lonk')
+        self.set_value('#id_last_name', 'Zeldo')
+        self.set_value('#id_address_line_1', '123 Lonk Ln')
+        self.set_value('#id_address_city', 'Castle')
+        self.set_value('#id_address_state', 'Hyrule')
+        self.set_value('#id_address_postal_code', '98798')
+        self.set_value('#id_address_country', 'Zeldoland')
+
+        self.click_on(self.find('button[type=submit]'))
+        self.assertIn('User with this Email already exists', self.find('.form-field-errors').text)
+
+
+class AddUserPermissionsTestCase(TestCase):
+    def test_non_membership_secretary_add_user_permission_denied(self) -> None:
+        board_member = User.objects.create_user(
+            username=f'boardo@wee.com', password='password'
+        )
+        board_member.user_permissions.add(
+            Permission.objects.get(codename='board_member')
+        )
+
+        self.client.force_login(board_member)
+        response = self.client.get(reverse('add-user'))
+        self.assertEqual(403, response.status_code)
+
+        response = self.client.post(reverse('add-user'), {})
+        self.assertEqual(403, response.status_code)
+
+        user = User.objects.create_user(username='user@user.com')
+        self.client.force_login(user)
+        response = self.client.get(reverse('add-user'))
+        self.assertEqual(403, response.status_code)
+
+        response = self.client.post(reverse('add-user'), {})
+        self.assertEqual(403, response.status_code)
+
+
 class _TestData(Protocol):
     users: List[User]
     num_users: int

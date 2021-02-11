@@ -186,6 +186,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         )
 
         self.assertIn('expired', self.selenium.find_element_by_id('membership-status-msg').text)
+        self.assertTrue(self.exists('#show-membership-purchase-wrapper'))
 
     def test_lifetime_member_message(self) -> None:
         MembershipSubscription.objects.create(
@@ -196,6 +197,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
             self.selenium.find_element_by_id('valid-until-timestamp')
 
         self.assertIn('forever', self.selenium.find_element_by_id('membership-status-msg').text)
+        self.assertFalse(self.exists('#show-membership-purchase-wrapper'))
 
     def test_family_member_message(self) -> None:
         owner = User.objects.create_user(

@@ -4,11 +4,14 @@ Contains views for the membership secretary dashboard (referred to as
 """
 
 import csv
-from typing import Any, Dict, Iterable, Literal
+from typing import Any, Dict, Iterable, List, Literal
 
+from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http.response import HttpResponse
+from django.urls.base import reverse
 from django.views.generic.base import View
+from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 
 from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
@@ -17,9 +20,52 @@ from vdgsa_backend.accounts.views.permissions import is_membership_secretary
 from ..models import User
 
 
+class AddUserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+            'address_line_1',
+            'address_line_2',
+            'address_city',
+            'address_state',
+            'address_postal_code',
+            'address_country',
+            'phone1',
+            'phone2',
+        ]
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+
+        self.fields['address_line_1'].required = True
+        self.fields['address_city'].required = True
+        self.fields['address_state'].required = True
+        self.fields['address_postal_code'].required = True
+        self.fields['address_country'].required = True
+
+
+class AddUserView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    object: User  # Initialized by CreateView
+
+    form_class = AddUserForm
+    template_name = 'membership_secretary/add_user.html'
+
+    def test_func(self) -> bool:
+        return is_membership_secretary(self.request.user)
+
+    def get_success_url(self) -> str:
+        return reverse('user-account', kwargs={'pk': self.object.pk})
+
+
 class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = User
-    template_name = 'membership_secretary.html'
+    template_name = 'membership_secretary/membership_secretary.html'
     context_object_name = 'users'
 
     # https://github.com/typeddjango/django-stubs/issues/477
@@ -86,15 +132,14 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
             'Other Commercial',
             'Educational Institution Affiliation',
 
+            'Is Deceased',
+            'Notes',
+
             'Do Not Email',
             'Include Name in Membership Directory',
             'Include Email in Membership Directory',
             'Include Address in Membership Directory',
             'Include Phone in Membership Directory',
-            'Include Name in Mailing List',
-            'Include Email in Mailing List',
-            'Include Address in Mailing List',
-            'Include Phone in Mailing List',
             'Last Modified',
         ]
 
@@ -141,6 +186,9 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
                 'Other Commercial': user.other_commercial,
                 'Educational Institution Affiliation': user.educational_institution_affiliation,
 
+                'Is Deceased': user.is_deceased,
+                'Notes': user.notes,
+
                 'Do Not Email': user.do_not_email,
                 'Include Name in Membership Directory': self._format_bool(
                     user.include_name_in_membership_directory),
@@ -150,14 +198,6 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
                     user.include_address_in_membership_directory),
                 'Include Phone in Membership Directory': self._format_bool(
                     user.include_phone_in_membership_directory),
-                'Include Name in Mailing List': self._format_bool(
-                    user.include_name_in_mailing_list),
-                'Include Email in Mailing List': self._format_bool(
-                    user.include_email_in_mailing_list),
-                'Include Address in Mailing List': self._format_bool(
-                    user.include_address_in_mailing_list),
-                'Include Phone in Mailing List': self._format_bool(
-                    user.include_phone_in_mailing_list),
                 'Last Modified': user.last_modified,
             })
 
