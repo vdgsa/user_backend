@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3>Create a VdGSA Account</h3>
+<ol>
+  <li>Enter your email address and other info below.</li>
+  <li>Check your email for a link to a secret page where you can create a password.</li>
+  <li>Log in with your username and password.</li>
+  <li>Pay for your membership.</li>
+</ol>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div class="row mt-3">
+    <div class="col-sm-6">
+      {% include 'utils/form_field.tmpl' with field=form.email label='Email'%}
+    </div>
+  </div>
+
+  {% include 'required_contact_info_form.tmpl' with form=form %}
+
+  {% if username_taken %}
+  <div id="username-taken-msg">
+    There is already an account associated with that email address. <br>
+    If you're having trouble logging in, you can
+    <a href="{% url 'password_reset' %}">reset your password here.</a>
+  </div>
+  {% endif %}
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</form>
+
+{% endblock %}

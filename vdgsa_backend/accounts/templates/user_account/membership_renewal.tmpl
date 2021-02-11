@@ -1,0 +1,147 @@
+{% load filters %}
+
+<h2 id="membership-header">
+  {% if user.subscription is None %}
+  Pay For Your
+  {% endif %}
+  Membership
+</h2>
+
+{% if user.subscription is not None and user.subscription.owner != user %}
+<div id="family-member-msg">
+  You are a family member on {{user.subscription.owner | show_name}}'s membership.
+</div>
+{% endif %}
+
+{% if user.subscription is not None %}
+  {% if user.subscription.membership_type == 'lifetime' %}
+    <div id="membership-status-msg">Your membership is valid forever!</div>
+  {% elif user.subscription_is_current %}
+  <div id="membership-status-msg">
+    Your membership is valid until
+    <span id="valid-until-timestamp">
+      {% format_datetime user.subscription.valid_until none_ok=True %}
+    </span>
+  </div>
+  {% else %}
+  <div id="membership-status-msg">
+    Your membership <b>expired</b> on
+    <span id="valid-until-timestamp">
+      {% format_datetime user.subscription.valid_until none_ok=True %}
+    </span>
+  </div>
+  {% endif %}
+
+  {% if user.subscription.owner == user %}
+  <div id="show-membership-purchase-wrapper">
+    <a
+      id="show-membership-purchase"
+      href="#purchase-subscription-form"
+      data-bs-toggle="collapse"
+      aria-expanded="false"
+      aria-controls="purchase-subscription-form"
+    >
+      Renew your membership
+    </a>
+  </div>
+  {% endif %}
+{% endif %}
+
+<form
+  id="purchase-subscription-form"
+  class="
+    collapse
+    {% if user.subscription is None %}
+    show
+    {% endif %}
+    ms-1
+  "
+  method="post"
+  action="{% url 'purchase-subscription' pk=user.pk %}"
+>
+  {% csrf_token %}
+  {% include 'utils/form_body.tmpl' with form=form %}
+
+  <div class="redirect-info-msg my-2">
+    Clicking "Checkout" will redirect you to Stripe. <br>
+    Please enter your payment info there.
+  </div>
+  <button type="submit" class="btn btn-primary">Checkout</button>
+  {% if user.subscription is not None %}
+  <button
+    id="hide-purchase-subscription"
+    type="button"
+    class="btn cancel-button"
+    data-bs-toggle="collapse"
+    data-bs-target="#purchase-subscription-form"
+    aria-controls="purchase-subscription-form"
+  >
+    Cancel
+  </button>
+  {% endif %}
+</form>
+
+{% if user.subscription is not None and user.subscription.owner == user %}
+<div id="family-members-wrapper" class="mt-3">
+  <div class="mb-1">
+    <b>
+      You can add up to {{MAX_NUM_FAMILY_MEMBERS}} family members to your membership. <br>
+      Please enter their email addresses below.
+    </b>
+  </div>
+  <ul id="family-member-list">
+    {% for member in user.subscription.family_members.all %}
+    <li class="family-member">
+      <form
+        class="remove-family-member-form"
+        method="post"
+        action="{% url 'remove-family-member' pk=user.subscription.pk %}"
+      >
+        {% csrf_token %}
+        <input type="hidden" value="{{member.username}}" name="username">
+
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+              <input
+                disabled
+                class="form-control family-member-name"
+                value="{{member | show_name_and_email}}"
+              >
+              <button type="submit" class="btn btn-danger">Remove</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </li>
+    {% endfor %}
+    {% if user.subscription.family_members.count < MAX_NUM_FAMILY_MEMBERS %}
+    <li>
+      <form
+        id="add-family-member-form"
+        method="post"
+        action="{% url 'add-family-member' pk=user.subscription.pk %}"
+      >
+        {% csrf_token %}
+        <div id="add-family-member-input-wrapper" class="row">
+          <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+              <input
+                type="email"
+                name="username"
+                type="email"
+                class="form-control"
+                required
+                autocomplete="off"
+                placeholder="Email"
+              >
+              <button type="submit" class="btn btn-primary btn-sm">Add</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </li>
+    {% endif %}
+  </ul>
+</div>
+{% endif %}

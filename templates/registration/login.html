@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{# This template is used with django.contrib.auth.views.LoginView #}
+
+<h3>Log in to your VdGSA account</h3>
+
+<form method="post" class="mt-3">
+  {% csrf_token %}
+  {% include 'utils/form_body.tmpl' %}
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Sign In</button>
+  </div>
+  <div class="mt-2">
+    <a href="{% url 'password_reset' %}">Forgot Password</a>
+  </div>
+  <div class="mt-1">
+    <a href="{% url 'user-registration' %}">Create an Account</a>
+  </div>
+</form>
+
+{% endblock %}

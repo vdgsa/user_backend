@@ -1,0 +1,25 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+mypy = "*"
+django-stubs = "*"
+autopep8 = "*"
+pycodestyle = "*"
+pydocstyle = "*"
+isort = "*"
+pyyaml = "*"
+uritemplate = "*"
+selenium = "*"
+
+[packages]
+django = "*"
+psycopg2 = "*"
+django-extensions = "*"
+django-cors-headers = "*"
+stripe = "*"
+
+[requires]
+python_version = "3.8"

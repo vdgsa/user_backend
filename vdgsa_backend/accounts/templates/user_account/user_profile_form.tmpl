@@ -1,0 +1,220 @@
+{% load filters %}
+
+{% if perms.accounts.membership_secretary %}
+<fieldset data-testid="secret_membership_secretary_fields">
+  <legend>Secret Membership Secretary Fields</legend>
+
+  <div>
+    {% include 'utils/form_field.tmpl' with field=form.notes %}
+  </div>
+
+  <div class="mt-3">
+    {% include 'utils/form_field.tmpl' with field=form.is_deceased %}
+  </div>
+
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <div class="last-saved ms-2"></div>
+  </div>
+</fieldset>
+{% endif %}
+
+<fieldset class="mt-3">
+  <legend>Contact Info</legend>
+
+  {% include 'required_contact_info_form.tmpl' with form=form %}
+
+  <div class="row mt-4">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.phone1 label='Phone 1 (Optional)'%}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.phone2 label='Phone 2 (Optional)'%}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col">
+      {% include 'utils/form_field.tmpl' with field=form.website label='Website (Optional)'%}
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary" data-testid="save_user_profile">Save</button>
+    <div class="last-saved ms-2"></div>
+  </div>
+
+  {% if form.non_field_errors %}
+    <div id="user-profile-non-field-errors" class="non-field-errors">
+    {% for err in form.non_field_errors %}
+      <p class="form-error">{{ err }}</p>
+    {% endfor %}
+    </div>
+  {% endif %}
+</fieldset>
+
+<fieldset class="mt-3">
+  <legend>Affiliations</legend>
+  {% include 'utils/form_field.tmpl' with field=form.is_young_player label='I identify as a young player' %}
+
+  <div class="mt-2">
+    <label for="{{form.educational_institution_affiliation.id_for_label}}" class="form-label">
+      If you are affiliated with an educational institution, please list it here <br>
+    </label>
+    {{form.educational_institution_affiliation | add_classes:"form-control"}}
+    {{form.educational_institution_affiliation.errors}}
+  </div>
+
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <div class="last-saved ms-2"></div>
+  </div>
+</fieldset>
+
+<fieldset class="mt-3">
+  <legend>Teachers</legend>
+
+  {% include 'utils/form_field.tmpl' with field=form.is_teacher label='I am a teaching member' %}
+  {% include 'utils/form_field.tmpl' with field=form.is_remote_teacher label='I am willing to teach online' %}
+
+  <div class="mt-2">
+    <label for="{{form.teacher_description.id_for_label}}" class="form-label">
+      Briefly describe who and what you teach
+      (<span id="teacher-description-num-chars-used">
+      </span>/{{form.fields.teacher_description.max_length}} chars)
+    </label>
+    {{form.teacher_description | add_classes:"form-control"}}
+    {{form.teacher_description.errors}}
+  </div>
+
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <div class="last-saved ms-2"></div>
+  </div>
+</fieldset>
+
+<fieldset class="mt-3">
+  <legend>Commercial Members</legend>
+
+  <div class="mt-3">Business categories (select all that apply)</div>
+  <div class="ms-1">
+    {% include 'utils/form_field.tmpl' with field=form.is_instrument_maker label='Instrument Maker' %}
+    {% include 'utils/form_field.tmpl' with field=form.is_bow_maker label='Bow Maker' %}
+    {% include 'utils/form_field.tmpl' with field=form.is_repairer label='Repairer' %}
+    {% include 'utils/form_field.tmpl' with field=form.is_publisher label='Publisher' %}
+    <div class="d-flex align-items-center">
+      <div class="form-check">
+        <!-- This checkbox is just for show. -->
+        <input
+          data-testid="other_commercial"
+          class="form-check-input"
+          type="checkbox"
+          {% if object.other_commercial %}
+          checked
+          {% endif %}
+        >
+        <label class="form-check-label">
+          Other (please specify)
+        </label>
+      </div>
+      <div class="ms-2">
+        {{form.other_commercial | add_classes:"form-control form-control-sm"}}
+      </div>
+      {{form.other_commercial.errors}}
+    </div>
+    <div class="mt-1">
+      <label for="{{form.commercial_description.id_for_label}}" class="form-label">
+        Briefly describe your business
+        (<span id="commercial-description-num-chars-used">
+        </span>/{{form.fields.commercial_description.max_length}} chars)
+      </label>
+      {{form.commercial_description | add_classes:"form-control"}}
+      {{form.commercial_description.errors}}
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <div class="last-saved ms-2"></div>
+  </div>
+</fieldset>
+
+<fieldset class="mt-3">
+  <legend>Privacy</legend>
+
+  <div class="form-check">
+    <label class="form-check-label">
+      Do not send me society emails (We email members very rarely with important announcements)
+    </label>
+    {{form.do_not_email | add_classes:"form-check-input"}}
+    {{form.do_not_email.errors}}
+  </div>
+
+  <div class="mt-2">
+    Include the following in the <b>membership directory</b>
+    (available only to members):
+  </div>
+  <div class="ms-1">
+    <div class="form-check">
+      <label class="form-check-label">
+        Name
+      </label>
+      {{form.include_name_in_membership_directory | add_classes:"form-check-input"}}
+      {{form.include_name_in_membership_directory.errors}}
+    </div>
+    <div class="form-check">
+      <label class="form-check-label">
+        Email
+      </label>
+      {{form.include_email_in_membership_directory | add_classes:"form-check-input"}}
+      {{form.include_email_in_membership_directory.errors}}
+    </div>
+    <div class="form-check">
+      <label class="form-check-label">
+        Address
+      </label>
+      {{form.include_address_in_membership_directory | add_classes:"form-check-input"}}
+      {{form.include_address_in_membership_directory.errors}}
+    </div>
+    <div class="form-check">
+      <label class="form-check-label">
+        Phone number
+      </label>
+      {{form.include_phone_in_membership_directory | add_classes:"form-check-input"}}
+      {{form.include_phone_in_membership_directory.errors}}
+    </div>
+  </div>
+
+  <div class="mt-3">
+    The VdGSA is committed to protecting your privacy. <br>
+    The information we collect is for the purpose of providing you with the goods and
+    services we offer. <br>
+    You can change these settings at any time. <br>
+    <a href="https://public.vdgsa.org/privacy-policy" target="_blank">
+      Read our full privacy policy here.
+    </a>
+  </div>
+
+  <div class="d-flex align-items-center mt-3">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <div class="last-saved ms-2"></div>
+  </div>
+</fieldset>
+
+<script>
+function add_char_counter(count_text_selector, input_selector) {
+  $(count_text_selector).text($(input_selector).val().length);
+
+  $(input_selector).on('input', function() {
+    $(count_text_selector).text($(this).val().length);
+  });
+}
+
+$().ready(function() {
+  add_char_counter('#teacher-description-num-chars-used', '#id_teacher_description');
+  add_char_counter('#commercial-description-num-chars-used', '#id_commercial_description');
+});
+</script>

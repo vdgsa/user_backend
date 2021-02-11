@@ -1,0 +1,35 @@
+{% comment %}
+See https://docs.djangoproject.com/en/3.1/topics/forms/#rendering-fields-manually
+when we want to make our forms and error messages look nicer
+{% endcomment %}
+
+{% comment %}
+Note: The csrf_token tag only takes effect if this template is rendered directly.
+If this template is being included, you MUST still include the csrf_token tag
+in the parent template.
+{% endcomment %}
+
+{% csrf_token %}
+
+{% comment %}
+IMPORTANT: The class used here should match the class part of the
+default selector used in update_form_body (JS)
+{% endcomment %}
+<div class="form-body-wrapper">
+{% for field in form %}
+  <div id="{{field.auto_id}}_wrapper" class="row mt-2">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=field %}
+    </div>
+  </div>
+{% endfor %}
+
+{% if form.non_field_errors %}
+  <div class="non-field-errors">
+  {% for err in form.non_field_errors %}
+    <p class="form-error">{{ err }}</p>
+  {% endfor %}
+  </div>
+{% endif %}
+
+</div>

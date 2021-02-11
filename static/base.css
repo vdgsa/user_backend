@@ -1,0 +1,88 @@
+/* Note: Fonts are loaded and set globally in base.html */
+
+#nav-links {
+    /* This gradient gives us a fixed-height yellow stripe at the bottom of the navbar */
+    background-image: linear-gradient(
+        to top,
+        hsl(47, 96%, 63%) .5rem, /* Start w/ yellow at bottom, continue for .5rem */
+        0, /* Change to white immediately */
+        white
+    );
+}
+
+#logo {
+    font-family: Amphion;
+    color: rgb(128, 128, 128)!important;
+    font-weight: bold;
+    font-size: 3rem;
+    line-height: 1;
+}
+
+#nav-links-container {
+    background-color: white;
+}
+
+#nav-links .nav-item {
+    padding: .25rem .625rem;
+}
+
+#nav-links .nav-item .nav-link {
+    color: hsl(357, 65%, 37%);
+    font-weight: bold;
+}
+
+.current-tab .nav-link {
+    border-bottom: 1px solid hsl(357, 65%, 37%);
+}
+
+.form-field-errors, .form-error {
+    font-weight: bold;
+    color: hsl(357, 65%, 37%);
+}
+
+/* Bootstrap overrides ----------------------------------------------------- */
+
+a:link,
+a:visited,
+a:hover {
+    color: hsl(357, 65%, 37%)!important;
+}
+
+a:active {
+    color: hsl(357, 65%, 45%)!important;
+}
+
+.btn {
+    border-radius: 0!important;
+}
+
+.btn-primary {
+    background-color: hsl(47, 96%, 70%)!important;
+    border-color: hsl(47, 96%, 70%)!important;
+    color: black!important;
+}
+
+.btn-primary:hover {
+    background-color: hsl(47, 96%, 63%)!important;
+    border-color: hsl(47, 96%, 63%)!important;
+}
+
+.btn-danger {
+    background-color: hsl(357, 65%, 70%)!important;
+    border-color: hsl(357, 65%, 70%)!important;
+    color: black!important;
+}
+
+.btn-danger:hover {
+    background-color: hsl(357, 65%, 65%)!important;
+    border-color: hsl(357, 65%, 65%)!important;
+}
+
+.cancel-button {
+    border: 1px solid #aaaaaa!important;
+    color: black;
+}
+
+.form-control, .form-control-sm, .form-control-lg {
+    border-radius: 0!important;
+}

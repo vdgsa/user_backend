@@ -1,0 +1,163 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /accounts/users/current/:
+    get:
+      operationId: getCurrentUser
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: Returns the current authenticated User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: The requester is not authenticated.
+      tags:
+      - accounts
+  /accounts/stripe_webhook/:
+    post:
+      operationId: createStripeWebhook
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - accounts
+  /token_auth/:
+    post:
+      operationId: createAuthToken
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthToken'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: ''
+      tags:
+      - token-auth
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        subscription:
+          type: string
+          readOnly: true
+        owned_subscription:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            last_modified:
+              type: string
+              format: date-time
+              readOnly: true
+            valid_until:
+              type: string
+              format: date-time
+              nullable: true
+            membership_type:
+              enum:
+              - regular
+              - student
+              - lifetime
+              type: string
+            owner:
+              type: integer
+          required:
+          - membership_type
+          - owner
+          readOnly: true
+        subscription_is_family_member_for:
+          type: object
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            last_modified:
+              type: string
+              format: date-time
+              readOnly: true
+            valid_until:
+              type: string
+              format: date-time
+              nullable: true
+            membership_type:
+              enum:
+              - regular
+              - student
+              - lifetime
+              type: string
+            owner:
+              type: integer
+          required:
+          - membership_type
+          - owner
+          readOnly: true
+    AuthToken:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        token:
+          type: string
+          readOnly: true
+      required:
+      - username
+      - password

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3 id="almost-done-msg">Almost Done!</h3>
+To finish registering:
+<ol>
+  <li>Check your email for a message from us. Try checking your spam folder if you don't see it.</li>
+  <li>Visit the link in the email and set your password.</li>
+</ol>
+
+If you still haven't received the email, please visit the
+<a href="{% url 'password_reset' %}">password reset</a> page to send it again.
+
+{% endblock %}
