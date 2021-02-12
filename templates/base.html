@@ -100,6 +100,12 @@
           </li>
           {% endif %}
 
+          {% if perms.rental_viols.rental_manager or perms.accounts.board_member %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'rentals' %}">Rental Viols</a>
+          </li>
+          {% endif %}
+
           {% if user.is_authenticated %}
           <li class="nav-item">
             <a id="logout" class="nav-link" href="{% url 'logout' %}">Logout</a>

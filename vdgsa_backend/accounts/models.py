@@ -172,5 +172,6 @@ class AccountPermissions(models.Model):
         # Our custom permissions.
         permissions = (
             ('membership_secretary', 'Membership Secretary'),
-            ('board_member', 'Board Member')
+            ('board_member', 'Board Member'),
+            ('rental_manager', 'Rental Manager')
         )

@@ -51,6 +51,9 @@ INSTALLED_APPS = [
 
     'django_extensions',
 
+    'django_bootstrap_icons',
+
+
     'vdgsa_backend.accounts',
     'vdgsa_backend.api_schema',
     'vdgsa_backend.rental_viols',
