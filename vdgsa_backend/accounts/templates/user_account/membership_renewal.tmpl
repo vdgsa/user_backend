@@ -32,7 +32,7 @@
   </div>
   {% endif %}
 
-  {% if user.subscription.owner == user %}
+  {% if user.subscription.owner == user and user.subscription.membership_type != 'lifetime' %}
   <div id="show-membership-purchase-wrapper">
     <a
       id="show-membership-purchase"

@@ -4,15 +4,9 @@
 
 {% load filters %}
 
-{% if perms.accounts.membership_secretary %}
-<div class="mb-2">
-  <a id="all-users-link" href="{% url 'membership-secretary' %}">&lt Directory</a>
-</div>
-{% endif %}
-
 <div id="membership-subscription-wrapper">
   {% with user=object form=membership_renewal_form MAX_NUM_FAMILY_MEMBERS=MAX_NUM_FAMILY_MEMBERS %}
-  {% include 'membership_subscription.tmpl' %}
+  {% include 'user_account/membership_renewal.tmpl' %}
   {% endwith %}
 </div>
 
@@ -65,7 +59,7 @@
   </form>
 
 
-  {% if object == current_authenticated_user %}
+  {% if object == request.user %}
   <!-- See https://getbootstrap.com/docs/5.0/utilities/spacing/ -->
   <div class="my-2">
     <a id="password-change-link" href="{% url 'password_change' %}">Change Password</a>
@@ -78,12 +72,7 @@
   <form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
     {% csrf_token %}
     <div class='form-body-wrapper'>
-      {% include 'user_profile/edit_profile_form.tmpl' with user=object form=edit_profile_form %}
-    </div>
-
-    <div class="d-flex align-items-center mt-3">
-      <button type="submit" class="btn btn-primary">Save</button>
-      <div class="last-saved ms-2"></div>
+      {% include 'user_account/user_profile_form.tmpl' with form=edit_profile_form %}
     </div>
   </form>
 </div>
@@ -124,9 +113,14 @@ $().ready(function() {
 
   setup_ajax_submit('user-profile-form', {
     success: function(form, response_data) {
-      $('#user-profile-form .last-saved').text(
-        `Saved at ${(new Date()).toLocaleTimeString()}`
-      );
+      if (response_data.status === 'form_validation_error') {
+        update_form_body(form, response_data);
+      }
+      else if (response_data.status === 'success') {
+        $('#user-profile-form .last-saved').text(
+          `Saved at ${(new Date()).toLocaleTimeString()}`
+        );
+      }
     }
   });
 

@@ -1,12 +1,19 @@
+from typing import Any, List, Union
+
 from django.contrib.auth.models import Permission
 from django.test import LiveServerTestCase
+from selenium.common.exceptions import NoSuchElementException  # type: ignore
+from selenium.webdriver.common.action_chains import ActionChains  # type: ignore
 from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore
+from selenium.webdriver.support import expected_conditions as EC  # type: ignore
+from selenium.webdriver.support.wait import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import User
 
 
 class SeleniumTestCaseBase(LiveServerTestCase):
     selenium: WebDriver
+    wait: WebDriverWait
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -19,10 +26,14 @@ class SeleniumTestCaseBase(LiveServerTestCase):
         cls.selenium.quit()
         super().tearDownClass()
 
+    def setUp(self) -> None:
+        super().setUp()
+        self.wait = WebDriverWait(self.selenium, 5)
+
     def login_as(
         self,
         user: User,
-        dest_url: str = '/accounts/profile/',
+        dest_url: str = '/accounts/',
         password: str = 'password'
     ) -> None:
         """
@@ -51,3 +62,45 @@ class SeleniumTestCaseBase(LiveServerTestCase):
             Permission.objects.get(codename='board_member')
         )
         return board_member
+
+    def find(self, selector: str) -> Any:
+        """
+        Alias for self.selenium.find_element_by_css_selector('selector')
+        """
+        return self.selenium.find_element_by_css_selector(selector)
+
+    def find_all(self, selector: str) -> Union[List[Any], Any]:
+        """
+        Alias for self.selenium.find_elements_by_css_selector('selector')
+        """
+        return self.selenium.find_elements_by_css_selector(selector)
+
+    def exists(self, selector: str) -> bool:
+        """
+        Returns True if the element identified by selector exists.
+        """
+        try:
+            self.selenium.find_element_by_css_selector(selector)
+            return True
+        except NoSuchElementException:
+            return False
+
+    def get_value(self, selector: str) -> Any:
+        """
+        Returns the "value" attribute of the element identified by selector.
+        """
+        return self.find(selector).get_attribute('value')
+
+    def set_value(self, selector: str, text: str) -> None:
+        """
+        Clears the current value and sets the given text using send_keys.
+        """
+        element = self.find(selector)
+        element.clear()
+        element.send_keys(text)
+
+    def click_on(self, element: Any) -> None:
+        try:
+            element.click()
+        except Exception:
+            ActionChains(self.selenium).move_to_element(element).click().perform()

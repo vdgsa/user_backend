@@ -6,13 +6,12 @@ from django.core import mail
 from django.test import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
-from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import (
     ChangeEmailRequest, MembershipSubscription, MembershipType, User
 )
 
-from .selenium_test_base import SeleniumTestCaseBase
+from ..selenium_test_base import SeleniumTestCaseBase
 
 
 class ChangeEmailUITestCase(SeleniumTestCaseBase):
@@ -89,7 +88,7 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
         membership_secretary.user_permissions.add(
             Permission.objects.get(codename='membership_secretary'))
 
-        self.login_as(membership_secretary, dest_url=f'/accounts/profile/{self.user.pk}/')
+        self.login_as(membership_secretary, dest_url=f'/accounts/{self.user.pk}/')
 
         # Show the form
         self.selenium.find_element_by_id('show-change-email-form').click()
@@ -115,7 +114,7 @@ class ChangeEmailUITestCase(SeleniumTestCaseBase):
         membership_secretary.user_permissions.add(
             Permission.objects.get(codename='membership_secretary'))
 
-        self.login_as(membership_secretary, dest_url=f'/accounts/profile/{self.user.pk}/')
+        self.login_as(membership_secretary, dest_url=f'/accounts/{self.user.pk}/')
 
         # Show the form
         self.selenium.find_element_by_id('show-change-email-form').click()

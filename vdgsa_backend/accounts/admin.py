@@ -8,7 +8,8 @@ class UserAdmin(admin.ModelAdmin):  # type: ignore
 
 
 class MembershipSubscriptionAdmin(admin.ModelAdmin):  # type: ignore
-    pass
+    def has_add_permission(self, *args: object) -> bool:
+        return False
 
 
 admin.site.register(User, UserAdmin)

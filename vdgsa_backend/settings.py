@@ -50,11 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_extensions',
-    'django_bootstrap_icons',
 
     'vdgsa_backend.accounts',
     'vdgsa_backend.api_schema',
-    'vdgsa_backend.rental_viols',
     'vdgsa_backend.stripe_wix_proxy',
 
     'corsheaders'
@@ -147,3 +145,6 @@ STATICFILES_DIRS = [
 ]
 # In docker container, ends up being /usr/src/static
 STATIC_ROOT = BASE_DIR.parent / 'static'
+
+# Misc custom settings --------------------------------------------------------
+MAX_NUM_FAMILY_MEMBERS = 3

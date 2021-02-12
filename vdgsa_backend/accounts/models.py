@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Dict, Final, Optional
+from typing import Any, Final, Optional
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields.array import ArrayField
@@ -64,11 +64,6 @@ class User(AbstractUser):
     include_email_in_membership_directory = models.BooleanField(default=True)
     include_address_in_membership_directory = models.BooleanField(default=True)
     include_phone_in_membership_directory = models.BooleanField(default=True)
-
-    include_name_in_mailing_list = models.BooleanField(default=True)
-    include_email_in_mailing_list = models.BooleanField(default=True)
-    include_address_in_mailing_list = models.BooleanField(default=True)
-    include_phone_in_mailing_list = models.BooleanField(default=True)
 
     # MEMBERSHIP SECRETARY ONLY
     is_deceased = models.BooleanField(default=False)

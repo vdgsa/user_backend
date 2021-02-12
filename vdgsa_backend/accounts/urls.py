@@ -1,4 +1,5 @@
 from django.urls import path
+from django.urls.conf import re_path
 
 from . import views
 
@@ -13,7 +14,6 @@ urlpatterns = [
     path('change_email_confirm/<id>/', views.change_email_confirm, name='change-email-confirm'),
 
     path('profile/<int:pk>/', views.UserProfileView.as_view(), name='user-profile'),
-    path('profile/', views.current_user_profile_view, name='current-user-profile'),
 
     path('subscription/<int:pk>/add_family_member/', views.AddFamilyMemberView.as_view(),
          name='add-family-member'),
@@ -27,6 +27,10 @@ urlpatterns = [
          name='all-users-csv'),
     path('directory/', views.MembershipSecretaryView.as_view(),
          name='membership-secretary'),
+    path('add_user/', views.AddUserView.as_view(), name='add-user'),
 
     path('stripe_webhook/', views.stripe_webhook_view),
+
+    path('<int:pk>/', views.UserAccountView.as_view(), name='user-account'),
+    re_path('^$', views.current_user_account_view, name='current-user-account'),
 ]

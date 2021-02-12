@@ -35,7 +35,7 @@
     border-bottom: 1px solid hsl(357, 65%, 37%);
 }
 
-.form-field-errors {
+.form-field-errors, .form-error {
     font-weight: bold;
     color: hsl(357, 65%, 37%);
 }
