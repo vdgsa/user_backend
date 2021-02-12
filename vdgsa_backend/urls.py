@@ -42,6 +42,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('vdgsa_backend.accounts.urls')),
     path('schema/', include('vdgsa_backend.api_schema.urls')),
+    path('swp/', include('vdgsa_backend.stripe_wix_proxy.urls')),
 
     path('login/', VdGSALoginView.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
