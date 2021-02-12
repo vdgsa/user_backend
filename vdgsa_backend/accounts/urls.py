@@ -27,6 +27,7 @@ urlpatterns = [
          name='all-users-csv'),
     path('directory/', views.MembershipSecretaryView.as_view(),
          name='membership-secretary'),
+    path('add_user/', views.AddUserView.as_view(), name='add-user'),
 
     path('stripe_webhook/', views.stripe_webhook_view),
 

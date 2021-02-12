@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load filters %}
+
+<h3>Add a User</h3>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div class="row mt-3">
+    <div class="col-sm-6">
+      {% include 'utils/form_field.tmpl' with field=form.username label='Email'%}
+    </div>
+  </div>
+
+  {% include 'required_contact_info_form.tmpl' with form=form %}
+
+  <div class="row mt-4">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.phone1 label='Phone 1 (Optional)'%}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.phone2 label='Phone 2 (Optional)'%}
+    </div>
+  </div>
+
+  {% if username_taken %}
+  <div id="username-taken-msg">
+    There is already an account associated with that email address. <br>
+    If you're having trouble logging in, you can
+    <a href="{% url 'password_reset' %}">reset your password here.</a>
+  </div>
+  {% endif %}
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</form>
+
+{% endblock %}

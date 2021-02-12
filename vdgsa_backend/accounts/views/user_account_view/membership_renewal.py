@@ -95,7 +95,8 @@ class PurchaseSubscriptionForm(forms.Form):
                 ]
             )
 
-    donation = forms.IntegerField(required=False, min_value=0)
+        # Defining this field in __init__ so that it comes after membership type
+        self.fields['donation'] = forms.IntegerField(required=False, min_value=0)
 
     _public_membership_types: Final[Sequence[MembershipType]] = [
         MembershipType.regular,

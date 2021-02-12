@@ -56,11 +56,6 @@ class UserProfileForm(ModelForm):
             'include_address_in_membership_directory',
             'include_phone_in_membership_directory',
 
-            'include_name_in_mailing_list',
-            'include_email_in_mailing_list',
-            'include_address_in_mailing_list',
-            'include_phone_in_mailing_list',
-
             # MEMBERSHIP SECRETARY ONLY
             'is_deceased',
             'notes',
@@ -71,7 +66,7 @@ class UserProfileForm(ModelForm):
             'notes': Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
-    def __init__(self, authorized_user: User, *args: Any, **kwargs: Any):
+    def __init__(self, *args: Any, authorized_user: User, **kwargs: Any):
         data = kwargs.pop('data', None)
 
         if data is not None and not is_membership_secretary(authorized_user):

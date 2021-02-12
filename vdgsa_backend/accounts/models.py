@@ -65,11 +65,6 @@ class User(AbstractUser):
     include_address_in_membership_directory = models.BooleanField(default=True)
     include_phone_in_membership_directory = models.BooleanField(default=True)
 
-    include_name_in_mailing_list = models.BooleanField(default=True)
-    include_email_in_mailing_list = models.BooleanField(default=True)
-    include_address_in_mailing_list = models.BooleanField(default=True)
-    include_phone_in_mailing_list = models.BooleanField(default=True)
-
     # MEMBERSHIP SECRETARY ONLY
     is_deceased = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
