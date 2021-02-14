@@ -19,7 +19,8 @@ from django.views.generic.list import ListView
 
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
-from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import RentalItemBaseManager, RentalEvent
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
+    RentalItemBaseManager, RentalEvent)
 from vdgsa_backend.rental_viols.models import (
     Bow, Case, RentalEvent, RentalHistory, Viol, WaitingList, RentalEvent
 )
@@ -87,7 +88,8 @@ class AttachToViolView(RentalViewBase, View):
                 bow.save()
                 viol.bows.add(bow)
                 history = RentalHistoryForm(
-                    {"event": RentalEvent.attached, "viol_num": viol.viol_num, "bow_num": bow.bow_num})
+                    {"event": RentalEvent.attached, "viol_num": viol.viol_num,
+                     "bow_num": bow.bow_num})
                 history.save()
                 messages.add_message(self.request, messages.SUCCESS, 'Bow attached!')
 
@@ -97,7 +99,9 @@ class AttachToViolView(RentalViewBase, View):
                 case.save()
                 viol.cases.add(case)
                 history = RentalHistoryForm(
-                    {"event": RentalEvent.attached, "viol_num": viol.viol_num, "case_num": case.case_num})
+                    {"event": RentalEvent.attached,
+                     "viol_num": viol.viol_num,
+                     "case_num": case.case_num})
                 history.save()
                 messages.add_message(self.request, messages.SUCCESS, 'Case attached!')
 
@@ -114,7 +118,8 @@ class DetachFromViolView(RentalViewBase, View):
                 bow.status = RentalEvent.detached
                 bow.save()
                 history = RentalHistoryForm(
-                    {"event": RentalEvent.detached, "viol_num": viol.viol_num, "bow_num": bow.bow_num})
+                    {"event": RentalEvent.detached, "viol_num": viol.viol_num, "bow_num":
+                     bow.bow_num})
                 history.save()
                 messages.add_message(self.request, messages.SUCCESS, 'Bow attached!')
 
@@ -124,7 +129,8 @@ class DetachFromViolView(RentalViewBase, View):
                 case.status = RentalEvent.detached
                 case.save()
                 history = RentalHistoryForm(
-                    {"event": RentalEvent.detached, "viol_num": viol.viol_num, "case_num": case.case_num})
+                    {"event": RentalEvent.detached, "viol_num": viol.viol_num,
+                     "case_num": case.case_num})
                 history.save()
                 messages.add_message(self.request, messages.SUCCESS, 'Case attached!')
 
@@ -200,7 +206,7 @@ class ViolsMultiListView(RentalViewBase, ListView):
 
     def getFilter(self, **kwargs):
         filter = self.request.GET.get('filter')
-        if filter == None:
+        if filter is None:
             filter = self.request.session.get(self.filterSessionName, None)
         self.request.session[self.filterSessionName] = filter
         return filter

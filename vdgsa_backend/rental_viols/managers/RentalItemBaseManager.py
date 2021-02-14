@@ -27,10 +27,10 @@ class RentalEvent(TextChoices):
 
 class RentalItemBaseQuerySet(QuerySet):
     def delete(self):
-        return super(SoftDeletionQuerySet, self).update(status=RentalEvent.deleted)
+        return super(RentalItemBaseQuerySet, self).update(status=RentalEvent.deleted)
 
     def hard_delete(self):
-        return super(SoftDeletionQuerySet, self).delete()
+        return super(RentalItemBaseQuerySet, self).delete()
 
     # def alive(self):
     #     return self.filter(status=RentalEvent.active)
@@ -46,5 +46,6 @@ class RentalItemBaseManager(Manager):
 
     def get_queryset(self):
         if self.active_only:
-            return RentalItemBaseQuerySet(self.model).exclude(status__in=[RentalEvent.deleted, RentalEvent.retired])
+            return RentalItemBaseQuerySet(self.model).exclude(status__in=[RentalEvent.deleted,
+                                                                          RentalEvent.retired])
         return RentalItemBaseQuerySet(self.model)

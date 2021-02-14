@@ -4,7 +4,8 @@ from django.db.models.enums import TextChoices
 from django.utils import timezone
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
-from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import RentalItemBaseManager, RentalEvent
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
+    RentalItemBaseManager, RentalEvent)
 
 
 class RentalProgram(TextChoices):
@@ -36,7 +37,7 @@ class RentalItemBase(models.Model):
 
     objects = RentalItemBaseManager()
 
-    def get_fields(obj):
+    def get_fields(self, obj):
         return obj._meta.get_fields()
 
 
