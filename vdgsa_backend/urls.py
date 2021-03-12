@@ -47,6 +47,7 @@ urlpatterns = [
     path('schema/', include('vdgsa_backend.api_schema.urls')),
     path('rentals/', include('vdgsa_backend.rental_viols.urls')),
     path('swp/', include('vdgsa_backend.stripe_wix_proxy.urls')),
+    path('stripe_emails/', include('vdgsa_backend.stripe_email_webhook.urls')),
 
     path('login/', VdGSALoginView.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
