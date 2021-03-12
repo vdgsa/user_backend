@@ -21,10 +21,10 @@
     {% for item in object_list %}
     <tr>
       <td>
-        <a href="{% url 'renters-detail' pk=item.pk %}">{{item.event}}</a>
+        <a href="{% url 'rental-detail' pk=item.pk %}">{{item.event}}</a>
       </td>
       <td>
-        <a href="{% url 'renter-detail' pk=item.renter_num.pk %}">{{item.renter_num}}</a>
+       {{item.renter_num}}
       </td>
       <td>
       {% if item.viol_num %}
@@ -49,7 +49,7 @@
       </td>
       <td>{{ item.rental_start }}</td>
       <td>{{ item.rental_end }}</td>
-      <td>
+      <td class="text-nowrap">
         <a href="{% url 'rental-return' item.entry_num %}" title="Return">{% bs_icon 'arrow-return-left' %}</a>
         <a href="{% url 'rental-renew' item.entry_num %}" title="Renew">{% bs_icon 'arrow-clockwise' %}</a>
         <a href="{% url 'soft-delete' 'RentalHistory' item.entry_num %}" title="Remove">{% bs_icon 'trash' %}</a>

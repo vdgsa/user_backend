@@ -152,3 +152,6 @@ STATIC_ROOT = BASE_DIR.parent / 'static'
 
 # Misc custom settings --------------------------------------------------------
 MAX_NUM_FAMILY_MEMBERS = 3
+
+MEDIA_ROOT = BASE_DIR.parent / 'uploads'
+MEDIA_URL = '/uploads/'

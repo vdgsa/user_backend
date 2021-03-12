@@ -161,9 +161,10 @@ class Image(models.Model):
         )
 
 
-class RentalContract(models.Model):
+class RentalContract(RentalItemBase):
     entry_num = models.AutoField(primary_key=True)
-    # Possibly change to ImageField
+    # Leaving both for legacy data
+    document = models.FileField(upload_to='contracts/%Y/', blank=True, null=True)
     file_name = models.CharField(max_length=100, blank=True, null=True)
     original_name = models.CharField(max_length=100, blank=True, null=True)
 
@@ -174,7 +175,7 @@ class WaitingList(RentalItemBase):
 
     entry_num = models.AutoField(primary_key=True)
     renter_num = models.ForeignKey(User, on_delete=models.CASCADE)
-    size = models.TextField(choices=TextChoices.choices)
+    size = models.TextField(choices=ViolSize.choices)
     viol_num = models.ForeignKey(
         Viol, db_column='viol_num',
         on_delete=models.SET_NULL, blank=True, null=True, default=None
@@ -187,7 +188,7 @@ class WaitingList(RentalItemBase):
 
     def __str__(self) -> str:
         return (
-            f'{self.entry_num}: {self.renter_num.lastname}, {self.viol.maker} '
+            f'{self.entry_num}: {self.renter_num}, {self.viol_num.maker} '
         )
 
 
@@ -216,7 +217,9 @@ class RentalHistory(RentalItemBase):
     notes = models.TextField(blank=True, null=True)
     rental_start = models.DateField(blank=True, null=True)
     rental_end = models.DateField(blank=True, null=True)
-    contract_scan = models.IntegerField(blank=True, null=True)
+    contract_scan = models.ForeignKey(RentalContract, blank=True, null=True,
+                                      default=None, on_delete=models.SET_NULL,
+                                      related_name='rental')
 
     def get_pk_name(self):
         primary_key_name = 'entry_num'

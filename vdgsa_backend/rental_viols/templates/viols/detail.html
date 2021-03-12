@@ -8,8 +8,8 @@
   <div className="buttonbar-ctr d-flex justify-content-around ">
     {% if not object.renter %}
       <a href="{% url 'viol-rentOut'%}?viol_num={{ object.viol_num }}" class="btn btn-primary" >Rent out</a> 
-      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Retire</a> 
-      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Reserve</a> 
+      <a href="{% url 'viol-retire' %}?viol_num={{ object.viol_num }}" class="btn btn-primary" >Retire</a> 
+      <a href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}" class="btn btn-primary" >Reserve</a> 
       <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" > Make available</a> 
     {% else %}
       <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Renew rental</a> 

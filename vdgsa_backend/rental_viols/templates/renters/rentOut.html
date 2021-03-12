@@ -1,8 +1,28 @@
 {% extends '../rentals.html' %}
 {% load rental_tags %}{% load filters %}
 {% block content %}
-<p>To Rent Out 
-    {{viol}} , please select a user</p>
+
+
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      <p>To Rent Out {{viol}} , please select a user</p>
+    </div>
+  </div>
+  
+{% if waiting %}
+    <div class="row">
+    <div class="col">
+      <p >Waiting list</p>
+      {% for wait in waiting %}
+       <div>{{wait}}</div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+</div>
 
   TODO: Add filter - Find User
 <form id="rental-create-form" method="post" action="{% url 'rental-create' %}">

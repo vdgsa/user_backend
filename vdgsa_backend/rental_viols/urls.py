@@ -8,11 +8,14 @@ urlpatterns = [
 
     path('viol/rentOut/', views.RentOutView.as_view(), name='viol-rentOut'),
 
+    path('rentals/', views.ListRentersView.as_view(), name='list-renters'),
     path('rental/renew/<int:pk>/', views.RentOutView.as_view(), name='rental-renew'),
     path('rental/return/<int:pk>/', views.RentOutView.as_view(), name='rental-return'),
     path('rental/create/', views.RentalCreateView.as_view(), name='rental-create'),
     path('rental/submit/', views.RentalSubmitView.as_view(), name='rental-submit'),
-    path('renter/<int:pk>/', views.RentalSubmitView.as_view(), name='renter-detail'),
+    path('rental/upload/<int:entry_num>', views.UploadRentalView.as_view(), name='rental-upload'),
+    path('rentals/<int:pk>/', views.RentersDetailView.as_view(), name='rental-detail'),
+    path('rental/<int:pk>/', views.UpdateRentalView.as_view(), name='rental-update'),
 
 
     path('bows/', views.ListBowsView.as_view(), name='list-bows'),
@@ -29,11 +32,11 @@ urlpatterns = [
     path('viols/add/', views.AddViolView.as_view(), name='add-viol'),
     path('viol/attach/', views.AttachToViolView.as_view(), name='viol-attach'),
     path('viol/detach/', views.DetachFromViolView.as_view(), name='viol-detach'),
+    path('viol/reserve/', views.ReserveViolView.as_view(), name='viol-reserve'),
+    path('viol/retire/', views.RetireViolView.as_view(), name='viol-retire'),
     path('viols/<int:pk>/', views.ViolDetailView.as_view(), name='viol-detail'),
     path('viol/update/<int:pk>/', views.UpdateViolView.as_view(), name='viol-update'),
 
-    path('renters/', views.ListRentersView.as_view(), name='list-renters'),
-    path('renter/<int:pk>/', views.RentersDetailView.as_view(), name='renters-detail'),
 
     path('waiting/', views.ListWaitingView.as_view(), name='list-waiting'),
 

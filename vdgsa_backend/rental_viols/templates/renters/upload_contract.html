@@ -1,0 +1,14 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+{% block content %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+rental_entry_num = {{form.entry_num}}<br>
+    <input type='texts' name="rental_entry_num" value="{{ entry_num }}"/>
+    {{ form }}
+    <button type="submit" class="btn btn-primary">Upload </button>
+  </form>
+
+{% endblock %}

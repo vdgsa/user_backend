@@ -1,4 +1,5 @@
 {% extends 'rentals.html' %}
+{% load django_bootstrap_icons %}
 {% block content %} Waiting List
 <table id="viol-table" class="table table-striped">
   <thead>
@@ -10,16 +11,16 @@
   <tbody>
     {% for item in object_list %}
     <tr>
-      {% comment %}
       <td>
-        <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+        <a href="{% url 'viol-detail' pk=item.pk %}">{{item.entry_num}}</a>
       </td>
+      <td>{{item.renter_num}}</td>
+      <td><a href="{% url 'viol-detail' pk=item.viol_num.pk %}">{{item.viol_num}}</a></td>
       <td>{{item.size}}</td>
-      <td>{{item.strings}}</td>
-      <td>{{item.maker}}</td>
-      <td>{{item.program}}</td>
-      <td>{{item.state}}</td>
-      {% endcomment %}
+      <td>{{item.date_req}}</td>
+      <td class="text-nowrap">
+        <a href="{% url 'soft-delete' 'WaitingList' item.entry_num %}" title="Remove">{% bs_icon 'trash' %}</a>
+      </td>
     </tr>
     {% endfor %}
   </tbody>

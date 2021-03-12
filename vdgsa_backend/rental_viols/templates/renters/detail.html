@@ -1,37 +1,76 @@
 {% extends '../rentals.html' %}
 {% load rental_tags %}
 {% block content %}
-<p>Renter detail</p>
-<div>Edit | Add to waiting list | Deactivate</div>
-
-{{object.fields}}
 
 
+<div class="card">
+<div class="card-body">
+  <div className="buttonbar-ctr d-flex justify-content-around ">
 
-{% for field in object.get_fields %}
-    <li><b>{{ field }}:</b> {{ field.data }}</li>
-{% endfor %}
+    <a href="{% url 'rental-renew' object.entry_num  %}" class="btn disabled" >Renew rental</a> 
+    <a href="{% url 'rental-return' object.entry_num %}" class="btn disabled" >Return from rental</a> 
+    <a href="{% url 'rental-update' object.entry_num  %}" class="btn btn-primary" >Edit</a> 
+ </div> </div> </div>
+
+
+
+
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      {% comment %} <p class="h3">{{object.entry_num}}</p> {% endcomment %}
+      <p class="h3">{{object.renter_num}}</p>
+      <p class="h3">{{object.notes}}</p>
+      <p class="h3">{{object.rental_start}}</p>
+      <p class="h3">{{object.rental_end}}</p>
+
+      <p class="h3">      
+        {% if object.contract_scan %}
+          {{ object.contract_scan.document }}
+        {% else %}
+          <a href="{% url 'rental-upload' object.entry_num %}" >Attach Rental Agreement</a>
+        {% endif%}
+      </p>
+
+    </div>
+  </div>
+
+<div class="row">
+    <div class="col">
+    {% if object.viol_num %}
+      {{ object.viol_num }}
+    {% else %}
+      <a href="{% url 'viol-attach' %}?viol_num={{ object.viol_num.viol_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+    {% endif%}
+
+
+    </div>
+    <div class="col">
+     
+     {% if object.case_num%}
+      {{ object.case_num }}
+      {% else %}
+      <a href="{% url 'case-attach' %}?case_num={{ object.case_num.case_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+     {% endif%}
+
+    </div>
+    <div class="col">
+      {% if object.bow_num %}
+      {{ object.bow_num }}
+      {% else %}
+        <a href="{% url 'viol-attach' %}?viol_num={{ object.viol_num.viol_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
+      {% endif%}
+
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+
 
 {% endblock %}
-
-
-    {% comment %} 
-    
-
-
-    status
-    entry_num
-    viol_num
-    bow_num
-    case_num
-    renter_num
-    event
-    notes
-    rental_start
-    rental_end
-    contract_scan 
-    
-    created_at
-    last_modified
-
-    {% endcomment %}

@@ -1,15 +1,18 @@
+import datetime
 from functools import cached_property
 from typing import Any, Dict, Iterable, Literal
 from django import forms
+from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.apps import apps
+from django.forms.widgets import DateTimeBaseInput
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.http import Http404
 from django.shortcuts import redirect, render, get_object_or_404
-from django.urls.base import reverse
+from django.urls.base import reverse, reverse_lazy
 from django.utils.http import urlencode
 from django.utils import timezone
 from django.views.generic.base import TemplateView, View
@@ -22,7 +25,7 @@ from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManag
 from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
     RentalItemBaseManager, RentalEvent)
 from vdgsa_backend.rental_viols.models import (
-    Bow, Case, RentalEvent, RentalHistory, Viol, WaitingList, RentalEvent
+    Bow, Case, RentalEvent, RentalHistory, Viol, WaitingList, RentalEvent, ViolSize, RentalContract
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 
@@ -149,6 +152,8 @@ class RentOutView(RentalViewBase, View):
         if self.request.GET.get('viol_num'):
             context['viol'] = Viol.objects.get(pk=self.request.GET.get('viol_num'))
             context['users'] = User.objects.all()
+            context['waiting'] = WaitingList.objects.all().filter(viol_num=context['viol'])
+
         return render(request, 'renters/rentOut.html', context)
 
 
@@ -160,7 +165,6 @@ class RentalCreateView(RentalViewBase, View):
         if self.request.POST.get('viol_num'):
             context['viol'] = Viol.objects.get(pk=self.request.POST['viol_num'])
             context['user'] = User.objects.get(pk=self.request.POST['user_id'])
-
         return render(request, 'renters/createAgreement.html', context)
 
 
@@ -192,9 +196,158 @@ class RentalSubmitView(RentalViewBase, View):
 
 # TODO: Rental Actions
 # RentalContract scan of signed contract
-# Return Rental
-# Renew Rental
-# Make Available (not sure what happens in DB)
+
+
+class RentalContractForm(forms.ModelForm):
+    rental_entry_num = forms.HiddenInput()
+
+    class Meta:
+        model = RentalContract
+        fields = ('document', 'original_name', 'file_name')
+
+
+class UploadRentalView(RentalViewBase, CreateView):
+    model = RentalContract
+    form_class = RentalContractForm
+    success_url = reverse_lazy('list-renters')
+    template_name = 'renters/upload_contract.html'
+
+    # def get_initial(self):
+    #     initial = super().get_initial()
+    #     initial['entry_num'] = self.kwargs['entry_num']
+    #     return initial
+
+    # def get_context_data(self, **kwargs):
+    #     kwargs.setdefault('entry_num', self.kwargs['entry_num'])
+    #     return kwargs
+
+    def form_valid(self, form):
+        print('form_valid ', self.kwargs['entry_num'])
+        rh = RentalHistory.objects.get(pk=self.kwargs['entry_num'])
+
+        response = super().form_valid(form)
+        form.instance.rental.set([rh])
+        return response
+
+    def get_context_data(self, **kwargs):
+        if 'form' not in kwargs:
+            kwargs['form'] = self.get_form()
+
+        return super().get_context_data(**kwargs)
+
+
+class RentalHistoryForm(forms.ModelForm):
+
+    class Meta:
+        model = RentalHistory
+        fields = ('notes', 'rental_start', 'rental_end')
+
+        widgets = {
+            'rental_start': forms.DateInput(format=('%m/%d/%Y'),
+                                            attrs={'class': 'form-control',
+                                                   'placeholder': 'Select a date',
+                                                   'type': 'date'}),
+            'rental_end': forms.DateInput(format=('%m/%d/%Y'),
+                                          attrs={'class': 'form-control',
+                                                 'placeholder': 'Select a date',
+                                                 'type': 'date'}),
+
+        }
+
+
+class UpdateRentalView(RentalViewBase, SuccessMessageMixin, UpdateView):
+    model = RentalHistory
+    form_class = RentalHistoryForm
+    template_name = 'renters/updateRental.html'
+    success_message = "Rental was updated successfully"
+
+    def get_success_url(self, **kwargs) -> str:
+        print(reverse('rental-detail', self.object.entry_num))
+        return reverse('rental-detail', self.object.entry_num)
+
+
+class ReserveViolModelForm(forms.ModelForm):
+    class Meta:
+        model = WaitingList
+        fields = [
+            'entry_num',
+            'viol_num',
+            'renter_num',
+            'date_req',
+            'size'
+        ]
+
+
+class ReserveViolView(RentalViewBase, FormView):
+    template_name = 'renters/reserve.html'
+    form_class = ReserveViolModelForm
+    model = ReserveViolModelForm
+    success_url = '/rentals/waiting/'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['date_req'] = datetime.date.today
+        if self.request.GET.get('viol_num'):
+            viol = Viol.objects.get(pk=self.request.GET.get('viol_num'))
+            initial['viol_num'] = viol
+        if self.request.GET.get('user_id'):
+            renter = User.objects.get(pk=self.request.GET.get('user_id'))
+            initial['renter_num'] = renter
+        return initial
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        context = self.get_context_data(**kwargs)
+        context['form'] = form
+
+        if self.request.GET.get('viol_num'):
+            context['viol'] = Viol.objects.get(pk=request.GET.get('viol_num'))
+            context['users'] = User.objects.all()
+
+        return self.render_to_response(context)
+
+    def form_valid(self, form):
+        waitinglist = WaitingList.objects.create(
+            renter_num=form.cleaned_data['renter_num'],
+            viol_num=form.cleaned_data['viol_num'],
+            date_req=form.cleaned_data['date_req'],
+            size=form.cleaned_data['size'])
+        waitinglist.save()
+        history = RentalHistoryForm(
+            {"event": RentalEvent.reserved,
+                "viol_num": form.cleaned_data['viol_num'].viol_num,
+                "renter_num": form.cleaned_data['renter_num'].id})
+        history.save()
+        messages.add_message(self.request, messages.SUCCESS, 'Waiting List created!')
+        return super().form_valid(form)
+
+
+class ViolUpdateForm(forms.Form):
+    viol_num = forms.IntegerField()
+    user_id = forms.IntegerField()
+
+
+class RetireViolView(RentalViewBase, View):
+    template_name = 'renters/retire.html'
+    form_class = ViolUpdateForm
+    success_url = 'viols/'
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        context = {}
+        if self.request.GET.get('viol_num'):
+            context['viol'] = Viol.objects.get(pk=self.request.GET.get('viol_num'))
+            context['users'] = User.objects.all()
+
+        return render(request, self.template_name, context)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        context = {}
+        if self.request.POST.get('viol_num'):
+            context['viol'] = Viol.objects.get(pk=self.request.POST['viol_num'])
+            context['user'] = User.objects.get(pk=self.request.POST['user_id'])
+
+        return render(request, 'renters/createAgreement.html', context)
 
 # LIST VIEWS
 
@@ -250,7 +403,9 @@ class ListRentersView(RentalViewBase, ListView):
 
 class ListWaitingView(RentalViewBase, ListView):
     def get_queryset(self, *args: Any, **kwargs: Any):
-        return WaitingList.objects.all()
+        queryset = WaitingList.objects.all()
+        print(queryset)
+        return queryset
 
     template_name = 'waitinglist.html'
 
