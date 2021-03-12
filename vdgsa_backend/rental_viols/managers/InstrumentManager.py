@@ -6,8 +6,6 @@ class AccessoryQuerySet(models.QuerySet):
         if size:
             return self.filter(size=size).filter(viol_num__isnull=not attached)
 
-        return self.filter(viol_num__isnull=not attached)
-
 
 class ViolQuerySet(models.QuerySet):
     def get_rented_status(self, rented, size):
@@ -21,7 +19,7 @@ class AccessoryManager(models.Manager):
         return AccessoryQuerySet(self.model, using=self._db)
 
     def get_available(self, size=None):
-        return self.get_queryset().get_rented_status(rented=False, size=size)
+        return self.get_queryset().get_attached_status(attached=False, size=size)
 
     def get_attached(self):
         return self.get_queryset().get_attached_status(attached=True)

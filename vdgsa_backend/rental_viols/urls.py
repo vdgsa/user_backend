@@ -12,6 +12,7 @@ urlpatterns = [
     path('rental/renew/<int:pk>/', views.RentOutView.as_view(), name='rental-renew'),
     path('rental/return/<int:pk>/', views.RentOutView.as_view(), name='rental-return'),
     path('rental/create/', views.RentalCreateView.as_view(), name='rental-create'),
+    path('rental/attach/', views.AttachToRentalView.as_view(), name='rental-attach'),
     path('rental/submit/', views.RentalSubmitView.as_view(), name='rental-submit'),
     path('rental/upload/<int:entry_num>', views.UploadRentalView.as_view(), name='rental-upload'),
     path('rentals/<int:pk>/', views.RentersDetailView.as_view(), name='rental-detail'),

@@ -41,7 +41,7 @@
     {% if object.viol_num %}
       {{ object.viol_num }}
     {% else %}
-      <a href="{% url 'viol-attach' %}?viol_num={{ object.viol_num.viol_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=viol" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
     {% endif%}
 
 
@@ -51,7 +51,7 @@
      {% if object.case_num%}
       {{ object.case_num }}
       {% else %}
-      <a href="{% url 'case-attach' %}?case_num={{ object.case_num.case_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=case" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
      {% endif%}
 
     </div>
@@ -59,7 +59,7 @@
       {% if object.bow_num %}
       {{ object.bow_num }}
       {% else %}
-        <a href="{% url 'viol-attach' %}?viol_num={{ object.viol_num.viol_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
+        <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=bow" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
       {% endif%}
 
     </div>

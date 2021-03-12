@@ -49,6 +49,56 @@ class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
 # Add to waiting list | Cancel waiting list
 
 
+class AttachToRentalView(RentalViewBase, View):
+    template_name = 'renters/attatchToRental.html'
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        context = {}
+        if self.request.method == 'GET' and 'item' in self.request.GET:
+            context['item'] = self.request.GET['item']
+            context['rental'] = RentalHistory.objects.get(pk=self.request.GET['entry_num'])
+            if context['rental'].viol_num:
+                context['avail_cases'] = context['rental'].viol_num.cases
+                context['avail_bows'] = context['rental'].viol_num.bows
+            else:
+                context['viol'] = Viol.objects.get_available()
+                context['avail_cases'] = Case.objects.get_available()
+                context['avail_bows'] = Bow.objects.get_available()
+
+        return render(
+            self.request,
+            'renters/attatchToRental.html', context
+        )
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        if self.request.POST.get('viol_num'):
+            viol = Viol.objects.get(pk=self.request.POST.get('viol_num'))
+            if self.request.POST.get('bow_num'):
+                bow = Bow.objects.get(pk=self.request.POST['bow_num'])
+                bow.status = RentalEvent.attached
+                bow.save()
+                viol.bows.add(bow)
+                history = RentalHistoryForm(
+                    {"event": RentalEvent.attached, "viol_num": viol.viol_num,
+                     "bow_num": bow.bow_num})
+                history.save()
+                messages.add_message(self.request, messages.SUCCESS, 'Bow attached!')
+
+            if self.request.POST.get('case_num'):
+                case = Case.objects.get(pk=self.request.POST['case_num'])
+                case.status = RentalEvent.attached
+                case.save()
+                viol.cases.add(case)
+                history = RentalHistoryForm(
+                    {"event": RentalEvent.attached,
+                     "viol_num": viol.viol_num,
+                     "case_num": case.case_num})
+                history.save()
+                messages.add_message(self.request, messages.SUCCESS, 'Case attached!')
+
+        return redirect(reverse('viol-detail', args=[self.request.POST.get('viol_num')]))
+
+
 class AttachToViolView(RentalViewBase, View):
     template_name = 'viols/attatchToViol.html'
 
@@ -237,21 +287,19 @@ class UploadRentalView(RentalViewBase, CreateView):
 
 
 class RentalHistoryForm(forms.ModelForm):
-
     class Meta:
         model = RentalHistory
         fields = ('notes', 'rental_start', 'rental_end')
 
         widgets = {
-            'rental_start': forms.DateInput(format=('%m/%d/%Y'),
+            'rental_start': forms.DateInput(format=('%Y-%m-%d'),
                                             attrs={'class': 'form-control',
                                                    'placeholder': 'Select a date',
                                                    'type': 'date'}),
-            'rental_end': forms.DateInput(format=('%m/%d/%Y'),
+            'rental_end': forms.DateInput(format=('%Y-%m-%d'),
                                           attrs={'class': 'form-control',
                                                  'placeholder': 'Select a date',
                                                  'type': 'date'}),
-
         }
 
 
@@ -262,8 +310,7 @@ class UpdateRentalView(RentalViewBase, SuccessMessageMixin, UpdateView):
     success_message = "Rental was updated successfully"
 
     def get_success_url(self, **kwargs) -> str:
-        print(reverse('rental-detail', self.object.entry_num))
-        return reverse('rental-detail', self.object.entry_num)
+        return reverse('rental-detail', args=[self.object.entry_num])
 
 
 class ReserveViolModelForm(forms.ModelForm):
