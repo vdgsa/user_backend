@@ -111,6 +111,8 @@ DATABASES = {
     }
 }
 
+DEFAULT_FROM_EMAIL = 'VdGSA Website <webmaster@vdgsa.org>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

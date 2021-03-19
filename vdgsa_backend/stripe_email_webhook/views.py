@@ -48,7 +48,7 @@ def stripe_officer_email_view(request: HttpRequest, *args: Any, **kwargs: Any) -
 
             send_mail(
                 subject=f'{customer_email} has made a {product.name} payment',
-                from_email='webmaster@vdgsa.org',
+                from_email=None,
                 recipient_list=recipients,
                 message=f'{customer_email} has made a '
                         f'{item.price.unit_amount / 100:.2f}{item.price.currency} '

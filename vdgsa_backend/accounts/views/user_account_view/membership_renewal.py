@@ -59,7 +59,7 @@ def stripe_webhook_view(request: HttpRequest, *args: Any, **kwargs: Any) -> Http
             pending_purchase.save()
         send_mail(
             subject=f'{show_name_and_email(pending_purchase.user)} has renewed their membership',
-            from_email='webmaster@vdgsa.org',
+            from_email=None,
             recipient_list=['membership@vdgsa.org'],
             message=f'{show_name_and_email(pending_purchase.user)} '
                     f'has renewed their {pending_purchase.membership_type} membership'
@@ -282,7 +282,7 @@ class AddFamilyMemberView(LoginRequiredMixin, UserPassesTestMixin, View):
             send_mail(
                 subject=f'VdGSA Membership: {show_name(self.subscription.owner)}'
                 ' has added you as a family member',
-                from_email='webmaster@vdgsa.org',
+                from_email=None,
                 recipient_list=[username],
                 message=f"""Hello from the VdGSA Web Team!
 
