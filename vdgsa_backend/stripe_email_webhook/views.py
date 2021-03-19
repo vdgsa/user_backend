@@ -1,11 +1,22 @@
+from __future__ import annotations
+
 import json
-from typing import Any
+from typing import Any, Dict, Final, List
 
 import stripe  # type: ignore
 from django.core.mail import send_mail
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+
+LINE_ITEM_NAMES_TO_OFFICER_EMAILS: Final[Dict[str, List[str]]] = {
+    'advertising': ['advertising@vdgsa.org'],
+    'Rental Viol': ['rentalviol@vdgsa.org'],
+    'Sheet Music': ['arenken@sandwich.net'],
+    'Books and Merchandise': ['arenken@sandwich.net'],
+    "Young Players' Weekend": ['pafunes@me.com'],
+    "Professional Development Weekend": ['janelhershey@gmail.com'],
+}
 
 
 # See https://stripe.com/docs/webhooks/build#example-code
@@ -32,8 +43,8 @@ def stripe_officer_email_view(request: HttpRequest, *args: Any, **kwargs: Any) -
         for item in line_items.data:
             product = stripe.Product.retrieve(item.price.product)
             recipients = ['treasurer@vdgsa.org']
-            if product.name == 'Rental Viol':
-                recipients.append('rentalviol@gmail.com')
+            if product.name in LINE_ITEM_NAMES_TO_OFFICER_EMAILS:
+                recipients += LINE_ITEM_NAMES_TO_OFFICER_EMAILS[product.name]
 
             send_mail(
                 subject=f'{customer_email} has made a {product.name} payment',
