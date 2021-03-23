@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'vdgsa_backend.accounts',
     'vdgsa_backend.api_schema',
     'vdgsa_backend.stripe_wix_proxy',
+    'vdgsa_backend.stripe_email_webhook',
 
     'corsheaders'
 ]
@@ -106,6 +107,8 @@ DATABASES = {
     }
 }
 
+DEFAULT_FROM_EMAIL = 'VdGSA Website <webmaster@vdgsa.org>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

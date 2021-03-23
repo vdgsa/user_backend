@@ -70,7 +70,7 @@ class ChangeEmailRequestView(LoginRequiredMixin, UserPassesTestMixin, View):
         change_request = form.save()
         send_mail(
             subject='VdGSA Account - Change Login Email Request',
-            from_email='webmaster@vdgsa.org',
+            from_email=None,
             recipient_list=[change_request.new_email],
             message=f'''
 You have requested that your VdGSA login email be changed from
