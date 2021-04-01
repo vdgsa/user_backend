@@ -227,7 +227,9 @@ def create_or_renew_subscription(
     if not hasattr(user, 'owned_subscription'):
         # Purchase new subscription
         now = timezone.now()
-        valid_until = _plus_one_calendar_year(now)
+        valid_until = (
+            None if membership_type == MembershipType.lifetime else _plus_one_calendar_year(now)
+        )
 
         subscription = MembershipSubscription.objects.create(
             owner=user, valid_until=valid_until,
@@ -242,9 +244,22 @@ def create_or_renew_subscription(
 
         # Only lifetime members should have valid_until be None.
         assert user.owned_subscription.valid_until is not None
-        # Extend existing subscription by 1 year
-        valid_from = user.owned_subscription.valid_until
-        valid_until = _plus_one_calendar_year(user.owned_subscription.valid_until)
+
+        now = timezone.now()
+        # If their subscription has expired, renew it until a year from
+        # now since it may have been more than a year since they last renewed.
+        # Otherwise, extend the current expiration date by a year (this)
+        # allows users to renew multiple years in a row.
+        if now > user.owned_subscription.valid_until:
+            valid_from = now
+        else:
+            valid_from = user.owned_subscription.valid_until
+
+        valid_until = (
+            None if membership_type == MembershipType.lifetime
+            else _plus_one_calendar_year(valid_from)
+        )
+
         user.owned_subscription.valid_until = valid_until
         user.owned_subscription.membership_type = membership_type
         user.owned_subscription.years_renewed.append(valid_from.year)

@@ -1,5 +1,7 @@
 import json
 import time
+from typing import Final
+from unittest import mock
 
 from django.conf import settings
 from django.core import mail
@@ -11,8 +13,123 @@ from selenium.webdriver.support import expected_conditions as EC  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
+from vdgsa_backend.accounts.views.user_account_view.membership_renewal import (
+    create_or_renew_subscription
+)
 
 from ..selenium_test_base import SeleniumTestCaseBase
+
+
+class MembershipRenewalLogicTestCase(TestCase):
+    user: User
+    one_minute_millisec: Final = 60000
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = User.objects.create_user(username='user@user.com')
+
+    def test_create_new_subscription(self) -> None:
+        now = timezone.now()
+        create_or_renew_subscription(self.user, MembershipType.student)
+        subscription = self.user.subscription
+        assert subscription is not None
+        assert subscription.valid_until is not None
+        self.assertEqual(MembershipType.student, subscription.membership_type)
+
+        expected_valid_until = now.replace(year=now.year + 1)
+        self.assertAlmostEqual(
+            expected_valid_until.timestamp(),
+            subscription.valid_until.timestamp(),
+            delta=self.one_minute_millisec
+        )
+        self.assertEqual([now.year], subscription.years_renewed)
+
+    def test_renewing_lifetime_does_nothing(self) -> None:
+        now = timezone.now()
+        create_or_renew_subscription(self.user, MembershipType.lifetime)
+        subscription = self.user.subscription
+        assert subscription is not None
+        self.assertEqual(MembershipType.lifetime, subscription.membership_type)
+        self.assertIsNone(subscription.valid_until)
+        self.assertEqual([now.year], subscription.years_renewed)
+
+        create_or_renew_subscription(self.user, MembershipType.regular)
+        self.user.refresh_from_db()
+        subscription = self.user.subscription
+        assert subscription is not None
+        self.assertEqual(MembershipType.lifetime, subscription.membership_type)
+        self.assertEqual([now.year], subscription.years_renewed)
+
+    def test_renew_regular_as_lifetime(self) -> None:
+        create_or_renew_subscription(self.user, MembershipType.regular)
+        subscription = self.user.subscription
+        assert subscription is not None
+        assert subscription.valid_until is not None
+        self.assertEqual(MembershipType.regular, subscription.membership_type)
+
+        create_or_renew_subscription(self.user, MembershipType.lifetime)
+        self.user.refresh_from_db()
+        subscription = self.user.subscription
+        assert subscription is not None
+        self.assertEqual(MembershipType.lifetime, subscription.membership_type)
+        now = timezone.now()
+        self.assertEqual([now.year, now.year + 1], subscription.years_renewed)
+        self.assertIsNone(subscription.valid_until)
+
+    def test_renew_multiple_years_in_advance(self) -> None:
+        now = timezone.now()
+        create_or_renew_subscription(self.user, MembershipType.student)
+        subscription = self.user.subscription
+        assert subscription is not None
+        assert subscription.valid_until is not None
+        self.assertEqual(MembershipType.student, subscription.membership_type)
+
+        expected_valid_until = now.replace(year=now.year + 1)
+        self.assertAlmostEqual(
+            expected_valid_until.timestamp(),
+            subscription.valid_until.timestamp(),
+            delta=self.one_minute_millisec
+        )
+
+        create_or_renew_subscription(self.user, MembershipType.student)
+        create_or_renew_subscription(self.user, MembershipType.student)
+        self.user.refresh_from_db()
+        assert subscription is not None
+        assert subscription.valid_until is not None
+
+        expected_valid_until = now.replace(year=now.year + 3)
+        self.assertAlmostEqual(
+            expected_valid_until.timestamp(),
+            subscription.valid_until.timestamp(),
+            delta=self.one_minute_millisec
+        )
+        self.assertEqual([now.year, now.year + 1, now.year + 2], subscription.years_renewed)
+
+    def test_renew_after_membership_has_expired(self) -> None:
+        now = timezone.now()
+        create_or_renew_subscription(self.user, MembershipType.regular)
+        # subscription = self.user.subscription
+        # assert subscription is not None
+        # assert subscription.valid_until is not None
+        # self.assertEqual(MembershipType.regular, subscription.membership_type)
+
+        renewal_time = now.replace(now.year + 2)
+        patch_path = ('vdgsa_backend.accounts.views.user_account_view'
+                      '.membership_renewal.timezone.now')
+        with mock.patch(patch_path, new=mock.Mock(return_value=renewal_time)):
+            create_or_renew_subscription(self.user, MembershipType.regular)
+
+        self.user.refresh_from_db()
+        subscription = self.user.subscription
+        assert subscription is not None
+        assert subscription.valid_until is not None
+        self.assertEqual([now.year, renewal_time.year], subscription.years_renewed)
+        expected_valid_until = renewal_time.replace(year=renewal_time.year + 1)
+        self.assertAlmostEqual(
+            expected_valid_until.timestamp(),
+            subscription.valid_until.timestamp(),
+            delta=self.one_minute_millisec
+        )
 
 
 class MembershipUITestCase(SeleniumTestCaseBase):
