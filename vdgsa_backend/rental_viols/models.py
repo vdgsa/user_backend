@@ -1,17 +1,24 @@
 from __future__ import annotations
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
+    RentalItemBaseManager, RentalEvent)
 from django.db import models
 from django.db.models.enums import TextChoices
 from django.utils import timezone
 from vdgsa_backend.accounts.models import User
-from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
-from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
-    RentalItemBaseManager, RentalEvent)
+from vdgsa_backend.rental_viols.managers.InstrumentManager import (AccessoryManager, ViolManager,
+                                                                   ImageManager)
 
 
 class RentalProgram(TextChoices):
     regular = 'regular'
     select_reserve = 'select_reserve'
     consort_loan = 'consort_loan'
+
+
+class ItemType(TextChoices):
+    viol = 'viol'
+    bow = 'bow'
+    case = 'case'
 
 
 class ViolSize(TextChoices):
@@ -142,18 +149,21 @@ class Case(RentalItemInstrument):
 
 
 class Image(models.Model):
-    # TODO: Use ImageField
     picture_id = models.AutoField(primary_key=True)
-    vbc_number = models.PositiveIntegerField()
+    vbc_number = models.PositiveIntegerField()  # foreign key using type
     type = models.CharField(max_length=4)
     orig_image_file_name = models.CharField(max_length=250)
-    image_file_name = models.CharField(max_length=250)
-    image_width = models.IntegerField()
-    image_height = models.IntegerField()
-    thumb_file_name = models.CharField(max_length=250)
-    thumb_width = models.IntegerField()
-    thumb_height = models.IntegerField()
-    caption = models.TextField()
+
+    image_file_name = models.ImageField(upload_to='images/', blank=True, null=True)
+    # image_file_name = models.CharField(max_length=250)
+    image_width = models.IntegerField(blank=True, null=True)
+    image_height = models.IntegerField(blank=True, null=True)
+    thumb_file_name = models.CharField(max_length=250, blank=True, null=True)
+    thumb_width = models.IntegerField(blank=True, null=True)
+    thumb_height = models.IntegerField(blank=True, null=True)
+    caption = models.TextField(blank=True, null=True)
+
+    objects = ImageManager()
 
     def __str__(self) -> str:
         return (
@@ -178,7 +188,8 @@ class WaitingList(RentalItemBase):
     size = models.TextField(choices=ViolSize.choices)
     viol_num = models.ForeignKey(
         Viol, db_column='viol_num',
-        on_delete=models.SET_NULL, blank=True, null=True, default=None
+        on_delete=models.SET_NULL, blank=True, null=True, default=None,
+        related_name='waitingList'
     )
     date_req = models.DateField(blank=True, null=True)
 

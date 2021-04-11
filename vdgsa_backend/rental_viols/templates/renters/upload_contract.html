@@ -4,11 +4,10 @@
 
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-
-rental_entry_num = {{form.entry_num}}<br>
-    <input type='texts' name="rental_entry_num" value="{{ entry_num }}"/>
-    {{ form }}
+    {% include 'utils/form_body.tmpl' with form=form %}
+  <div class="mt-2">
     <button type="submit" class="btn btn-primary">Upload </button>
+  </div>
   </form>
 
 {% endblock %}

@@ -1,0 +1,18 @@
+{% extends './rentals.html' %}
+{% load rental_tags %}{% load filters %}
+{% block content %}
+<p>Retire multi
+
+
+<form id="rental-create-form" method="post" action="{% url 'viol-retire' %}">
+    {% csrf_token %} 
+    {% include 'utils/form_body.tmpl' with form=form %}
+
+
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Retire</button>
+  </div>
+</form>
+
+{% endblock %}

@@ -17,6 +17,7 @@
           <select class="form-control" name="filter" id="filter" onchange="javascript:this.form.submit()">
             <option value="available"{% ifequal 'available' filter  %}selected{% endifequal %}>Available</option>
             <option value='rented' {% ifequal 'rented' filter  %}selected{% endifequal %}>Rented</option>
+            <option value='retired' {% ifequal 'retired' filter  %}selected{% endifequal %}>Retired</option>
             <option value='all' {% ifequal 'all' filter  %}selected{% endifequal %}>All</option>
           </select>
         </div>
@@ -34,6 +35,8 @@
       <td>Value</td>
       <td>Program</td>
       <td>State</td>
+      <td>Reserved for</td>
+     
     </tr>
   </thead>
   <tbody>
@@ -48,6 +51,16 @@
       <td>{{item.value | currency}}</td>
       <td>{{item.program}}</td>
       <td>{{item.state}}</td>
+      <td>
+      {% if item.waitingList.all %}
+
+          {% for wl in item.waitingList.all %}
+          <div>
+            {{ wl }}
+          </div>
+          {% endfor %}
+      {% endif %}
+      </td>
     </tr>
     {% endfor %}
   </tbody>

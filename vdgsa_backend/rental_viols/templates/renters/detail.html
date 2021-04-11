@@ -1,7 +1,7 @@
 {% extends '../rentals.html' %}
 {% load rental_tags %}
+{% load django_bootstrap_icons %}
 {% block content %}
-
 
 <div class="card">
 <div class="card-body">
@@ -24,15 +24,13 @@
       <p class="h3">{{object.notes}}</p>
       <p class="h3">{{object.rental_start}}</p>
       <p class="h3">{{object.rental_end}}</p>
-
       <p class="h3">      
         {% if object.contract_scan %}
-          {{ object.contract_scan.document }}
+          <a href="/uploads/{{ object.contract_scan.document }}" target="_blank" title="Click for Rental Agreement">{% bs_icon 'file-earmark-text' %} </a>
         {% else %}
           <a href="{% url 'rental-upload' object.entry_num %}" >Attach Rental Agreement</a>
         {% endif%}
       </p>
-
     </div>
   </div>
 

@@ -9,15 +9,18 @@ urlpatterns = [
     path('viol/rentOut/', views.RentOutView.as_view(), name='viol-rentOut'),
 
     path('rentals/', views.ListRentersView.as_view(), name='list-renters'),
-    path('rental/renew/<int:pk>/', views.RentOutView.as_view(), name='rental-renew'),
-    path('rental/return/<int:pk>/', views.RentOutView.as_view(), name='rental-return'),
+    path('rental/renew/<int:entry_num>/', views.RentalRenewView.as_view(), name='rental-renew'),
+    path('rental/return/<int:entry_num>/', views.RentalReturnView.as_view(), name='rental-return'),
     path('rental/create/', views.RentalCreateView.as_view(), name='rental-create'),
     path('rental/attach/', views.AttachToRentalView.as_view(), name='rental-attach'),
     path('rental/submit/', views.RentalSubmitView.as_view(), name='rental-submit'),
     path('rental/upload/<int:entry_num>', views.UploadRentalView.as_view(), name='rental-upload'),
+    # path('rental/view/<int:entry_num>', views.ViewRentalAgreement.as_view(), name='view-agree'),
+
     path('rentals/<int:pk>/', views.RentersDetailView.as_view(), name='rental-detail'),
     path('rental/<int:pk>/', views.UpdateRentalView.as_view(), name='rental-update'),
 
+    path('attachImage/<str:to>/<int:pk>', views.AttachImageView.as_view(), name='add-image'),
 
     path('bows/', views.ListBowsView.as_view(), name='list-bows'),
     path('bows/add/', views.AddBowView.as_view(), name='add-bow'),
@@ -34,7 +37,7 @@ urlpatterns = [
     path('viol/attach/', views.AttachToViolView.as_view(), name='viol-attach'),
     path('viol/detach/', views.DetachFromViolView.as_view(), name='viol-detach'),
     path('viol/reserve/', views.ReserveViolView.as_view(), name='viol-reserve'),
-    path('viol/retire/', views.RetireViolView.as_view(), name='viol-retire'),
+    path('viol/retire/<int:viol_num>/', views.RetireViolView.as_view(), name='viol-retire'),
     path('viols/<int:pk>/', views.ViolDetailView.as_view(), name='viol-detail'),
     path('viol/update/<int:pk>/', views.UpdateViolView.as_view(), name='viol-update'),
 

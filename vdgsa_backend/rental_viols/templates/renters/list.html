@@ -21,7 +21,7 @@
     {% for item in object_list %}
     <tr>
       <td>
-        <a href="{% url 'rental-detail' pk=item.pk %}">{{item.event}}</a>
+        <a href="{% url 'rental-detail' pk=item.pk %}" title="View rental details"> {% bs_icon 'eye' %} </a>
       </td>
       <td>
        {{item.renter_num}}

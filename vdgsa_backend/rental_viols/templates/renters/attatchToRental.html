@@ -1,10 +1,7 @@
 {% extends '../rentals.html' %}
 
 {% block content %}
-
-
 <hr>
-
 <div class="container border mt-3 mb-3 p-3">
 <form method="post" action="{% url 'rental-attach' %}">
   {% csrf_token %}

@@ -1,22 +1,48 @@
-{% extends '../rentals.html' %}
-{% load rental_tags %}
+{% extends '../rentals.html' %} {% load rental_tags %}
+
 {% block content %}
 
-
 <div class="card">
-<div class="card-body">
-  <div className="buttonbar-ctr d-flex justify-content-around ">
-    {% if not object.renter %}
-      <a href="{% url 'viol-rentOut'%}?viol_num={{ object.viol_num }}" class="btn btn-primary" >Rent out</a> 
-      <a href="{% url 'viol-retire' %}?viol_num={{ object.viol_num }}" class="btn btn-primary" >Retire</a> 
-      <a href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}" class="btn btn-primary" >Reserve</a> 
-      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" > Make available</a> 
-    {% else %}
-      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Renew rental</a> 
-      <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" >Return from rental</a> 
-    {% endif %}
-    <a href="{% url 'viol-update' object.viol_num %}" class="btn btn-primary" >Edit</a> 
- </div> </div> </div>
+  <div class="card-body">
+    <div className="buttonbar-ctr d-flex justify-content-around ">
+      {% if not object.renter %}
+      <a
+        href="{% url 'viol-rentOut'%}?viol_num={{ object.viol_num }}"
+        class="btn btn-primary"
+        >Rent out</a
+      >
+      <a href="{% url 'viol-retire' object.viol_num %}" class="btn btn-primary"
+        >Retire</a
+      >
+      <a
+        href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}"
+        class="btn btn-primary"
+        >Reserve</a
+      >
+      <a
+        href="{% url 'viol-attach' %}?case_num={{ object.case_num }}"
+        class="btn disabled"
+      >
+        Make available</a
+      >
+      {% else %}
+      <a
+        href="{% url 'viol-attach' %}?case_num={{ object.case_num }}"
+        class="btn disabled"
+        >Renew rental</a
+      >
+      <a
+        href="{% url 'viol-attach' %}?case_num={{ object.case_num }}"
+        class="btn disabled"
+        >Return from rental</a
+      >
+      {% endif %}
+      <a href="{% url 'viol-update' object.viol_num %}" class="btn btn-primary"
+        >Edit</a
+      >
+    </div>
+  </div>
+</div>
 
 <div class="container border mt-3 mb-3 p-3">
   <div class="row">
@@ -25,79 +51,127 @@
     </div>
   </div>
 
-  
-
   {% instrument_detail object %}
   <div class="row">
     <div class="col">
-     
-     {% if not object.cases.all %}
-      <a href="{% url 'viol-attach' %}?viol_num={{ object.viol_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
-     {% endif%}
-     {% for case in object.cases.all %}
+      {% if not object.cases.all %}
+      <a
+        href="{% url 'viol-attach' %}?viol_num={{ object.viol_num }}"
+        class="btn btn-outline-success btn-sm float-end"
+        >Attach a Case</a
+      >
+      {% endif%} 
+      {% for case in object.cases.all %}
       <div>
         <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Case</h5>
-          <p class="card-text">
-            <a href="{% url 'case-detail' case.case_num %}"> {{ case }} </a>
-          </p>
-          <a href="{% url 'viol-detach' %}?case_num={{ case.case_num }}&viol_num={{ object.viol_num }}" class="btn btn-outline-danger btn-sm float-end" >Detach from viol</a> 
-    
-        </div>
+          <div class="card-body">
+            <h5 class="card-title">Case</h5>
+            <p class="card-text">
+              <a href="{% url 'case-detail' case.case_num %}"> {{ case }} </a>
+            </p>
+            <a
+              href="{% url 'viol-detach' %}?case_num={{ case.case_num }}&viol_num={{ object.viol_num }}"
+              class="btn btn-outline-danger btn-sm float-end"
+              >Detach from viol</a
+            >
+          </div>
         </div>
       </div>
       {% endfor %}
-
     </div>
     <div class="col">
       {% if not object.bows.all %}
-        <a href="{% url 'viol-attach' %}?viol_num={{ object.viol_num }}" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
-      {% endif%}
+      <a
+        href="{% url 'viol-attach' %}?viol_num={{ object.viol_num }}"
+        class="btn btn-outline-success btn-sm float-end"
+        >Attach a Bow</a
+      >
+      {% endif%} 
       {% for bow in object.bows.all %}
       <div>
-          <div class="card">
+        <div class="card">
           <div class="card-body">
             <h5 class="card-title">Bow</h5>
             <p class="card-text">
               <a href="{% url 'bow-detail' bow.bow_num %}"> {{ bow }} </a>
             </p>
-            <a href="{% url 'viol-detach' %}?bow_num={{ bow.bow_num }}&viol_num={{ object.viol_num }}" class="btn btn-outline-danger btn-sm float-end" >Detach from viol</a> 
-    
+            <a
+              href="{% url 'viol-detach' %}?bow_num={{ bow.bow_num }}&viol_num={{ object.viol_num }}"
+              class="btn btn-outline-danger btn-sm float-end"
+              >Detach from viol</a
+            >
           </div>
         </div>
       </div>
       {% endfor %}
+    </div>
+    <div class="row p-3">
+      <div class="col">Images</div>
+      <div class="col">
+        {% for image in images.all %}
+        <a
+          onClick="showModalImage('/uploads/{{image}}')"
+          ><img height="100" src="/uploads/{{image}}"
+        /></button>
+        {% endfor %}
+      </div>
+      <div class="col">
+        <a
+          class="btn btn-primary"
+          href="{% url 'add-image' to='viol' pk=object.viol_num %}"
+          >Add picture</a
+        >
+      </div>
+    </div>
+
+    {% comment %}
+    <div class="row">
+      <div class="col">
+        <p class="h3"></p>
+      </div>
+    </div>
+    {% endcomment %}
+
+    <script>
+      function showModalImage(imageUrl) {
+        $("#modalImage").attr("src", imageUrl);
+        $("#imageModal").modal("show");
+      }
+    </script>
+
+    {% history_table object.history %}
   </div>
 
+  {% endblock %}
 
-{% comment %} 
-  <div class="row">
-    <div class="col">
-      1 of 3
-    </div>
-    <div class="col">
-      2 of 3
-    </div>
-    <div class="col">
-      3 of 3
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col">
-      <p class="h3"></p>
-    </div>
-  </div>
-   {% endcomment %}
+  
 </div>
 
-
-
-
-
-
-
-{% history_table object.history %}
+{% block modals %}
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Image</h5>
+        <button
+          type="button"
+          class="close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modalImage" width="500" src="" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

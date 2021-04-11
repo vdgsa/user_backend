@@ -16,7 +16,11 @@
   </tr>
   {% for event in history.all %}
   <tr>
-    <td>{{ event.event }}</td>
+    <td>{% if event.event == 'rented' %}
+          <a href="{% url 'rental-detail' pk=event.pk  %}" >{{ event.event }}</a>
+        {% else %}
+          {{ event.event }}
+        {% endif  %}</td>
     <td>{{ event.viol_num }}</td>
     <td>{{ event.bow_num }}</td>
     <td>{{ event.case_num }}</td>

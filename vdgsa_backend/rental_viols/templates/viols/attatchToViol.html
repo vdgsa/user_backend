@@ -29,12 +29,16 @@
     {% else %}
     <div class="form-group col-md-6">
      <label for="viol_num">Select Case </label>
+      {% if avail_cases %}
       <select class="form-control" name="case_num" id="case_num">
         {% for v in avail_cases %}
         <option value="{{v.pk}}">{{v}}</option>
         {% endfor %}
    
       </select>
+      {% else %}
+      <p>No available cases found</p>
+      {% endif %}
     </div>
     {% endif %}
     </div>
@@ -45,18 +49,22 @@
     {% else %}
     <div class="form-group col-md-6">
      <label for="viol_num">Select Bow </label>
+
+      {% if avail_cases %}
       <select class="form-control" name="bow_num" id="bow_num">
         {% for v in avail_bows %}
         <option value="{{v.pk}}">{{v}}</option>
         {% endfor %}
   
       </select>
+      {% else %}
+      <p>No available bows found</p>
+      {% endif %}
     </div>
   </div>
   </div>
 
     {% endif %}
-
 {% else %}
 
 
@@ -71,12 +79,15 @@
   <div class="form-row">
     <div class="form-group col-md-6">
      <label for="viol_num">Select Viol </label>
+      {% if viols %}
       <select class="form-control" name="viol_num" id="viol_num">
         {% for v in viols %}
         <option value="{{v.pk}}">{{v}}</option>
         {% endfor %}
-   
       </select>
+      {% else %}
+      <p>No available viols found</p>
+      {% endif %}
     </div>
   </div>
     </div>
@@ -87,7 +98,7 @@
  <div class="row">
   <div class="col">
     <div class="form-row">    
-      <input  class="btn btn-primary"  type="submit" value="Attach">
+      <input class="btn btn-primary" type="submit" value="Attach">
     </div>
     </div>
   </div>
