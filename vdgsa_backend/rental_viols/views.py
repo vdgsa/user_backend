@@ -281,24 +281,39 @@ class RentalCreateView(RentalViewBase, View):
         return render(request, 'renters/createAgreement.html', context)
 
 
+class RentalRenewForm(forms.ModelForm):
+    class Meta:
+        model = RentalHistory
+        fields = ('notes', 'rental_end')
+        widgets = {
+            'rental_end': forms.DateInput(format=('%Y-%m-%d'),
+                                          attrs={'class': 'form-control',
+                                                 'placeholder': 'Select a date',
+                                                 'type': 'date'}),
+        }
+
+
 class RentalRenewView(RentalViewBase, FormView):
     """Renew Rental Agreement"""
     template_name = 'renters/rentOut.html'
-    form_class = RentalHistoryForm
+    form_class = RentalRenewForm
     model = RentalHistory
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
         if self.kwargs['entry_num']:
             oldrental = RentalHistory.objects.get(pk=self.kwargs['entry_num'])
-            print('oldrental:', oldrental)
-            context['form'] = RentalHistoryForm(
-                {"event": RentalEvent.rented, "viol_num": oldrental.viol_num,
-                 "case_num": oldrental.case_num,
-                 "bow_num": oldrental.bow_num,
-                 "renter_num": oldrental.renter_num})
+            context['oldrental'] = oldrental
+            context['form'] = RentalReturnForm({})
+            context['form'].fields['rental_end'].label = "New Rental End"
+            # print('oldrental:', oldrental)
+            # context['form'] = RentalHistoryForm(
+            #     {"event": RentalEvent.rented, "viol_num": oldrental.viol_num,
+            #      "case_num": oldrental.case_num,
+            #      "bow_num": oldrental.bow_num,
+            #      "renter_num": oldrental.renter_num})
 
-        return render(request, 'renters/rentOut.html', context)
+        return render(request, 'renters/renew.html', context)
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
@@ -358,24 +373,39 @@ class RetireViolView(RentalViewBase, FormView):
         # return redirect(reverse('viol-detail', args=[self.request.POST.get('viol_num')]))
 
 
+class RentalReturnForm(forms.ModelForm):
+    class Meta:
+        model = RentalHistory
+        fields = ('notes', 'rental_end')
+        widgets = {
+            'rental_end': forms.DateInput(format=('%Y-%m-%d'),
+                                          attrs={'class': 'form-control',
+                                                 'placeholder': 'Select a date',
+                                                 'type': 'date'}),
+        }
+
+
 class RentalReturnView(RentalViewBase, FormView):
     """Return Rental """
     template_name = './return.html'
-    form_class = RentalHistoryForm
+    form_class = RentalReturnForm
     model = RentalHistory
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
         if self.kwargs['entry_num']:
             oldrental = RentalHistory.objects.get(pk=self.kwargs['entry_num'])
-            print('oldrental:', oldrental)
-            context['form'] = RentalHistoryForm(
-                {"event": RentalEvent.rented, "viol_num": oldrental.viol_num,
-                 "case_num": oldrental.case_num,
-                 "bow_num": oldrental.bow_num,
-                 "renter_num": oldrental.renter_num})
+            context['oldrental'] = oldrental
+            # print('oldrental:', oldrental)
+            context['form'] = RentalReturnForm({})
+            # context['form'] = RentalReturnView(
+            #     {"event": RentalEvent.returned, "viol_num": oldrental.viol_num,
+            #      "rental_start": oldrental.rental_start,
+            #      "case_num": oldrental.case_num,
+            #      "bow_num": oldrental.bow_num,
+            #      "renter_num": oldrental.renter_num})
 
-        return render(request, 'renters/rentOut.html', context)
+        return render(request, 'renters/return.html', context)
 
 
 class RentalSubmitView(RentalViewBase, View):
