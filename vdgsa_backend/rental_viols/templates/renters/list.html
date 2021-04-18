@@ -16,15 +16,14 @@
       <td></td>
 
     </tr>
-  </thead>
+  </thead>  
   <tbody>
     {% for item in object_list %}
     <tr>
       <td>
         <a href="{% url 'rental-detail' pk=item.pk %}" title="View rental details"> {% bs_icon 'eye' %} </a>
       </td>
-      <td>
-       {{item.renter_num}}
+      <td><a href="{% url 'renter-info' pk=item.renter_num.pk %}" title="View renter details">{{item.renter_num}}</a>
       </td>
       <td>
       {% if item.viol_num %}

@@ -676,6 +676,11 @@ class BowDetailView(RentalViewBase, DetailView):
     model = Bow
     template_name = 'bows/bow_detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(BowDetailView, self).get_context_data(**kwargs)
+        context['images'] = Image.objects.get_images('bow', context['bow'].pk)
+        return context
+
 
 class CaseForm(forms.ModelForm):
     class Meta:
@@ -718,6 +723,11 @@ class UpdateCaseView(RentalViewBase, SuccessMessageMixin, UpdateView):
 class CaseDetailView(RentalViewBase, DetailView):
     model = Case
     template_name = 'cases/detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(CaseDetailView, self).get_context_data(**kwargs)
+        context['images'] = Image.objects.get_images('case', context['case'].pk)
+        return context
 
 
 class ViolForm(forms.ModelForm):
@@ -798,3 +808,15 @@ class SoftDeleteView(RentalViewBase, View):
         print(obj)
         # return HttpResponseRedirect(self.request.path_info)
         return redirect(reverse('list-renters'))
+
+
+class ViewUserInfo(RentalViewBase, DetailView):
+    model = User
+    template_name = 'renters/userDetail.html'
+
+    def get_context_data(self, **kwargs):
+
+        context = super(ViewUserInfo, self).get_context_data(**kwargs) 
+        context['history'] = (RentalHistory.objects.all()
+            .filter(event=RentalEvent.rented).filter(renter_num=self.kwargs['pk']))
+        return context

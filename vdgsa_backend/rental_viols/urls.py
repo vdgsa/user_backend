@@ -16,6 +16,9 @@ urlpatterns = [
     path('rental/submit/', views.RentalSubmitView.as_view(), name='rental-submit'),
     path('rental/upload/<int:entry_num>', views.UploadRentalView.as_view(), name='rental-upload'),
     # path('rental/view/<int:entry_num>', views.ViewRentalAgreement.as_view(), name='view-agree'),
+    
+    path('renterInfo/<int:pk>', views.ViewUserInfo.as_view(), name='renter-info'),
+
 
     path('rentals/<int:pk>/', views.RentersDetailView.as_view(), name='rental-detail'),
     path('rental/<int:pk>/', views.UpdateRentalView.as_view(), name='rental-update'),

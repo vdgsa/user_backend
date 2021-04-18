@@ -132,12 +132,7 @@
     </div>
     {% endcomment %}
 
-    <script>
-      function showModalImage(imageUrl) {
-        $("#modalImage").attr("src", imageUrl);
-        $("#imageModal").modal("show");
-      }
-    </script>
+
 
     {% history_table object.history %}
   </div>
@@ -148,6 +143,12 @@
 </div>
 
 {% block modals %}
+    <script>
+      function showModalImage(imageUrl) {
+        $("#modalImage").attr("src", imageUrl);
+        $("#imageModal").modal("show");
+      }
+    </script>
 <div class="modal fade" id="imageModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
