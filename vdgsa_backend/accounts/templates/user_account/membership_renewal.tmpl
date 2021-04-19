@@ -1,4 +1,4 @@
-{% load filters %}
+{% load vdgsa_tags %}
 
 <h2 id="membership-header">
   {% if user.subscription is None %}
@@ -59,7 +59,6 @@
   method="post"
   action="{% url 'purchase-subscription' pk=user.pk %}"
 >
-  {% csrf_token %}
   {% include 'utils/form_body.tmpl' with form=form %}
 
   <div class="redirect-info-msg my-2">
@@ -97,7 +96,6 @@
         method="post"
         action="{% url 'remove-family-member' pk=user.subscription.pk %}"
       >
-        {% csrf_token %}
         <input type="hidden" value="{{member.username}}" name="username">
 
         <div class="row mb-2">
@@ -122,7 +120,6 @@
         method="post"
         action="{% url 'add-family-member' pk=user.subscription.pk %}"
       >
-        {% csrf_token %}
         <div id="add-family-member-input-wrapper" class="row">
           <div class="col-sm-6">
             <div class="input-group input-group-sm">
@@ -145,3 +142,40 @@
   </ul>
 </div>
 {% endif %}
+
+<script>
+setup_ajax_submit('add-family-member-form', {
+  success: function(form, response_data) {
+    if (response_data.status === 'success') {
+      window.location.reload();
+    }
+    else if (response_data.status === 'other_error' && response_data.extra_data.error_msg) {
+      window.alert(response_data.extra_data.error_msg);
+    }
+  },
+});
+
+$('.remove-family-member-form').each(function(index, element) {
+  let form = $(element);
+  form.on('submit', function(event) {
+    event.preventDefault();
+
+    let username = form.find('input[name=username]').val();
+    console.log(username);
+    if (!confirm(`Remove ${username} from your membership?`)) {
+      return;
+    }
+
+    $.post(
+      form.attr('action'),
+      form.serialize(),
+      function() {
+        window.location.reload();
+      }
+    ).fail(function(response) {
+      // TODO: better error message
+      alert('An unexpected error occured');
+    });
+  });
+});
+</script>

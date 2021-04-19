@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h2>Conclave Registration Dashboard</h2>
+
+<div>
+  <a href="{% url 'create-conclave' %}">Start New Conclave (TODO: make me a big button-looking thing)</a>
+</div>
+
+<h3 class="mt-2">All Conclaves</h3>
+{% for entry in object_list %}
+<div>
+  <a href="{% url 'conclave-detail' pk=entry.pk %}">{{entry.year}}</a>
+</div>
+{% endfor %}
+
+{% endblock %}

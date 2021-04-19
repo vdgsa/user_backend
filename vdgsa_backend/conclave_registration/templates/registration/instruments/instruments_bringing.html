@@ -1,0 +1,102 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<p>
+  Please list the instruments you'll be bringing to conclave.<br>
+  Once you've added all of them, you may proceed to the
+  <a href="{{next_step_url}}">next step</a>
+</p>
+
+{% if not instruments.empty %}
+<h3>Instruments</h3>
+{% endif %}
+
+<table id="instruments" class="table table-striped">
+  <tbody>
+  {% for instrument in instruments %}
+    <tr class="instrument-row">
+      <td>
+        {% include 'registration/instruments/instrument.tmpl'%}
+        <div>
+          <a href="#" class="delete-instrument" data-instrumentpk="{{instrument.pk}}">
+            Delete
+          </a>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="add-instrument-header">Add an instrument</div>
+<form method="post" id="add-instrument-form">
+  {% include 'utils/form_body.tmpl' %}
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Add</button>
+  </div>
+</form>
+
+<script>
+$().ready(function() {
+  $('#id_name_if_other_wrapper').hide();
+  $('#id_size').on('change', function(event) {
+    if (event.target.value === 'other') {
+      $('#id_name_if_other_wrapper').show();
+      $('#id_name_if_other').attr('required', true);
+    }
+    else {
+      $('#id_name_if_other_wrapper').hide();
+      $('#id_name_if_other').attr('required', false);
+    }
+  });
+
+  $('.delete-instrument').on('click', function(event) {
+    event.preventDefault();
+    let row = $(this).parents('.instrument-row');
+    let pk = $(this).data()['instrumentpk'];
+
+    if (confirm('Remove this instrument?')) {
+      $.ajax({
+        type: 'POST',
+        url: `/conclave/register/instruments/${pk}/`,
+        headers: {
+          'X-CSRFToken': get_cookie('csrftoken')
+        },
+      }).done(function() {
+        row.remove();
+      }).catch(function() {
+        alert('An unexpected error occurred.');
+      });
+    }
+  });
+
+  setup_ajax_submit('add-instrument-form', {
+    success: function(form, response_data) {
+      if (response_data.status === 'success') {
+        $('#instruments').append(
+          '<tr class="instrument-row"><td>'
+          + response_data.rendered_form
+          + '</tr></td>'
+        );
+      }
+      else if (response_data.status === 'other_error' && response_data.extra_data.error_msg) {
+        window.alert(response_data.extra_data.error_msg);
+      }
+    },
+  });
+});
+</script>
+{% endblock %}
+
+{% block page_style %}
+{{block.super}}
+<style>
+.add-instrument-header {
+  /* font-weight: bold; */
+  font-size: 1.125rem;
+}
+</style>
+{% endblock %}

@@ -29,17 +29,14 @@ def get_ajax_form_response(
     form_template: str = 'utils/form_body.tmpl',
     extra_data: Dict[str, object] = {},
 ) -> AjaxFormResponse:
-    if form is None:
-        rendered_form = None
-    else:
-        if form_context is None:
-            form_context = {'form': form}
-        rendered_form = render_to_string(form_template, form_context)
+    context: dict[str, object] = {'form': form}
+    if form_context is not None:
+        context.update(form_context)
 
     return AjaxFormResponse(
         {
             'status': status,
-            'rendered_form': rendered_form,
+            'rendered_form': render_to_string(form_template, form_context),
             'extra_data': extra_data,
         },
         status=200,

@@ -1,0 +1,21 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h3>Work Study Application</h3>
+
+<div>
+  If you are not applying for a work study position, you may
+  <a href="{{next_step_url}}">skip this step.</a>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  {% include 'utils/form_body.tmpl' %}
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Save and continue</button>
+  </div>
+</form>
+{% endblock %}
