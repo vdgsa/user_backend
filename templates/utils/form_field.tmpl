@@ -1,30 +1,53 @@
-{% load filters %}
+{% load vdgsa_tags %}
 
-{% if field.field.widget.input_type == 'checkbox' %}
-<div class="form-check">
-  {{field | add_classes:"form-check-input"}}
-  <label for="{{field.id_for_label}}" class="form-check-label">
-    {% firstof label field.label %}
+{% with widget=field.field.widget input_type=field.field.widget.input_type %}
+{% if input_type == 'checkbox' and not widget.allow_multiple_selected %}
+  <div class="form-check">
+    {{field | add_classes:"form-check-input"}}
+    <label for="{{field.id_for_label}}" class="form-check-label">
+      {% firstof label field.label %}
+    </label>
+  </div>
+
+  <div class="form-field-errors mt-1">
+    {{field.errors}}
+  </div>
+{% elif input_type == 'select' %}
+  {% comment %} No label tag if label is empty. {% endcomment %}
+  {% if label or field.label %}
+  <label for="{{field.id_for_label}}" class="form-label">
+    {% firstof label field.label %} <br>
   </label>
-</div>
-{% elif field.field.widget.input_type == 'select' %}
-<label for="{{field.id_for_label}}" class="form-label">
-  {% comment %} No label tag if label is empty. {% endcomment %}
-  {% if label or field.label %}
-    {% firstof label field.label %} <br>
   {% endif %}
-</label>
-{{field | add_classes:"form-select"}}
-{% else %}
-<label for="{{field.id_for_label}}" class="form-label">
-  {% comment %} No label tag if label is empty. {% endcomment %}
-  {% if label or field.label %}
-    {% firstof label field.label %} <br>
-  {% endif %}
-</label>
-{{field | add_classes:"form-control"}}
+  {{field | add_classes:"form-select"}}
 
-<div class="form-field-errors mt-1">
-  {{field.errors}}
-</div>
+  <div class="form-field-errors mt-1">
+    {{field.errors}}
+  </div>
+{% elif input_type == 'radio' or input_type == 'checkbox' and widget.allow_multiple_selected %}
+  <label class="form-label">{{field.label}}</label>
+  {% for radio in field %}
+  <div class="form-check">
+    {{radio | add_classes:"form-check-input"}}
+    <label for="{{radio.id_for_label}}" class="form-check-label">
+      {{radio.choice_label}}
+    </label>
+  </div>
+  {% endfor %}
+  <div class="form-field-errors mt-1">
+    {{field.errors}}
+  </div>
+{% else %}
+  {% comment %} No label tag if label is empty. {% endcomment %}
+  {% if label or field.label %}
+  <label for="{{field.id_for_label}}" class="form-label">
+    {% firstof label field.label %} <br>
+  </label>
+  {% endif %}
+  {{field | add_classes:"form-control"}}
+
+  <div class="form-field-errors mt-1">
+    {{field.errors}}
+  </div>
 {% endif %}
+{% endwith %}

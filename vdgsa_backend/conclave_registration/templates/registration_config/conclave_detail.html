@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load conclave_tags %}
+
+<h2>Conclave {{object.year}} Registration Admin</h2>
+
+<div class="mt-3">
+  <div>Registration phase: <b>{{object.phase | format_registration_phase}}</b></div>
+  <div>
+    <a href="{% url 'edit-conclave' pk=object.pk %}">Edit Settings</a>
+  </div>
+</div>
+
+<h3 class="mt-4">Classes</h3>
+<div><a href="{% url 'create-class' conclave_config_pk=object.pk %}">Add a class</a></div>
+<div><a href="">Load classes from CSV</a></div>
+{% include 'class_list.tmpl' with classes_by_period=classes_by_period allow_editing=True %}
+
+{% endblock %}

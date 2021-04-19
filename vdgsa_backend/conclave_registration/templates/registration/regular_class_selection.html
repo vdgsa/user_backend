@@ -1,0 +1,148 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h3>Class Selection</h3>
+
+<div id="hide-classes-button-wrapper">
+  <a href="#class-list" data-bs-toggle="collapse" aria-controls="class-list">
+    Show/hide class descriptions
+  </a>
+</div>
+
+<div id="class-selection-wrapper">
+  <div id="class-list" class="collapse show">
+    {% include 'class_list.tmpl' with classes_by_period=classes_by_period allow_editing=False %}
+  </div>
+
+  <div id="class-choices">
+    <form method="post">
+      {% csrf_token %}
+      <div class="period-header mt-2">1st Period</div>
+      <div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period1_choice1 label='Choice 1'%}
+          {% include 'utils/small_select.tmpl' with field=form.period1_choice1_instrument label='Instrument Preference'%}
+        </div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period1_choice2 label='Choice 2'%}
+          {% include 'utils/small_select.tmpl' with field=form.period1_choice2_instrument label='Instrument Preference'%}
+        </div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period1_choice3 label='Choice 3'%}
+          {% include 'utils/small_select.tmpl' with field=form.period1_choice3_instrument label='Instrument Preference'%}
+        </div>
+      </div>
+      <div class="period-header mt-2">2nd Period</div>
+      <div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period2_choice1 label='Choice 1'%}
+          {% include 'utils/small_select.tmpl' with field=form.period2_choice1_instrument label='Instrument Preference'%}
+        </div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period2_choice2 label='Choice 2'%}
+          {% include 'utils/small_select.tmpl' with field=form.period2_choice2_instrument label='Instrument Preference'%}
+        </div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period2_choice3 label='Choice 3'%}
+          {% include 'utils/small_select.tmpl' with field=form.period2_choice3_instrument label='Instrument Preference'%}
+        </div>
+      </div>
+      <div class="period-header mt-2">3rd Period</div>
+      <div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period3_choice1 label='Choice 1'%}
+          {% include 'utils/small_select.tmpl' with field=form.period3_choice1_instrument label='Instrument Preference'%}
+        </div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period3_choice2 label='Choice 2'%}
+          {% include 'utils/small_select.tmpl' with field=form.period3_choice2_instrument label='Instrument Preference'%}
+        </div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period3_choice3 label='Choice 3'%}
+          {% include 'utils/small_select.tmpl' with field=form.period3_choice3_instrument label='Instrument Preference'%}
+        </div>
+      </div>
+      <div class="period-header mt-2">4th Period</div>
+      <div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice1 label='Choice 1'%}
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice1_instrument label='Instrument Preference'%}
+        </div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice2 label='Choice 2'%}
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice2_instrument label='Instrument Preference'%}
+        </div>
+        <div class="choice-wrapper">
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice3 label='Choice 3'%}
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice3_instrument label='Instrument Preference'%}
+        </div>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="non-field-errors">
+        {% for err in form.non_field_errors %}
+          <p class="form-error">{{ err }}</p>
+        {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Save and continue</button>
+      </div>
+    </form>
+  </div>
+
+
+</div>
+{% endblock %}
+
+{% block page_style %}
+{{block.super}}
+<style>
+.period-header {
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+
+.choice-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.choice-wrapper > *:first-child {
+  flex-grow: 1;
+}
+
+.choice-wrapper > * {
+  margin-right: .5rem;
+}
+
+@media only screen and (min-width: 600px) {
+  #class-selection-wrapper {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+  #class-choices {
+    width: 45%;
+    flex-grow: 1;
+  }
+
+  #class-list {
+    margin-top: 0;
+    position: sticky;
+    top: 0;
+    overflow: auto;
+    height: 100vh;
+
+    width: 55%;
+
+    border-left: 1px solid rgb(220, 220, 220);
+    padding-left: .5rem;
+  }
+}
+</style>
+{% endblock %}

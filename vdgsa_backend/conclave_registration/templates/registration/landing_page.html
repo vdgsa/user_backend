@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h2 id="registration-landing-header">
+  Conclave {{conclave_config.year}} Registration
+  {% if conclave_config.phase == 'late' %}
+  (Late)
+  {% endif %}
+</h2>
+
+{% if not request.user.subscription_is_current %}
+<div data-testid="membership_renewal_message">
+  Your membership is not up to date. Please visit the
+  <a data-testid="accounts_link" href="{% url 'current-user-account' %}">My Account</a> page,
+  renew your membership, and then return here to register.
+</div>
+{% elif conclave_config.phase == 'closed' %}
+<div data-testid="registration_closed_message">
+  Registration for this year's conclave has closed.
+</div>
+{% else %}
+
+<h3>Select a program</h3>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="row mt-2">
+    <div class="col-md-6 ">
+      {% include 'utils/form_field.tmpl' with field=choose_program_form.program %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div id="faculty-registration-password" class="col-md-6 ">
+      {% include 'utils/form_field.tmpl' with field=choose_program_form.faculty_registration_password %}
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Start Registration</button>
+  </div>
+
+  {% if form.non_field_errors %}
+  <div class="non-field-errors">
+  {% for err in form.non_field_errors %}
+    <p class="form-error">{{ err }}</p>
+  {% endfor %}
+  </div>
+  {% endif %}
+</form>
+{% endif %}
+
+<script>
+$().ready(function() {
+  if ($('#id_program').val() === 'faculty_guest_other') {
+    $('#faculty-registration-password').show();
+  }
+
+  $('#id_program').on('change', function(event) {
+    if (event.target.value === 'faculty_guest_other') {
+      $('#faculty-registration-password').show();
+    }
+    else {
+      $('#faculty-registration-password').hide();
+    }
+  });
+});
+</script>
+{% endblock %}
+
+{% block page_style %}
+<style>
+  #faculty-registration-password {
+    display: none;
+  }
+</style>
+{% endblock %}

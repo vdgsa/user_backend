@@ -1,0 +1,11 @@
+{% load vdgsa_tags %}
+{% load conclave_tags %}
+<div>
+  {% if instrument.size == 'other' %}
+  {{instrument.name_if_other}}
+  {% else %}
+  {{instrument.size | format_instrument_size}}
+  {% endif %}
+</div>
+<div>Level: {{instrument.level}}</div>
+<div>Clefs: {{instrument.clefs | format_clef_list}}</div>

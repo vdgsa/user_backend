@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'vdgsa_backend.api_schema',
     'vdgsa_backend.stripe_wix_proxy',
     'vdgsa_backend.stripe_email_webhook',
+    'vdgsa_backend.conclave_registration',
 
     'corsheaders'
 ]
@@ -86,6 +87,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'vdgsa_tags': 'vdgsa_backend.templatetags.filters',
+            }
         },
     },
 ]
