@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django import template
 
-from ..models import Clef, InstrumentChoices, RegistrationPhase
+from ..models import Clef, InstrumentChoices, RegistrationPhase, TuitionOption
 
 register = template.Library()
 
@@ -35,8 +35,13 @@ def format_clef_list(clef: list[str]) -> str:
     return ', '.join((Clef(clef).label for clef in clef))
 
 
+def format_tuition_option(tuition_option: str) -> str:
+    return TuitionOption(tuition_option).label
+
+
 register.filter('format_registration_phase', format_registration_phase)
 register.filter('format_period_long', format_period_long)
 register.filter('format_level_list', format_level_list)
 register.filter('format_instrument_size', format_instrument_size)
 register.filter('format_clef_list', format_clef_list)
+register.filter('format_tuition_option', format_tuition_option)

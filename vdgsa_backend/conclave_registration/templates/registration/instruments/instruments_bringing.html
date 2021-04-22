@@ -19,11 +19,6 @@
     <tr class="instrument-row">
       <td>
         {% include 'registration/instruments/instrument.tmpl'%}
-        <div>
-          <a href="#" class="delete-instrument" data-instrumentpk="{{instrument.pk}}">
-            Delete
-          </a>
-        </div>
       </td>
     </tr>
   {% endfor %}
@@ -32,7 +27,7 @@
 
 <div class="add-instrument-header">Add an instrument</div>
 <form method="post" id="add-instrument-form">
-  {% include 'utils/form_body.tmpl' %}
+  {% include 'registration/instruments/add_instrument_form_body.tmpl' %}
 
   <div class="mt-2">
     <button type="submit" class="btn btn-primary">Add</button>
@@ -41,18 +36,6 @@
 
 <script>
 $().ready(function() {
-  $('#id_name_if_other_wrapper').hide();
-  $('#id_size').on('change', function(event) {
-    if (event.target.value === 'other') {
-      $('#id_name_if_other_wrapper').show();
-      $('#id_name_if_other').attr('required', true);
-    }
-    else {
-      $('#id_name_if_other_wrapper').hide();
-      $('#id_name_if_other').attr('required', false);
-    }
-  });
-
   $('.delete-instrument').on('click', function(event) {
     event.preventDefault();
     let row = $(this).parents('.instrument-row');
@@ -81,6 +64,11 @@ $().ready(function() {
           + response_data.rendered_form
           + '</tr></td>'
         );
+        $('#id_clefs_wrapper input[type=checkbox]').prop('checked', false);
+      }
+      else if (response_data.status === 'form_validation_error') {
+        update_form_body(form, response_data);
+
       }
       else if (response_data.status === 'other_error' && response_data.extra_data.error_msg) {
         window.alert(response_data.extra_data.error_msg);

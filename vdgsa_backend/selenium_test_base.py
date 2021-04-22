@@ -115,3 +115,8 @@ class SeleniumTestCaseBase(LiveServerTestCase):
             element.click()
         except Exception:
             ActionChains(self.selenium).move_to_element(element).click().perform()
+
+    def accept_alert(self) -> None:
+        self.wait.until(EC.alert_is_present())
+        alert = self.selenium.switch_to.alert
+        alert.accept()

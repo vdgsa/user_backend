@@ -2,13 +2,72 @@
 {% block content %}
 
 {% load vdgsa_tags %}
+{% load conclave_tags %}
 
 <h3>Summary & Payment</h3>
 
-<p>Summary of work study, class selections, and t-shirts</p>
-<p>Validation check that they completed all required sections</p>
-<!-- <p>TODO: what do we want to summarize here? (work study, class selections, and t-shirts?)</p>
-<p>TODO: Check that all sections have been filled out</p> -->
+{% if missing_sections %}
+<div id="missing-sections-msg">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  You have not filled out the following required sections:
+  <ul>
+    {% for section in missing_sections%}
+    <li>{{section}}</li>
+    {% endfor %}
+  </ul>
+  Please complete them first and then return here to
+  enter payment information and finalize your registration.
+</div>
+{% else %}
+<div id="summary" class="mb-3">
+  {% include 'registration/payment/summary.tmpl' %}
+
+  <div style="border-bottom: 1px solid rgb(220, 220, 220);" class="my-3"></div>
+
+  <table id="charges-table" class="table">
+    <thead>
+      <tr>
+        <td class="fs-5">Summary of Charges So Far</td>
+        <td></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr id="tuition-charge-row">
+        <td>
+          Tuition: {{registration_entry.regular_class_choices.tuition_option | format_tuition_option}}
+        </td>
+        <td style="text-align: right;">
+          {{registration_entry.tuition_charge}}
+        </td>
+      </tr>
+      {% if registration_entry.late_fee %}
+      <tr id="late-fee-charge-row">
+        <td>
+          Late registration
+        </td>
+        <td style="text-align: right;">{{registration_entry.late_fee}}</td>
+      </tr>
+      {% endif %}
+      <tr id="tshirts-charge-row">
+        <td>T-Shirts: {{registration_entry.num_tshirts}}</td>
+        <td style="text-align: right;">{{registration_entry.tshirts_charge}}</td>
+      </tr>
+      <tr>
+        <td><b>Total</b></td>
+        <td id="total-charges-cell" style="text-align: right;">
+          <b>{{registration_entry.total_charges}}</b>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  {% if registration_entry.work_study %}
+  <div id="work-study-charges-msg">
+    If you receive your $475.00 Work-Study fee waiver, the total will be $745.00.
+    Work-Study positions will be awarded before June 1. Work-Study applicants
+    will not be charged until positions are finalized.
+  </div>
+  {% endif %}
+</div>
 
 <form method="post" id="conclave-go-to-payment-form">
   {% csrf_token %}
@@ -32,7 +91,7 @@
     </div>
   </div>
 
-  <p>
+  <p style="color: hotpink">
     Some text here about when we'll charge their card, how they won't
     be able to make changes after they enter their payment info, and how
     we don't store their credit card number.
@@ -82,6 +141,8 @@
   {% endif %}
 </form>
 
+{% endif %}
+
 <script>
 $().ready(function() {
   if ($('#stripe-error').length) {
@@ -95,9 +156,24 @@ $().ready(function() {
 {% block page_style %}
 {{block.super}}
 <style>
-  #stripe-error {
-    color: crimson;
-    font-weight: bold;
+#stripe-error {
+  color: crimson;
+  font-weight: bold;
+}
+
+#summary {
+  border: 1px solid black;
+  padding: .75rem 1rem;
+}
+
+#missing-sections-msg .bi-exclamation-triangle-fill {
+  color: crimson;
+}
+
+@media only screen and (min-width: 768px) {
+  #summary {
+    width: 85%;
   }
+}
 </style>
 {% endblock %}

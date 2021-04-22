@@ -97,7 +97,7 @@
         action="{% url 'remove-family-member' pk=user.subscription.pk %}"
       >
         <input type="hidden" value="{{member.username}}" name="username">
-
+        {% csrf_token %}
         <div class="row mb-2">
           <div class="col-sm-6">
             <div class="input-group input-group-sm">

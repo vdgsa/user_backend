@@ -36,7 +36,7 @@ def get_ajax_form_response(
     return AjaxFormResponse(
         {
             'status': status,
-            'rendered_form': render_to_string(form_template, form_context),
+            'rendered_form': render_to_string(form_template, context),
             'extra_data': extra_data,
         },
         status=200,

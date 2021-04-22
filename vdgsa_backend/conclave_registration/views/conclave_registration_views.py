@@ -7,7 +7,6 @@ from typing import Any, Dict, Final, Type, cast
 import stripe
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models.base import Model
 from django.forms import widgets
@@ -50,30 +49,6 @@ class ChooseProgramForm(forms.Form):
                 raise ValidationError({'faculty_registration_password': 'Invalid password'})
 
         return super().clean()
-
-
-# def _can_view_registration(
-#     user: User | AnonymousUser, conclave_config: ConclaveRegistrationConfig
-# ) -> bool:
-#     """
-#     Returns true if the given conclave registration config is published
-#     or if the user is on the conclave team.
-#     """
-#     return (
-#         conclave_config.phase != RegistrationPhase.unpublished
-#         or is_conclave_team(user)
-#     )
-
-
-# def _can_register(user: User | AnonymousUser, conclave_config: ConclaveRegistrationConfig) -> bool:
-#     """
-#     Returns true if the given conclave registration config is published
-#     but not closed or if the user is on the conclave team.
-#     """
-#     return (
-#         conclave_config.phase in [RegistrationPhase.open, RegistrationPhase.late]
-#         or is_conclave_team(user)
-#     )
 
 
 class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -259,6 +234,10 @@ class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'other_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.fields['liability_release'].required = True
+
 
 class BasicInfoView(_RegistrationStepViewBase):
     template_name = 'registration/basic_info.html'
@@ -354,7 +333,11 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         form = InstrumentBringingForm(self.registration_entry, self.request.POST)
         if not form.is_valid():
-            return get_ajax_form_response('form_validation_error', form)
+            return get_ajax_form_response(
+                'form_validation_error',
+                form,
+                form_template='registration/instruments/add_instrument_form_body.tmpl'
+            )
 
         instrument = form.save()
         return get_ajax_form_response(
@@ -366,7 +349,7 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
 
     def get_render_context(self, form: _RegistrationStepFormBase) -> dict[str, object]:
         context = super().get_render_context(form)
-        context['instruments'] = self.registration_entry.instruments_bringing.order_by('size')
+        context['instruments'] = self.registration_entry.instruments_bringing.all()
         return context
 
 
@@ -417,7 +400,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         # Interleave the class choice and instrument choice field names
         # i.e., ['period1_choice1', 'period1_choice1_instrument',
         #        'period1_choice2', 'period1_choice2_instrument']
-        fields = list(
+        fields = ['tuition_option'] + list(
             chain.from_iterable(
                 zip(
                     chain.from_iterable(_CLASS_CHOICE_FIELD_NAMES_BY_PERIOD.values()),
@@ -434,6 +417,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                     conclave_config=self.registration_entry.conclave_config,
                     period=period
                 )
+                self.fields[field_name].empty_label = 'No class'
 
         for field_name in chain.from_iterable(_INSTRUMENT_FIELD_NAMES_BY_PERIOD.values()):
             self.fields[field_name].queryset = InstrumentBringing.objects.filter(
@@ -462,17 +446,13 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
 
 class TShirtsForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
-        fields = ['tshirt1', 'tshirt2', 'tshirt3']
+        fields = ['tshirt1', 'tshirt2']
         model = TShirts
 
     def __init__(self, registration_entry: RegistrationEntry, *args: Any, **kwargs: Any):
         super().__init__(registration_entry, *args, **kwargs)
         self.fields['tshirt1'].label = 'T-Shirt 1'
-        # self.fields['tshirt1'].empty_label = 'n/a'
         self.fields['tshirt2'].label = 'T-Shirt 2'
-        # self.fields['tshirt2'].empty_label = 'n/a'
-        self.fields['tshirt3'].label = 'T-Shirt 3'
-        # self.fields['tshirt3'].empty_label = 'n/a'
 
 
 class TShirtsView(_RegistrationStepViewBase):
@@ -525,7 +505,7 @@ class PaymentForm(_RegistrationStepFormBase, forms.ModelForm):
 
 
 class PaymentView(_RegistrationStepViewBase):
-    template_name = 'registration/payment.html'
+    template_name = 'registration/payment/payment.html'
     form_class = PaymentForm
     next_step_url_name = 'conclave-done'
 
@@ -541,6 +521,9 @@ class PaymentView(_RegistrationStepViewBase):
             return self.render_page(form)
 
         payment_info = form.save(commit=False)
+
+        if self._get_missing_sections():
+            return self.render_page(form)
 
         try:
             payment_method = stripe.PaymentMethod.create(
@@ -562,6 +545,22 @@ class PaymentView(_RegistrationStepViewBase):
         payment_info.save()
 
         return HttpResponseRedirect(self.get_next_step_url())
+
+    def get_render_context(self, form: _RegistrationStepFormBase | None) -> dict[str, object]:
+        context = super().get_render_context(form)
+        context['missing_sections'] = self._get_missing_sections()
+        return context
+
+    def _get_missing_sections(self) -> list[str]:
+        missing_sections = []
+
+        if not hasattr(self.registration_entry, 'basic_info'):
+            missing_sections.append('Misc Info')
+
+        if not hasattr(self.registration_entry, 'regular_class_choices'):
+            missing_sections.append('Classes')
+
+        return missing_sections
 
 
 class RegistrationDoneView(View):

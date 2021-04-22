@@ -16,7 +16,7 @@
   <a data-testid="accounts_link" href="{% url 'current-user-account' %}">My Account</a> page,
   renew your membership, and then return here to register.
 </div>
-{% elif conclave_config.phase == 'closed' %}
+{% elif conclave_config.phase == 'closed' and not perms.conclave_registration.conclave_team %}
 <div data-testid="registration_closed_message">
   Registration for this year's conclave has closed.
 </div>
