@@ -86,3 +86,21 @@ a:active {
 .form-control, .form-control-sm, .form-control-lg, .form-select {
     border-radius: 0!important;
 }
+
+.list-group {
+    border-radius: 0!important;
+}
+
+.list-group-item.active {
+    background-color: rgb(240, 240, 240)!important;
+    border: 1px solid rgba(0, 0, 0, .125)!important;
+
+}
+
+.alert {
+    border-radius: 0!important;
+}
+
+.alert.form-error {
+    color: black
+}

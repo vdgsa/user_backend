@@ -1,10 +1,12 @@
 from __future__ import annotations
+from itertools import chain
 
 from typing import Any, Final
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.functional import cached_property
 
 from vdgsa_backend.accounts.models import User
 
@@ -122,7 +124,39 @@ class RegistrationEntry(models.Model):
     program = models.CharField(max_length=50, choices=Program.choices)
     is_late = models.BooleanField(blank=True, default=False)
 
-    # basic_info is the related name for BasicRegistrationInfo
+    @property
+    def is_finalized(self) -> bool:
+        return self.payment_info is not None and self.payment_info.stripe_payment_method_id != ''
+
+    @property
+    def total_charges(self) -> int:
+        return self.tuition_charge + self.tshirts_charge + self.late_fee
+
+    @property
+    def total_minus_work_study(self) -> int:
+        return self.total_charges - self.tuition_charge
+
+    @property
+    def tuition_charge(self) -> int:
+        if not hasattr(self, 'regular_class_choices'):
+            return 0
+
+        return 200 if self.regular_class_choices.tuition_option == TuitionOption.full_time else 100
+
+    @property
+    def late_fee(self) -> int:
+        return 25 if self.is_late else 0
+
+    @property
+    def num_tshirts(self) -> int:
+        if not hasattr(self, 'tshirts'):
+            return 0
+
+        return sum((1 for item in [self.tshirts.tshirt1, self.tshirts.tshirt2] if item))
+
+    @property
+    def tshirts_charge(self) -> int:
+        return self.num_tshirts * 25
 
 
 class BasicRegistrationInfo(models.Model):
@@ -132,7 +166,7 @@ class BasicRegistrationInfo(models.Model):
         related_name='basic_info'
     )
 
-    is_first_time_attendee = models.TextField(choices=YesNoMaybe.choices)
+    is_first_time_attendee = models.BooleanField()
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices)
     willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.BooleanField(blank=True)
@@ -144,7 +178,11 @@ class BasicRegistrationInfo(models.Model):
 
 
 class WorkStudyJob(models.TextChoices):
-    fixme = 'fixme'
+    hospitality = 'hospitality'
+    moving_crew = 'moving_crew'
+    copy_crew_auction = 'copy_crew_auction', 'Copy Crew/Auction'
+    money_store = 'money_store', 'Money/Store'
+    any = 'any'
 
 
 class WorkStudyApplication(models.Model):
@@ -201,6 +239,9 @@ class InstrumentChoices(models.TextChoices):
 
 
 class InstrumentBringing(models.Model):
+    class Meta:
+        order_with_respect_to = 'registration_entry'
+
     registration_entry = models.ForeignKey(
         RegistrationEntry,
         on_delete=models.CASCADE,
@@ -209,7 +250,7 @@ class InstrumentBringing(models.Model):
 
     size = models.CharField(max_length=100, choices=InstrumentChoices.choices)
     name_if_other = models.CharField(max_length=100, blank=True)
-    level = models.TextField(choices=Level.choices)
+    level = models.TextField(choices=Level.choices[1:])
     clefs = ArrayField(models.CharField(max_length=50, choices=Clef.choices))
 
     def clean(self) -> None:
@@ -225,12 +266,18 @@ class InstrumentBringing(models.Model):
 
 
 def _make_class_choice_field() -> Any:
-    return models.ForeignKey(Class, on_delete=models.SET_NULL, related_name='+', null=True)
+    return models.ForeignKey(
+        Class, on_delete=models.SET_NULL, related_name='+', null=True, blank=True)
 
 
 def _make_class_instrument_field() -> Any:
     return models.ForeignKey(
         InstrumentBringing, on_delete=models.SET_NULL, related_name='+', null=True, blank=True)
+
+
+class TuitionOption(models.TextChoices):
+    full_time = 'full_time', 'Full Time (2-3 Classes)'
+    part_time = 'part_time', 'Part Time (1 Class)'
 
 
 class RegularProgramClassChoices(models.Model):
@@ -239,6 +286,9 @@ class RegularProgramClassChoices(models.Model):
         on_delete=models.CASCADE,
         related_name='regular_class_choices',
     )
+
+    tuition_option = models.TextField(
+        choices=TuitionOption.choices, default=TuitionOption.full_time)
 
     period1_choice1 = _make_class_choice_field()
     period1_choice1_instrument = _make_class_instrument_field()
@@ -268,6 +318,37 @@ class RegularProgramClassChoices(models.Model):
     period4_choice3 = _make_class_choice_field()
     period4_choice3_instrument = _make_class_instrument_field()
 
+    @cached_property
+    def by_period(self) -> dict[Period, list[dict[str, Class | InstrumentBringing]]]:
+        return {
+            Period.first: [
+                {'class': self.period1_choice1, 'instrument': self.period1_choice1_instrument},
+                {'class': self.period1_choice2, 'instrument': self.period1_choice2_instrument},
+                {'class': self.period1_choice3, 'instrument': self.period1_choice3_instrument},
+            ],
+            Period.second: [
+                {'class': self.period2_choice1, 'instrument': self.period2_choice1_instrument},
+                {'class': self.period2_choice2, 'instrument': self.period2_choice2_instrument},
+                {'class': self.period2_choice3, 'instrument': self.period2_choice3_instrument},
+            ],
+            Period.third: [
+                {'class': self.period3_choice1, 'instrument': self.period3_choice1_instrument},
+                {'class': self.period3_choice2, 'instrument': self.period3_choice2_instrument},
+                {'class': self.period3_choice3, 'instrument': self.period3_choice3_instrument},
+            ],
+            Period.fourth: [
+                {'class': self.period4_choice1, 'instrument': self.period4_choice1_instrument},
+                {'class': self.period4_choice2, 'instrument': self.period4_choice2_instrument},
+                {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
+            ],
+        }
+
+    def clean(self) -> None:
+        super().clean()
+        choices = chain.from_iterable(self.by_period.values())
+        if all(choice['class'] is None for choice in choices):
+            raise ValidationError('Please specify your class preferences.')
+
 
 # We won't need this until 2022
 # class RoomAndBoard(models.Model):
@@ -296,7 +377,6 @@ class TShirts(models.Model):
 
     tshirt1 = models.CharField(max_length=50, choices=TShirtSizes.choices, blank=True)
     tshirt2 = models.CharField(max_length=50, choices=TShirtSizes.choices, blank=True)
-    tshirt3 = models.CharField(max_length=50, choices=TShirtSizes.choices, blank=True)
 
 
 class PaymentInfo(models.Model):
@@ -306,7 +386,7 @@ class PaymentInfo(models.Model):
         related_name='payment_info',
     )
 
-    donation = models.IntegerField(blank=True)
+    donation = models.IntegerField(blank=True, default=0)
     # We'll consider registration to be finalized when
     # this field has a value.
     stripe_payment_method_id = models.TextField(blank=True)

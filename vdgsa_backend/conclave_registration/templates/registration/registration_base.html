@@ -9,35 +9,94 @@
   <div id="sidebar">
     <div id="sidebar-wrapper" class=" collapse-show bg-white">
       <div class="list-group">
-        <a
-          href="{% url 'conclave-basic-info' conclave_reg_pk=registration_entry.pk %}"
-          class="list-group-item list-group-item-action"
-        >Misc Info</a>
-        <a
-          href="{% url 'conclave-work-study' conclave_reg_pk=registration_entry.pk %}"
-          class="list-group-item list-group-item-action"
-        >Work Study</a>
-        <a
-          href="{% url 'conclave-instruments-bringing' conclave_reg_pk=registration_entry.pk %}"
-          class="list-group-item list-group-item-action"
-        >Instruments</a>
-        <a
-          href="{% url 'conclave-class-selection' conclave_reg_pk=registration_entry.pk %}"
-          class="list-group-item list-group-item-action"
-        >Classes</a>
+        <a {% url 'conclave-basic-info' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Misc Info
+            {% if registration_entry.basic_info %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        <a {% url 'conclave-work-study' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Work Study
+            {% if registration_entry.work_study %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        <a {% url 'conclave-instruments-bringing' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Instruments
+            {% if registration_entry.instruments_bringing.count %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        <a {% url 'conclave-class-selection' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Classes
+            {% if registration_entry.regular_class_choices %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
         <!-- We don't need room and board until 2022 -->
         <!-- <a
           href="{% url 'conclave-housing' conclave_reg_pk=registration_entry.pk %}"
           class="list-group-item list-group-item-action"
         >Room and Board</a> -->
-        <a
-          href="{% url 'conclave-tshirts' conclave_reg_pk=registration_entry.pk %}"
-          class="list-group-item list-group-item-action"
-        >T-Shirts</a>
-        <a
-          href="{% url 'conclave-payment' conclave_reg_pk=registration_entry.pk %}"
-          class="list-group-item list-group-item-action"
-        >Payment</a>
+        <a {% url 'conclave-tshirts' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            T-Shirts
+            {% if registration_entry.tshirts %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        <a {% url 'conclave-payment' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Payment
+            <!-- They can't view this page after finalizing payment, so we don't
+              need a check icon here. -->
+          </div>
+        </a>
       </div>
     </div>
   </div>
@@ -45,7 +104,12 @@
   <div id="page-content-wrapper">
     <div id="page-body" class="container-fluid mb-3">
       {% with conclave_config=registration_entry.conclave_config %}
-        {% if perms.conclave_registration.conclave_team or conclave_config.is_open %}
+        {% if registration_entry.is_finalized and not perms.conclave_registration.conclave_team %}
+          <div data-testid="registration_finalized_message">
+            Your registration has been finalized. If you need to change something,
+            please contact the Conclave Team.
+          </div>
+        {% elif perms.conclave_registration.conclave_team or conclave_config.is_open %}
           {% if conclave_config.phase == 'late' %}
           {% endif %}
           {% block content %}{% endblock %}
