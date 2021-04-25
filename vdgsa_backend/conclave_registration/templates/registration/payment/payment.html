@@ -32,14 +32,19 @@
       </tr>
     </thead>
     <tbody>
+      {% if registration_entry.class_selection_is_required %}
       <tr id="tuition-charge-row">
         <td>
-          Tuition: {{registration_entry.regular_class_choices.tuition_option | format_tuition_option}}
+          {% if registration_entry.program != 'regular' %}
+          Add-on
+          {% endif %}
+          Classes Selected: {{registration_entry.regular_class_choices.num_classes_selected}}
         </td>
         <td style="text-align: right;">
           {{registration_entry.tuition_charge}}
         </td>
       </tr>
+      {% endif %}
       {% if registration_entry.late_fee %}
       <tr id="late-fee-charge-row">
         <td>
@@ -62,7 +67,9 @@
   </table>
   {% if registration_entry.work_study %}
   <div id="work-study-charges-msg">
-    If you receive your $475.00 Work-Study fee waiver, the total will be $745.00.
+    If you receive your ${{registration_entry.tuition_charge}}
+    Work-Study fee waiver, the total will be
+    ${{registration_entry.total_minus_work_study}}.
     Work-Study positions will be awarded before June 1. Work-Study applicants
     will not be charged until positions are finalized.
   </div>

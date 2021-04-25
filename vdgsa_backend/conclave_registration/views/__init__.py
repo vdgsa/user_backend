@@ -22,5 +22,6 @@ from .conclave_registration_views import RegistrationDoneView as RegistrationDon
 from .conclave_registration_views import (
     RegularProgramClassSelectionView as RegularProgramClassSelectionView
 )
+from .conclave_registration_views import StartOverView as StartOverView
 from .conclave_registration_views import TShirtsView as TShirtsView
 from .conclave_registration_views import WorkStudyApplicationView as WorkStudyApplicationView

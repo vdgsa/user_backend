@@ -51,6 +51,7 @@
             {% endif %}
           </div>
         </a>
+        {% if registration_entry.class_selection_is_required %}
         <a {% url 'conclave-class-selection' conclave_reg_pk=registration_entry.pk as url %}
           href="{{url}}"
           class="
@@ -65,6 +66,7 @@
             {% endif %}
           </div>
         </a>
+        {% endif %}
         <!-- We don't need room and board until 2022 -->
         <!-- <a
           href="{% url 'conclave-housing' conclave_reg_pk=registration_entry.pk %}"
@@ -119,6 +121,16 @@
           </div>
         {% endif %}
       {% endwith %}
+
+      {% url 'start-over' conclave_reg_pk=registration_entry.pk as start_over_url %}
+      {% if request.path != start_over_url %}
+      <div class="mt-4">
+        <a href="{{start_over_url}}"
+          id="start-over-link">
+          I want to start over
+        </a>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>

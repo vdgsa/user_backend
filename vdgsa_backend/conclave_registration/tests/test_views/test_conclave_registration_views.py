@@ -594,6 +594,16 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             'You are not bringing any instruments.', self.find('#no-instruments-message').text
         )
 
+    def test_summary_no_classes(self) -> None:
+        self.login_as(
+            self.user,
+            dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
+        )
+        self.assertEqual(0, len(self.find_all('#classes-summary li')))
+        self.assertEqual(
+            'You have not selected any classes.', self.find('#no-classes-message').text
+        )
+
     def test_summary_of_tshirts(self) -> None:
         shirts = TShirts.objects.create(
             registration_entry=self.registration_entry, tshirt1=TShirtSizes.small)

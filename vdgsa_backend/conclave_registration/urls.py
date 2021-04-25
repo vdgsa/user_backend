@@ -34,6 +34,8 @@ urlpatterns = [
          name='conclave-payment'),
     path('register/<int:conclave_reg_pk>/done/', views.RegistrationDoneView.as_view(),
          name='conclave-done'),
+    path('register/<int:conclave_reg_pk>/start_over/', views.StartOverView.as_view(),
+         name='start-over'),
 
     path('<int:conclave_config_pk>/register/', views.ConclaveRegistrationLandingPage.as_view(),
          name='conclave-reg-landing'),
