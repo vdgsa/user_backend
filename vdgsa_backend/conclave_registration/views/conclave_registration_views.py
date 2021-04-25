@@ -43,12 +43,13 @@ class ChooseProgramForm(forms.Form):
         super().__init__(*args, **kwargs)
 
     def clean(self) -> Dict[str, Any]:
-        if self.data['program'] == Program.faculty_guest_other:
-            password = self.data.get('password', '')
+        result = super().clean()
+        if self.cleaned_data['program'] == Program.faculty_guest_other:
+            password = self.cleaned_data.get('faculty_registration_password', '')
             if password != self.conclave_config.faculty_registration_password:
                 raise ValidationError({'faculty_registration_password': 'Invalid password'})
 
-        return super().clean()
+        return result
 
 
 class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, View):
