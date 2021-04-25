@@ -1,4 +1,11 @@
-<div class="fs-5">Work Study</div>
+{% load conclave_tags %}
+
+<div class="fs-5">Program</div>
+<div id="chosen-program" class="ps-3">
+  <b>{{registration_entry.program | format_program}}</b>
+</div>
+
+<div class="fs-5 mt-2">Work Study</div>
 <div id="work-study-summary" class="ps-3">
   Applying for a work study position:
   <b>
@@ -23,8 +30,14 @@
   {% endif %}
 </div>
 
+{% if class_selection_required %}
 <div class="fs-5 mt-2">Class Preferences</div>
 <div id="classes-summary" class="ps-3">
+  {% if class_selection_required and registration_entry.regular_class_choices.num_classes_selected == 0 %}
+  <div id="no-classes-message">
+    You have not selected any classes.
+  </div>
+  {% else %}
   <div>Period 1</div>
   <ul>
     <li>
@@ -121,7 +134,9 @@
       {% endif %}
     </li>
   </ul>
+  {% endif %}
 </div>
+{% endif %}
 
 <div class="fs-5 mt-2">T-Shirts</div>
 {% with registration_entry.tshirts as tshirts %}

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from itertools import chain
 
-from typing import Any, Final
+from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
@@ -104,10 +104,10 @@ class YesNoMaybe(models.TextChoices):
 class Program(models.TextChoices):
     regular = 'regular'
     faculty_guest_other = 'faculty_guest_other', 'Faculty/Guest/Other'
-    # beginners = 'beginners'
-    # consort_coop = 'consort_coop'
-    # seasoned_players = 'seasoned_players'
-    # exhibitor = 'exhibitor'
+    beginners = 'beginners', 'Beginners'
+    consort_coop = 'consort_coop', 'Consort Cooperative'
+    seasoned_players = 'seasoned_players', 'Seasoned Players'
+    exhibitor = 'exhibitor', 'Vendor'
     # non_playing_attendee = 'non_playing_attendee'
 
 
@@ -125,6 +125,21 @@ class RegistrationEntry(models.Model):
     is_late = models.BooleanField(blank=True, default=False)
 
     @property
+    def class_selection_is_required(self) -> bool:
+        """
+        Returns true if the registrant is required to complete the
+        class selection form. Note that this includes programs where
+        class selections are add-ons. For example, Seasoned Players
+        registrants must complete the class selection form even if
+        they choose "No class" for all periods.
+        """
+        return self.program not in [
+            Program.faculty_guest_other,
+            # Program.non_playing_attendee,
+            Program.exhibitor
+        ]
+
+    @property
     def is_finalized(self) -> bool:
         return self.payment_info is not None and self.payment_info.stripe_payment_method_id != ''
 
@@ -138,10 +153,27 @@ class RegistrationEntry(models.Model):
 
     @property
     def tuition_charge(self) -> int:
+        if self.program == Program.exhibitor:
+            return 100
+
+        # Covers Faculty/Guest/Other and non-playing attendees
         if not hasattr(self, 'regular_class_choices'):
             return 0
 
-        return 200 if self.regular_class_choices.tuition_option == TuitionOption.full_time else 100
+        if self.program == Program.regular:
+            if self.regular_class_choices.num_classes_selected <= 1:
+                return 100
+            if self.regular_class_choices.num_classes_selected > 1:
+                return 200
+
+        if self.program == Program.beginners:
+            return 0 if self.regular_class_choices.num_classes_selected == 0 else 100
+
+        if self.program in [Program.consort_coop, Program.seasoned_players]:
+            return 100 if self.regular_class_choices.num_classes_selected == 0 else 200
+
+        # Fallback value for testing period, we theoretically shouldn't reach this point
+        return 42
 
     @property
     def late_fee(self) -> int:
@@ -280,6 +312,10 @@ class TuitionOption(models.TextChoices):
     part_time = 'part_time', 'Part Time (1 Class)'
 
 
+_ClassChoiceDict = TypedDict(
+    '_ClassChoiceDict', {'class': Class, 'instrument': InstrumentBringing})
+
+
 class RegularProgramClassChoices(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,
@@ -319,35 +355,76 @@ class RegularProgramClassChoices(models.Model):
     period4_choice3_instrument = _make_class_instrument_field()
 
     @cached_property
-    def by_period(self) -> dict[Period, list[dict[str, Class | InstrumentBringing]]]:
+    def period1_choices(self) -> list[_ClassChoiceDict]:
+        return [
+            {'class': self.period1_choice1, 'instrument': self.period1_choice1_instrument},
+            {'class': self.period1_choice2, 'instrument': self.period1_choice2_instrument},
+            {'class': self.period1_choice3, 'instrument': self.period1_choice3_instrument},
+        ]
+
+    @cached_property
+    def period2_choices(self) -> list[_ClassChoiceDict]:
+        return [
+            {'class': self.period2_choice1, 'instrument': self.period2_choice1_instrument},
+            {'class': self.period2_choice2, 'instrument': self.period2_choice2_instrument},
+            {'class': self.period2_choice3, 'instrument': self.period2_choice3_instrument},
+        ]
+
+    @cached_property
+    def period3_choices(self) -> list[_ClassChoiceDict]:
+        return [
+            {'class': self.period3_choice1, 'instrument': self.period3_choice1_instrument},
+            {'class': self.period3_choice2, 'instrument': self.period3_choice2_instrument},
+            {'class': self.period3_choice3, 'instrument': self.period3_choice3_instrument},
+        ]
+
+    @cached_property
+    def period4_choices(self) -> list[_ClassChoiceDict]:
+        return [
+            {'class': self.period4_choice1, 'instrument': self.period4_choice1_instrument},
+            {'class': self.period4_choice2, 'instrument': self.period4_choice2_instrument},
+            {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
+        ]
+
+    @cached_property
+    def by_period(self) -> dict[Period, list[_ClassChoiceDict]]:
         return {
-            Period.first: [
-                {'class': self.period1_choice1, 'instrument': self.period1_choice1_instrument},
-                {'class': self.period1_choice2, 'instrument': self.period1_choice2_instrument},
-                {'class': self.period1_choice3, 'instrument': self.period1_choice3_instrument},
-            ],
-            Period.second: [
-                {'class': self.period2_choice1, 'instrument': self.period2_choice1_instrument},
-                {'class': self.period2_choice2, 'instrument': self.period2_choice2_instrument},
-                {'class': self.period2_choice3, 'instrument': self.period2_choice3_instrument},
-            ],
-            Period.third: [
-                {'class': self.period3_choice1, 'instrument': self.period3_choice1_instrument},
-                {'class': self.period3_choice2, 'instrument': self.period3_choice2_instrument},
-                {'class': self.period3_choice3, 'instrument': self.period3_choice3_instrument},
-            ],
-            Period.fourth: [
-                {'class': self.period4_choice1, 'instrument': self.period4_choice1_instrument},
-                {'class': self.period4_choice2, 'instrument': self.period4_choice2_instrument},
-                {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
-            ],
+            Period.first: self.period1_choices,
+            Period.second: self.period2_choices,
+            Period.third: self.period3_choices,
+            Period.fourth: self.period4_choices,
         }
 
-    def clean(self) -> None:
-        super().clean()
-        choices = chain.from_iterable(self.by_period.values())
-        if all(choice['class'] is None for choice in choices):
-            raise ValidationError('Please specify your class preferences.')
+    @property
+    def num_classes_selected(self) -> int:
+        count = 0
+        for choices in self.by_period.values():
+            if any(choice['class'] is not None for choice in choices):
+                count += 1
+
+        return count
+
+    # @property
+    # def min_num_classes(self) -> int:
+    #     return 0
+
+    # @property
+    # def max_num_classes(self) -> int:
+    #     return 4
+
+    # def clean(self) -> None:
+    #     super().clean()
+    #     if self.num_classes_selected < self.min_num_classes:
+    #         raise ValidationError(
+    #             'Please specify your class preferences '
+    #             f'for at least {self.min_num_classes} period(s).'
+    #         )
+
+    #     if self.num_classes_selected > self.max_num_classes:
+    #         raise ValidationError(
+    #             'Please specify your class preferences '
+    #             f'for no more than {self.max_num_classes} period(s).'
+    #         )
 
 
 # We won't need this until 2022

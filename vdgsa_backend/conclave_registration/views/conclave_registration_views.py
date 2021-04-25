@@ -400,7 +400,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         # Interleave the class choice and instrument choice field names
         # i.e., ['period1_choice1', 'period1_choice1_instrument',
         #        'period1_choice2', 'period1_choice2_instrument']
-        fields = ['tuition_option'] + list(
+        fields = list(
             chain.from_iterable(
                 zip(
                     chain.from_iterable(_CLASS_CHOICE_FIELD_NAMES_BY_PERIOD.values()),
@@ -549,6 +549,7 @@ class PaymentView(_RegistrationStepViewBase):
     def get_render_context(self, form: _RegistrationStepFormBase | None) -> dict[str, object]:
         context = super().get_render_context(form)
         context['missing_sections'] = self._get_missing_sections()
+        context['class_selection_required'] = self.registration_entry.class_selection_is_required
         return context
 
     def _get_missing_sections(self) -> list[str]:
@@ -557,10 +558,29 @@ class PaymentView(_RegistrationStepViewBase):
         if not hasattr(self.registration_entry, 'basic_info'):
             missing_sections.append('Misc Info')
 
-        if not hasattr(self.registration_entry, 'regular_class_choices'):
+        if (self.registration_entry.class_selection_is_required
+                and not hasattr(self.registration_entry, 'regular_class_choices')):
             missing_sections.append('Classes')
 
         return missing_sections
+
+
+class StartOverView(_RegistrationStepViewBase):
+    template_name = 'registration/start_over.html'
+
+    def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        return self.render_page(None)
+
+    def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        redirect_url = self.get_next_step_url()
+        self.registration_entry.delete()
+        return HttpResponseRedirect(redirect_url)
+
+    def get_next_step_url(self) -> str:
+        return reverse(
+            'conclave-reg-landing',
+            kwargs={'conclave_config_pk': self.registration_entry.conclave_config.pk}
+        )
 
 
 class RegistrationDoneView(View):
