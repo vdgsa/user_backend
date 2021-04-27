@@ -1,4 +1,5 @@
 import time
+import unittest
 from vdgsa_backend.conclave_registration.views.conclave_registration_views import BasicInfoForm
 from django.test.testcases import TestCase
 from django.urls import reverse
@@ -52,14 +53,13 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
 
     def test_select_faculty_registration_with_password(self) -> None:
         password = 'nrsoietanrsit'
+        self.conclave_config.faculty_registration_password = password
+        self.conclave_config.save()
         self.login_as(self.user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
-
         self.assertFalse(self.find('#id_faculty_registration_password').is_displayed())
         self.click_on(self.find_all('#id_program option')[1])
         self.set_value('#id_faculty_registration_password', password)
-
         self.click_on(self.find('form button'))
-
         self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
 
         query = RegistrationEntry.objects.all()
@@ -212,6 +212,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.login_as(self.user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
         self.assertIn('finalized', self.find('[data-testid=registration_finalized_message]').text)
         self.assertFalse(self.exists('[data-testid=registration_section_header]'))
+        self.assertFalse(self.exists('#start-over-link'))
 
     def test_conclave_team_can_edit_finalized_registration(self) -> None:
         reg_entry = RegistrationEntry.objects.create(
@@ -226,6 +227,14 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         user = self.make_conclave_team()
         self.login_as(user, dest_url=f'/conclave/register/{reg_entry.pk}/basic_info')
         self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+
+    @unittest.skip('')
+    def test_user_cannot_reset_finalized_registration(self) -> None:
+        self.fail()
+
+    @unittest.skip('')
+    def test_conclave_team_can_reset_finalized_registration(self) -> None:
+        self.fail()
 
 
 class StartRegistrationPermissionsTestCase(TestCase):
@@ -458,17 +467,19 @@ class InstrumentsBringingViewTestCase(_SetUpRegistrationEntry, SeleniumTestCaseB
 
 
 class ClassesViewTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
-    def test_invalid_no_classes_selected(self) -> None:
-        self.login_as(
-            self.user,
-            dest_url=f'/conclave/register/{self.registration_entry.pk}/classes'
-        )
-        self.click_on(self.find('form button'))
+    pass
+    # Currently, it's allowed to not select any classes
+    # def test_invalid_no_classes_selected(self) -> None:
+    #     self.login_as(
+    #         self.user,
+    #         dest_url=f'/conclave/register/{self.registration_entry.pk}/classes'
+    #     )
+    #     self.click_on(self.find('form button'))
 
-        self.assertEqual(
-            'Please specify your class preferences.',
-            self.find('.non-field-errors .form-error:first-child').text
-        )
+    #     self.assertEqual(
+    #         'Please specify your class preferences.',
+    #         self.find('.non-field-errors .form-error:first-child').text
+    #     )
 
 #     def test_form_initial_values(self) -> None:
 #         self.fail()
@@ -637,10 +648,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
     def test_charges_part_time_tuition_and_tshirts(self) -> None:
         self.empty_class_choices.delete()
-        RegularProgramClassChoices.objects.create(
-            registration_entry=self.registration_entry,
-            tuition_option=TuitionOption.part_time
-        )
+        RegularProgramClassChoices.objects.create(registration_entry=self.registration_entry)
         self.login_as(
             self.user,
             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
@@ -676,10 +684,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
     def test_charges_full_time_tuition_and_tshirts(self) -> None:
         self.empty_class_choices.delete()
-        RegularProgramClassChoices.objects.create(
-            registration_entry=self.registration_entry,
-            tuition_option=TuitionOption.full_time
-        )
+        RegularProgramClassChoices.objects.create(registration_entry=self.registration_entry)
         self.login_as(
             self.user,
             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
@@ -714,10 +719,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         self.registration_entry.is_late = True
         self.registration_entry.save()
         self.empty_class_choices.delete()
-        RegularProgramClassChoices.objects.create(
-            registration_entry=self.registration_entry,
-            tuition_option=TuitionOption.full_time,
-        )
+        RegularProgramClassChoices.objects.create(registration_entry=self.registration_entry)
         self.login_as(
             self.user,
             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'

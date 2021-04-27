@@ -95,8 +95,9 @@
         >
           <div class="d-flex justify-content-between">
             Payment
-            <!-- They can't view this page after finalizing payment, so we don't
-              need a check icon here. -->
+            {% if registration_entry.payment_info %}
+            <i class="bi bi-check"></i>
+            {% endif %}
           </div>
         </a>
       </div>
@@ -124,12 +125,18 @@
 
       {% url 'start-over' conclave_reg_pk=registration_entry.pk as start_over_url %}
       {% if request.path != start_over_url %}
-      <div class="mt-4">
-        <a href="{{start_over_url}}"
-          id="start-over-link">
-          I want to start over
-        </a>
-      </div>
+        {% if not registration_entry.is_finalized or perms.conclave_registration.conclave_team %}
+        <div class="mt-4">
+          <a href="{{start_over_url}}"
+            id="start-over-link">
+            {% if registration_entry.is_finalized %}
+            Reset {{registration_entry.user | show_name_and_email}}'s registration
+            {% else %}
+            I want to start over
+            {% endif %}
+          </a>
+        </div>
+        {% endif %}
       {% endif %}
     </div>
   </div>

@@ -323,9 +323,6 @@ class RegularProgramClassChoices(models.Model):
         related_name='regular_class_choices',
     )
 
-    tuition_option = models.TextField(
-        choices=TuitionOption.choices, default=TuitionOption.full_time)
-
     period1_choice1 = _make_class_choice_field()
     period1_choice1_instrument = _make_class_instrument_field()
     period1_choice2 = _make_class_choice_field()
@@ -403,28 +400,6 @@ class RegularProgramClassChoices(models.Model):
                 count += 1
 
         return count
-
-    # @property
-    # def min_num_classes(self) -> int:
-    #     return 0
-
-    # @property
-    # def max_num_classes(self) -> int:
-    #     return 4
-
-    # def clean(self) -> None:
-    #     super().clean()
-    #     if self.num_classes_selected < self.min_num_classes:
-    #         raise ValidationError(
-    #             'Please specify your class preferences '
-    #             f'for at least {self.min_num_classes} period(s).'
-    #         )
-
-    #     if self.num_classes_selected > self.max_num_classes:
-    #         raise ValidationError(
-    #             'Please specify your class preferences '
-    #             f'for no more than {self.max_num_classes} period(s).'
-    #         )
 
 
 # We won't need this until 2022
