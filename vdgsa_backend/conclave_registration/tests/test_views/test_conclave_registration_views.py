@@ -45,7 +45,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual('Start Registration', button.text)
         self.click_on(button)
 
-        self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+        self.assertEqual(
+            'Instruments', self.find('[data-testid=registration_section_header]').text)
 
         query = RegistrationEntry.objects.all()
         self.assertEqual(1, query.count())
@@ -64,7 +65,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.click_on(self.find_all('#id_program option')[1])
         self.set_value('#id_faculty_registration_password', password)
         self.click_on(self.find('form button'))
-        self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+        self.assertEqual(
+            'Additional Info', self.find('[data-testid=registration_section_header]').text)
 
         query = RegistrationEntry.objects.all()
         self.assertEqual(1, query.count())
@@ -82,7 +84,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         )
 
         self.login_as(self.user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
-        self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+        self.assertEqual(
+            'Instruments', self.find('[data-testid=registration_section_header]').text)
 
     def test_membership_out_of_date_message(self) -> None:
         self.user.subscription.delete()
@@ -114,7 +117,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual('Start Registration', button.text)
         self.click_on(button)
 
-        self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+        self.assertEqual(
+            'Instruments', self.find('[data-testid=registration_section_header]').text)
 
         query = RegistrationEntry.objects.all()
         self.assertEqual(1, query.count())
@@ -135,7 +139,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual('Start Registration', button.text)
         self.click_on(button)
 
-        self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+        self.assertEqual(
+            'Instruments', self.find('[data-testid=registration_section_header]').text)
 
         query = RegistrationEntry.objects.all()
         self.assertEqual(1, query.count())
@@ -179,7 +184,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual('Start Registration', button.text)
         self.click_on(button)
 
-        self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+        self.assertEqual(
+            'Instruments', self.find('[data-testid=registration_section_header]').text)
 
         query = RegistrationEntry.objects.all()
         self.assertEqual(1, query.count())
@@ -201,7 +207,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
 
         user = self.make_conclave_team()
         self.login_as(user, dest_url=f'/conclave/register/{reg_entry.pk}/basic_info')
-        self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+        self.assertEqual(
+            'Additional Info', self.find('[data-testid=registration_section_header]').text)
 
     def test_editing_not_allowed_after_submitting_payment(self) -> None:
         reg_entry = RegistrationEntry.objects.create(
@@ -230,7 +237,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
 
         user = self.make_conclave_team()
         self.login_as(user, dest_url=f'/conclave/register/{reg_entry.pk}/basic_info')
-        self.assertEqual('Misc Info', self.find('[data-testid=registration_section_header]').text)
+        self.assertEqual(
+            'Additional Info', self.find('[data-testid=registration_section_header]').text)
 
     @unittest.skip('')
     def test_user_cannot_reset_finalized_registration(self) -> None:
@@ -822,7 +830,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
         missing_sections = self.find_all('#missing-sections-msg li')
         self.assertEqual(1, len(missing_sections))
-        self.assertIn('Misc Info', missing_sections[0].text)
+        self.assertIn('Additional Info', missing_sections[0].text)
         self.assertFalse(self.exists('#summary'))
         self.assertFalse(self.exists('#conclave-go-to-payment-form'))
 
@@ -847,7 +855,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
         missing_sections = self.find_all('#missing-sections-msg li')
         self.assertEqual(2, len(missing_sections))
-        self.assertIn('Misc Info', missing_sections[0].text)
+        self.assertIn('Additional Info', missing_sections[0].text)
         self.assertIn('Classes', missing_sections[1].text)
         self.assertFalse(self.exists('#summary'))
         self.assertFalse(self.exists('#conclave-go-to-payment-form'))

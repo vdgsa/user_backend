@@ -67,6 +67,16 @@ a:active {
     border-color: hsl(47, 96%, 63%)!important;
 }
 
+.btn-secondary {
+    background-color: hsl(227, 96%, 70%)!important;
+    border-color: hsl(227, 96%, 70%)!important;
+}
+
+.btn-secondary:hover {
+    background-color: hsl(227, 96%, 63%)!important;
+    border-color: hsl(227, 96%, 63%)!important;
+}
+
 .btn-danger {
     background-color: hsl(357, 65%, 70%)!important;
     border-color: hsl(357, 65%, 70%)!important;
