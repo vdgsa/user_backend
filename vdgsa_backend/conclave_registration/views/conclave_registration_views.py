@@ -326,7 +326,11 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
 class InstrumentsBringingView(_RegistrationStepViewBase):
     template_name = 'registration/instruments/instruments_bringing.html'
     form_class = InstrumentBringingForm
-    next_step_url_name = 'conclave-class-selection'
+
+    @property
+    def next_step_url_name(self) -> str:
+        return ('conclave-class-selection' if self.registration_entry.class_selection_is_required
+                else 'conclave-tshirts')
 
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
         return self.render_page(InstrumentBringingForm(self.registration_entry))
@@ -425,6 +429,37 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                 registration_entry=self.registration_entry
             )
             self.fields[field_name].empty_label = 'Any'
+
+    def full_clean(self) -> None:
+        super().full_clean()
+
+        # if self.instance.num_classes_selected < self.min_num_classes:
+        #     raise ValidationError(
+        #         'Please specify your class preferences '
+        #         f'for at least {self.min_num_classes} period(s).'
+        #     )
+
+        if self.instance.num_classes_selected > self.max_num_classes:
+            self.add_error(
+                None,
+                'Please specify your class preferences '
+                f'for no more than {self.max_num_classes} period(s).'
+            )
+
+    # @property
+    # def min_num_classes(self) -> int:
+    #     return 0
+
+    @property
+    def max_num_classes(self) -> int:
+        program = self.registration_entry.program
+        if program == Program.beginners:
+            return 1
+
+        if program in [Program.consort_coop, Program.seasoned_players]:
+            return 2
+
+        return 4
 
 
 class RegularProgramClassSelectionView(_RegistrationStepViewBase):
