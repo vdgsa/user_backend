@@ -3,17 +3,24 @@
 
 {% load vdgsa_tags %}
 
+<h3 data-testid="registration_section_header">Instruments</h3>
+
 <p>
   Please list the instruments you'll be bringing to conclave.<br>
   Once you've added all of them, you may proceed to the
   <a href="{{next_step_url}}">next step</a>
 </p>
 
-{% if not instruments.empty %}
-<h3>Instruments</h3>
-{% endif %}
+<div class="add-instrument-header">Add an instrument</div>
+<form method="post" id="add-instrument-form">
+  {% include 'registration/instruments/add_instrument_form_body.tmpl' %}
 
-<table id="instruments" class="table table-striped">
+  <div class="mt-2">
+    <button type="submit" class="btn btn-secondary">Add</button>
+  </div>
+</form>
+
+<table id="instruments" class="table table-striped my-3">
   <tbody>
   {% for instrument in instruments %}
     <tr class="instrument-row">
@@ -25,14 +32,15 @@
   </tbody>
 </table>
 
-<div class="add-instrument-header">Add an instrument</div>
-<form method="post" id="add-instrument-form">
-  {% include 'registration/instruments/add_instrument_form_body.tmpl' %}
+<div class="mt-4">
+  <div class="my-2">When you've finished adding instruments, click the button below to continue.</div>
 
-  <div class="mt-2">
-    <button type="submit" class="btn btn-primary">Add</button>
-  </div>
-</form>
+  <button
+    type="button"
+    class="btn btn-primary"
+    onclick="window.location = '{{next_step_url}}'"
+  >Save and continue</button>
+</div>
 
 <script>
 $().ready(function() {
