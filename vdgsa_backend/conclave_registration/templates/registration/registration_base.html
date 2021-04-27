@@ -9,34 +9,7 @@
   <div id="sidebar">
     <div id="sidebar-wrapper" class=" collapse-show bg-white">
       <div class="list-group">
-        <a {% url 'conclave-basic-info' conclave_reg_pk=registration_entry.pk as url %}
-          href="{{url}}"
-          class="
-            list-group-item list-group-item-action
-            {% if request.path == url %}active{% endif %}
-          "
-        >
-          <div class="d-flex justify-content-between">
-            Misc Info
-            {% if registration_entry.basic_info %}
-            <i class="bi bi-check"></i>
-            {% endif %}
-          </div>
-        </a>
-        <a {% url 'conclave-work-study' conclave_reg_pk=registration_entry.pk as url %}
-          href="{{url}}"
-          class="
-            list-group-item list-group-item-action
-            {% if request.path == url %}active{% endif %}
-          "
-        >
-          <div class="d-flex justify-content-between">
-            Work Study
-            {% if registration_entry.work_study %}
-            <i class="bi bi-check"></i>
-            {% endif %}
-          </div>
-        </a>
+        {% if registration_entry.class_selection_is_required %}
         <a {% url 'conclave-instruments-bringing' conclave_reg_pk=registration_entry.pk as url %}
           href="{{url}}"
           class="
@@ -51,7 +24,7 @@
             {% endif %}
           </div>
         </a>
-        {% if registration_entry.class_selection_is_required %}
+
         <a {% url 'conclave-class-selection' conclave_reg_pk=registration_entry.pk as url %}
           href="{{url}}"
           class="
@@ -67,6 +40,39 @@
           </div>
         </a>
         {% endif %}
+
+        <a {% url 'conclave-basic-info' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Additional Info
+            {% if registration_entry.basic_info %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+
+        {% if registration_entry.class_selection_is_required %}
+        <a {% url 'conclave-work-study' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Work Study
+            {% if registration_entry.work_study %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        {% endif %}
+
         <!-- We don't need room and board until 2022 -->
         <!-- <a
           href="{% url 'conclave-housing' conclave_reg_pk=registration_entry.pk %}"

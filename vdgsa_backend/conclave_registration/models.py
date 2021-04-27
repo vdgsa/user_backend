@@ -1,5 +1,4 @@
 from __future__ import annotations
-from itertools import chain
 
 from typing import Any, Final, TypedDict
 
@@ -107,8 +106,17 @@ class Program(models.TextChoices):
     beginners = 'beginners', 'Beginners'
     consort_coop = 'consort_coop', 'Consort Cooperative'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
+    advanced_projects = 'advanced_projects', 'Advanced Projects'
     exhibitor = 'exhibitor', 'Vendor'
     # non_playing_attendee = 'non_playing_attendee'
+
+
+ADVANCED_PROGRAMS = [Program.consort_coop, Program.seasoned_players, Program.advanced_projects]
+NO_CLASS_PROGRAMS = [
+    Program.faculty_guest_other,
+    Program.exhibitor,
+    # Program.non_playing_attendee,
+]
 
 
 class RegistrationEntry(models.Model):
@@ -127,17 +135,15 @@ class RegistrationEntry(models.Model):
     @property
     def class_selection_is_required(self) -> bool:
         """
-        Returns true if the registrant is required to complete the
+        Returns True if the registrant is required to complete the
         class selection form. Note that this includes programs where
         class selections are add-ons. For example, Seasoned Players
         registrants must complete the class selection form even if
         they choose "No class" for all periods.
+        Returns False for programs such as faculty/guest/other or
+        non-playing attendee that will never select classes.
         """
-        return self.program not in [
-            Program.faculty_guest_other,
-            # Program.non_playing_attendee,
-            Program.exhibitor
-        ]
+        return self.program not in NO_CLASS_PROGRAMS
 
     @property
     def is_finalized(self) -> bool:
@@ -153,27 +159,22 @@ class RegistrationEntry(models.Model):
 
     @property
     def tuition_charge(self) -> int:
-        if self.program == Program.exhibitor:
-            return 100
-
-        # Covers Faculty/Guest/Other and non-playing attendees
-        if not hasattr(self, 'regular_class_choices'):
+        if self.program in NO_CLASS_PROGRAMS:
             return 0
 
         if self.program == Program.regular:
             if self.regular_class_choices.num_classes_selected <= 1:
                 return 100
-            if self.regular_class_choices.num_classes_selected > 1:
+            else:
                 return 200
 
         if self.program == Program.beginners:
             return 0 if self.regular_class_choices.num_classes_selected == 0 else 100
 
-        if self.program in [Program.consort_coop, Program.seasoned_players]:
+        if self.program in ADVANCED_PROGRAMS:
             return 100 if self.regular_class_choices.num_classes_selected == 0 else 200
 
-        # Fallback value for testing period, we theoretically shouldn't reach this point
-        return 42
+        return 100
 
     @property
     def late_fee(self) -> int:

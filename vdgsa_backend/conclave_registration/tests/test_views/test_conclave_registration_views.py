@@ -1,6 +1,6 @@
 import time
 import unittest
-from vdgsa_backend.conclave_registration.views.conclave_registration_views import BasicInfoForm
+
 from django.test.testcases import TestCase
 from django.urls import reverse
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
@@ -9,8 +9,12 @@ from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.conclave_registration.models import (
-    BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirtSizes, TShirts, TuitionOption, WorkStudyApplication, WorkStudyJob, YesNoMaybe
+    BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
+    InstrumentChoices, Level, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase,
+    RegularProgramClassChoices, TShirts, TShirtSizes, TuitionOption, WorkStudyApplication,
+    WorkStudyJob, YesNoMaybe
 )
+from vdgsa_backend.conclave_registration.views.conclave_registration_views import BasicInfoForm
 from vdgsa_backend.selenium_test_base import SeleniumTestCaseBase
 
 
@@ -289,7 +293,7 @@ class StartRegistrationPermissionsTestCase(TestCase):
 
     #     # change url, have one of these tests for each registration step
     #     response = self.client.post(
-    #         reverse('conclave-reg-landing', kwargs={'conclave_config_pk': self.conclave_config.pk})
+    #     reverse('conclave-reg-landing', kwargs={'conclave_config_pk': self.conclave_config.pk})
     #     )
     #     self.assertEqual(403, response.status_code)
 
