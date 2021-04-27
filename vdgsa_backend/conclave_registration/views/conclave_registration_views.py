@@ -609,7 +609,7 @@ class PaymentView(_RegistrationStepViewBase):
         missing_sections = []
 
         if not hasattr(self.registration_entry, 'basic_info'):
-            missing_sections.append('Misc Info')
+            missing_sections.append('Additional Info')
 
         if (self.registration_entry.class_selection_is_required
                 and not hasattr(self.registration_entry, 'regular_class_choices')):
