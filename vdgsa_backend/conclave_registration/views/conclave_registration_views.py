@@ -21,9 +21,9 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
-    PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
-    TShirts, WorkStudyApplication, get_classes_by_period
+    NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig,
+    InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase,
+    RegularProgramClassChoices, TShirts, WorkStudyApplication, get_classes_by_period
 )
 
 from .permissions import is_conclave_team
@@ -60,9 +60,10 @@ class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, V
             conclave_config=self.conclave_config, user=cast(User, self.request.user)
         )
         if registration_entry_query.exists():
+            registration_entry = registration_entry_query.get()
             return HttpResponseRedirect(
-                reverse('conclave-basic-info',
-                        kwargs={'conclave_reg_pk': registration_entry_query.get().pk})
+                reverse(get_first_step_url_name(registration_entry),
+                        kwargs={'conclave_reg_pk': registration_entry.pk})
             )
 
         return self._render_page(ChooseProgramForm(self.conclave_config))
@@ -86,7 +87,10 @@ class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, V
             is_late=self.conclave_config.phase == RegistrationPhase.late
         )
         return HttpResponseRedirect(
-            reverse('conclave-basic-info', kwargs={'conclave_reg_pk': registration_entry.pk})
+            reverse(
+                get_first_step_url_name(registration_entry),
+                kwargs={'conclave_reg_pk': registration_entry.pk}
+            )
         )
 
     def test_func(self) -> bool:
@@ -111,6 +115,13 @@ class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, V
                 'conclave_config': self.conclave_config
             }
         )
+
+
+def get_first_step_url_name(registration_entry: RegistrationEntry) -> str:
+    if registration_entry.program in NO_CLASS_PROGRAMS:
+        return 'conclave-basic-info'
+
+    return 'conclave-instruments-bringing'
 
 
 class _RegistrationStepFormBase:
@@ -243,7 +254,13 @@ class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
 class BasicInfoView(_RegistrationStepViewBase):
     template_name = 'registration/basic_info.html'
     form_class = BasicInfoForm
-    next_step_url_name = 'conclave-work-study'
+
+    @property
+    def next_step_url_name(self) -> str:  # type: ignore
+        if self.registration_entry.program in NO_CLASS_PROGRAMS:
+            return 'conclave-tshirts'
+
+        return 'conclave-work-study'
 
     def get_step_instance(self) -> BasicRegistrationInfo | None:
         if hasattr(self.registration_entry, 'basic_info'):
@@ -290,7 +307,7 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
 class WorkStudyApplicationView(_RegistrationStepViewBase):
     template_name = 'registration/work_study.html'
     form_class = WorkStudyForm
-    next_step_url_name = 'conclave-instruments-bringing'
+    next_step_url_name = 'conclave-tshirts'
 
     def get_step_instance(self) -> WorkStudyApplication | None:
         if hasattr(self.registration_entry, 'work_study'):
@@ -326,11 +343,7 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
 class InstrumentsBringingView(_RegistrationStepViewBase):
     template_name = 'registration/instruments/instruments_bringing.html'
     form_class = InstrumentBringingForm
-
-    @property
-    def next_step_url_name(self) -> str:
-        return ('conclave-class-selection' if self.registration_entry.class_selection_is_required
-                else 'conclave-tshirts')
+    next_step_url_name = 'conclave-class-selection'
 
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
         return self.render_page(InstrumentBringingForm(self.registration_entry))
@@ -465,7 +478,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
 class RegularProgramClassSelectionView(_RegistrationStepViewBase):
     template_name = 'registration/regular_class_selection.html'
     form_class = RegularProgramClassSelectionForm
-    next_step_url_name = 'conclave-tshirts'
+    next_step_url_name = 'conclave-basic-info'
 
     def get_step_instance(self) -> RegularProgramClassChoices | None:
         if hasattr(self.registration_entry, 'regular_class_choices'):

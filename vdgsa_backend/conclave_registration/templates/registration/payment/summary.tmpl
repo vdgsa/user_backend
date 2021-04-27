@@ -5,6 +5,7 @@
   <b>{{registration_entry.program | format_program}}</b>
 </div>
 
+{% if class_selection_required %}
 <div class="fs-5 mt-2">Work Study</div>
 <div id="work-study-summary" class="ps-3">
   Applying for a work study position:
@@ -30,7 +31,6 @@
   {% endif %}
 </div>
 
-{% if class_selection_required %}
 <div class="fs-5 mt-2">Class Preferences</div>
 <div id="classes-summary" class="ps-3">
   {% if class_selection_required and registration_entry.regular_class_choices.num_classes_selected == 0 %}
