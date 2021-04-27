@@ -324,6 +324,8 @@ class RegularProgramClassChoices(models.Model):
         related_name='regular_class_choices',
     )
 
+    comments = models.TextField(blank=True)
+
     period1_choice1 = _make_class_choice_field()
     period1_choice1_instrument = _make_class_instrument_field()
     period1_choice2 = _make_class_choice_field()

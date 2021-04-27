@@ -425,7 +425,11 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                     chain.from_iterable(_INSTRUMENT_FIELD_NAMES_BY_PERIOD.values()),
                 )
             )
-        )
+        ) + ['comments']
+
+        widgets = {
+            'comments': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+        }
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
