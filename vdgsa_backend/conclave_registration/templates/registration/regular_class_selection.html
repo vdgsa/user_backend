@@ -66,6 +66,7 @@
           {% include 'utils/small_select.tmpl' with field=form.period1_choice3_instrument label='Instrument Preference'%}
         </div>
       </div>
+      {% if registration_entry.program != 'beginners' and registration_entry.program != 'seasoned_players' %}
       <div class="period-header fs-4 mt-2">
         2nd Period: {{registration_entry.conclave_config.second_period_time_label}}
       </div>
@@ -83,6 +84,8 @@
           {% include 'utils/small_select.tmpl' with field=form.period2_choice3_instrument label='Instrument Preference'%}
         </div>
       </div>
+      {% endif %}
+      {% if registration_entry.program != 'consort_coop' %}
       <div class="period-header fs-4 mt-2">
         3rd Period: {{registration_entry.conclave_config.third_period_time_label}}
       </div>
@@ -100,6 +103,7 @@
           {% include 'utils/small_select.tmpl' with field=form.period3_choice3_instrument label='Instrument Preference'%}
         </div>
       </div>
+      {% endif %}
       <div class="period-header fs-4 mt-2">
         4th Period: {{registration_entry.conclave_config.fourth_period_time_label}}
       </div>
