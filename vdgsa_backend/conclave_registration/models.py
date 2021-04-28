@@ -26,6 +26,13 @@ class ConclaveRegistrationConfig(models.Model):
     )
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
+    photo_release_text = models.TextField(blank=True)
+
+    first_period_time_label = models.CharField(max_length=255, blank=True)
+    second_period_time_label = models.CharField(max_length=255, blank=True)
+    third_period_time_label = models.CharField(max_length=255, blank=True)
+    fourth_period_time_label = models.CharField(max_length=255, blank=True)
+
     @property
     def is_open(self) -> bool:
         return self.phase in [RegistrationPhase.open, RegistrationPhase.late]
@@ -101,13 +108,13 @@ class YesNoMaybe(models.TextChoices):
 
 
 class Program(models.TextChoices):
-    regular = 'regular'
-    faculty_guest_other = 'faculty_guest_other', 'Faculty/Guest/Other'
-    beginners = 'beginners', 'Beginners'
+    regular = 'regular', 'Regular Curriculum (part- and full-time)'
+    beginners = 'beginners', 'Beginner Programs (both teen and adult)'
     consort_coop = 'consort_coop', 'Consort Cooperative'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     advanced_projects = 'advanced_projects', 'Advanced Projects'
-    exhibitor = 'exhibitor', 'Vendor'
+    exhibitor = 'exhibitor', 'Vendors'
+    faculty_guest_other = 'faculty_guest_other', 'Faculty/Guest/Other'
     # non_playing_attendee = 'non_playing_attendee'
 
 
@@ -146,12 +153,23 @@ class RegistrationEntry(models.Model):
         return self.program not in NO_CLASS_PROGRAMS
 
     @property
+    def is_advanced_program(self) -> bool:
+        return self.program in ADVANCED_PROGRAMS
+
+    @property
     def is_finalized(self) -> bool:
         return self.payment_info is not None and self.payment_info.stripe_payment_method_id != ''
 
     @property
     def total_charges(self) -> int:
-        return self.tuition_charge + self.tshirts_charge + self.late_fee
+        return self.tuition_charge + self.tshirts_charge + self.late_fee + self.donation
+
+    @property
+    def donation(self) -> int:
+        if not hasattr(self, 'tshirts'):
+            return 0
+
+        return self.tshirts.donation
 
     @property
     def total_minus_work_study(self) -> int:
@@ -200,7 +218,7 @@ class BasicRegistrationInfo(models.Model):
     )
 
     is_first_time_attendee = models.BooleanField()
-    buddy_willingness = models.TextField(choices=YesNoMaybe.choices)
+    buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.BooleanField(blank=True)
 
@@ -208,6 +226,11 @@ class BasicRegistrationInfo(models.Model):
     liability_release = models.BooleanField()
 
     other_info = models.TextField(blank=True)
+
+    def clean(self) -> None:
+        super().clean()
+        if not self.is_first_time_attendee and not self.buddy_willingness:
+            raise ValidationError({'buddy_willingness': 'This field is required.'})
 
 
 class WorkStudyJob(models.TextChoices):
@@ -432,6 +455,7 @@ class TShirts(models.Model):
 
     tshirt1 = models.CharField(max_length=50, choices=TShirtSizes.choices, blank=True)
     tshirt2 = models.CharField(max_length=50, choices=TShirtSizes.choices, blank=True)
+    donation = models.IntegerField(blank=True, default=0)
 
 
 class PaymentInfo(models.Model):
@@ -441,7 +465,6 @@ class PaymentInfo(models.Model):
         related_name='payment_info',
     )
 
-    donation = models.IntegerField(blank=True, default=0)
     # We'll consider registration to be finalized when
     # this field has a value.
     stripe_payment_method_id = models.TextField(blank=True)

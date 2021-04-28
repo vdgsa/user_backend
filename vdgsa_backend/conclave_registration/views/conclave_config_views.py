@@ -21,6 +21,12 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'year',
             'phase',
             'faculty_registration_password',
+            'photo_release_text',
+
+            'first_period_time_label',
+            'second_period_time_label',
+            'third_period_time_label',
+            'fourth_period_time_label',
         ]
 
         labels = {
@@ -29,6 +35,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
 
         widgets = {
             'phase': widgets.RadioSelect,
+            'photo_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
 

@@ -7,10 +7,106 @@
 
 <form method="post">
   {% csrf_token %}
-  {% include 'utils/form_body.tmpl' %}
+
+  <div class="row">
+    <div class="col-md-6">
+      Did you attend NonClave online last summer?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.is_first_time_attendee label='Yes'%}
+    </div>
+  </div>
+
+  <div id="buddy-willingness-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        Would you be willing to share your experience of online Conclave
+        with someone who is new to it this year?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-3">
+        {% include 'utils/form_field.tmpl' with field=form.buddy_willingness %}
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="row mt-2">
+    <div class="col-md-6">
+      There are always many small jobs that need to be done at Conclave.
+      Would you be willing to help out?
+    </div>
+  </div> -->
+  <!-- <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.willing_to_help_with_small_jobs %}
+    </div>
+  </div> -->
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      Are you a vendor who would like to take part in vendor activities?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.wants_display_space label='Yes' %}
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-8">
+      <b>Photo and Video Release:</b>
+      {{registration_entry.conclave_config.photo_release_text}}
+    </div>
+  </div>
+  <div class="row mt-1">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.photo_release_auth label='I agree' %}
+    </div>
+  </div>
+
+  <!-- <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.liability_release %}
+    </div>
+  </div> -->
+
+  <div class="row mt-3">
+    <div class="col-md-8">
+      Do you have a viol (or viols) that you would be willing to lend locally,
+      so that someone without their own viol could have the chance to take a
+      beginner class? If so, please describe the instrument(s) briefly below,
+      including size (and number of strings for basses).
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.other_info %}
+    </div>
+  </div>
 
   <div class="mt-2">
     <button type="submit" class="btn btn-primary">Save and continue</button>
   </div>
 </form>
+
+<script>
+  $().ready(function() {
+    if ($('#id_is_first_time_attendee').prop('checked')) {
+      $('#buddy-willingness-wrapper').hide();
+    }
+
+    $('#id_is_first_time_attendee').change(function() {
+      if ($('#id_is_first_time_attendee').prop('checked')) {
+        $('#buddy-willingness-wrapper').hide();
+      }
+      else {
+        $('#buddy-willingness-wrapper').show();
+      }
+    });
+  });
+</script>
 {% endblock %}

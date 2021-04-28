@@ -677,7 +677,7 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             other_info=''
         )
 
-    def test_charges_one_class_regular_tuition_and_tshirts(self) -> None:
+    def test_charges_one_class_regular_tuition_and_tshirts_no_donation(self) -> None:
         RegularProgramClassChoices.objects.create(
             registration_entry=self.registration_entry,
             period1_choice1=self.conclave_config.classes.first()
@@ -695,6 +695,9 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         self.assertEqual('T-Shirts: 0', self.find('#tshirts-charge-row td:first-child').text)
         self.assertEqual('0', self.find('#tshirts-charge-row td:last-child').text)
+
+        self.assertEqual('Donation', self.find('#donation-charge-row td:first-child').text)
+        self.assertEqual('0', self.find('#donation-charge-row td:last-child').text)
 
         self.assertEqual('100', self.find('#total-charges-cell').text)
 
@@ -916,6 +919,21 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             self.assertEqual('200', self.find('#total-charges-cell').text)
 
             self.selenium.delete_all_cookies()
+
+    def test_tuition_and_donation(self) -> None:
+        RegularProgramClassChoices.objects.create(registration_entry=self.registration_entry)
+        TShirts.objects.create(registration_entry=self.registration_entry, donation=43)
+        self.login_as(
+            self.user,
+            dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
+        )
+
+        self.assertEqual('100', self.find('#tuition-charge-row td:last-child').text)
+
+        self.assertEqual('Donation', self.find('#donation-charge-row td:first-child').text)
+        self.assertEqual('43', self.find('#donation-charge-row td:last-child').text)
+
+        self.assertEqual('143', self.find('#total-charges-cell').text)
 
 
 class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
