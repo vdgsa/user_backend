@@ -4,7 +4,8 @@
 {% load vdgsa_tags %}
 
 <h2 id="registration-landing-header">
-  Conclave {{conclave_config.year}} Registration
+  {{request.user | show_name}},
+  Welcome to Conclave {{conclave_config.year}} Registration!
   {% if conclave_config.phase == 'late' %}
   (Late)
   {% endif %}
@@ -22,34 +23,95 @@
 </div>
 {% else %}
 
-<h3>Select a program</h3>
-
-<form method="post">
-  {% csrf_token %}
-  <div class="row mt-2">
-    <div class="col-md-6 ">
-      {% include 'utils/form_field.tmpl' with field=choose_program_form.program %}
+<div class="row">
+  <div class="col-md-6 order-md-2">
+    <table class="table">
+      <thead>
+        <tr>
+          <td class="fs-5">Programs</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div><b>Regular Curriculum (part- and full-time)</b></div>
+            <div class="mt-1">I can haz description plz</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div><b>Beginner Programs (both teen and adult)</b></div>
+            <div class="mt-1">I can haz description plz</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div><b>Consort Cooperative</b></div>
+            <div class="mt-1">I can haz description plz</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div><b>Seasoned Players</b></div>
+            <div class="mt-1">I can haz description plz</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div><b>Advanced Projects</b></div>
+            <div class="mt-1">I can haz description plz</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div><b>Vendors</b></div>
+            <div class="mt-1">I can haz description plz</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div><b>Faculty/Guest/Other</b></div>
+            <div class="mt-1">I can haz description plz</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col-md-6 order-md-1">
+    <div>
+      Your membership contact info will be used for Conclave. <br>
+      If you'd like to change it, please do so on the
+      <a href="{% url 'current-user-account' %}">My Account</a> section of the website.
     </div>
-  </div>
 
-  <div class="row mt-2">
-    <div id="faculty-registration-password" class="col-md-6 ">
-      {% include 'utils/form_field.tmpl' with field=choose_program_form.faculty_registration_password %}
-    </div>
-  </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="row mt-4">
+        <div class="col-auto ">
+          {% include 'utils/form_field.tmpl' with field=choose_program_form.program %}
+        </div>
+      </div>
 
-  <div class="mt-2">
-    <button type="submit" class="btn btn-primary">Start Registration</button>
-  </div>
+      <div class="row mt-2">
+        <div id="faculty-registration-password" class="col-auto">
+          {% include 'utils/form_field.tmpl' with field=choose_program_form.faculty_registration_password %}
+        </div>
+      </div>
 
-  {% if form.non_field_errors %}
-  <div class="non-field-errors">
-  {% for err in form.non_field_errors %}
-    <p class="form-error">{{ err }}</p>
-  {% endfor %}
+      <div class="mt-2">
+        <button type="submit" class="btn btn-primary">Start Registration</button>
+      </div>
+
+      {% if form.non_field_errors %}
+      <div class="non-field-errors">
+      {% for err in form.non_field_errors %}
+        <p class="form-error">{{ err }}</p>
+      {% endfor %}
+      </div>
+      {% endif %}
+    </form>
   </div>
-  {% endif %}
-</form>
+</div>
 {% endif %}
 
 <script>

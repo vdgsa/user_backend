@@ -4,7 +4,7 @@ from abc import abstractmethod
 from itertools import chain
 from typing import Any, Dict, Final, Type, cast
 
-import stripe
+import stripe  # type: ignore
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -21,8 +21,8 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig,
-    InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase,
+    ADVANCED_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig,
+    InstrumentBringing, Period, Program, RegistrationEntry, RegistrationPhase,
     RegularProgramClassChoices, TShirts, WorkStudyApplication, get_classes_by_period
 )
 
@@ -33,7 +33,11 @@ from .permissions import is_conclave_team
 
 
 class ChooseProgramForm(forms.Form):
-    program = forms.ChoiceField(choices=Program.choices)
+    program = forms.TypedChoiceField(
+        coerce=Program,
+        choices=[('', '--- Select a Program ---')] + Program.choices,
+        label='',
+    )
     faculty_registration_password = forms.CharField(
         required=False, widget=widgets.PasswordInput, label='Password'
     )
@@ -249,6 +253,8 @@ class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.fields['liability_release'].required = True
+        self.fields['buddy_willingness'].label = ''
+        self.fields['other_info'].label = ''
 
 
 class BasicInfoView(_RegistrationStepViewBase):
@@ -330,9 +336,16 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
             'clefs',
         ]
 
+        labels = {
+            'level': 'My level on this instrument',
+        }
+
     # We don't want the field to process the "clefs" data in any way,
     # just pass it through to the underlying postgres array field.
-    clefs = _PassThroughField(widget=widgets.CheckboxSelectMultiple(choices=Clef.choices))
+    clefs = _PassThroughField(
+        widget=widgets.CheckboxSelectMultiple(choices=Clef.choices),
+        label='Clefs I read on this instrument'
+    )
 
     def __init__(self, registration_entry: RegistrationEntry, *args: Any, **kwargs: Any):
         super().__init__(registration_entry, *args, **kwargs)
@@ -445,7 +458,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             self.fields[field_name].queryset = InstrumentBringing.objects.filter(
                 registration_entry=self.registration_entry
             )
-            self.fields[field_name].empty_label = 'Any'
+            self.fields[field_name].empty_label = 'Any I listed'
 
     def full_clean(self) -> None:
         super().full_clean()
@@ -473,7 +486,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if program == Program.beginners:
             return 1
 
-        if program in [Program.consort_coop, Program.seasoned_players]:
+        if program in ADVANCED_PROGRAMS:
             return 2
 
         return 4
@@ -499,13 +512,21 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
 
 class TShirtsForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
-        fields = ['tshirt1', 'tshirt2']
+        fields = ['tshirt1', 'tshirt2', 'donation']
         model = TShirts
+
+    donation = forms.IntegerField(required=False, min_value=0)
 
     def __init__(self, registration_entry: RegistrationEntry, *args: Any, **kwargs: Any):
         super().__init__(registration_entry, *args, **kwargs)
         self.fields['tshirt1'].label = 'T-Shirt 1'
         self.fields['tshirt2'].label = 'T-Shirt 2'
+
+    def clean(self) -> Dict[str, Any]:
+        data = super().clean()
+        if data['donation'] is None:
+            data['donation'] = 0
+        return data
 
 
 class TShirtsView(_RegistrationStepViewBase):
@@ -535,13 +556,7 @@ def _credit_card_number_validator(card_number: str) -> None:
             raise ValidationError('Invalid card number')
 
 
-class PaymentForm(_RegistrationStepFormBase, forms.ModelForm):
-    class Meta:
-        model = PaymentInfo
-        fields = ['donation']
-
-    donation = forms.IntegerField(required=False, min_value=0)
-
+class PaymentForm(_RegistrationStepFormBase, forms.Form):
     name_on_card = forms.CharField()
     card_number = forms.CharField(
         min_length=16, max_length=16, validators=[_credit_card_number_validator]
@@ -550,23 +565,14 @@ class PaymentForm(_RegistrationStepFormBase, forms.ModelForm):
     expiration_year = forms.ChoiceField(choices=list(zip(_YEARS, _YEARS)))
     cvc = forms.CharField(min_length=3, max_length=3)
 
-    def clean(self) -> Dict[str, Any]:
-        data = super().clean()
-        if data['donation'] is None:
-            data['donation'] = 0
-        return data
-
 
 class PaymentView(_RegistrationStepViewBase):
     template_name = 'registration/payment/payment.html'
     form_class = PaymentForm
     next_step_url_name = 'conclave-done'
 
-    def get_step_instance(self) -> RegularProgramClassChoices | None:
-        if hasattr(self.registration_entry, 'payment_info'):
-            return self.registration_entry.payment_info
-
-        return None
+    def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        return self.render_page(PaymentForm(self.registration_entry))
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         form = self.get_form()

@@ -6,9 +6,12 @@
 <h3 data-testid="registration_section_header">Instruments</h3>
 
 <p>
-  Please list the instruments you'll be bringing to conclave.<br>
-  Once you've added all of them, you may proceed to the
-  <a href="{{next_step_url}}">next step</a>
+  Please list the instruments you'll be playing at Conclave. <br>
+  Don't know what level you are? Use our
+  <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
+     target="_blank">
+    self-rating guide
+  </a>.
 </p>
 
 <div class="add-instrument-header">Add an instrument</div>
@@ -73,6 +76,8 @@ $().ready(function() {
           + '</tr></td>'
         );
         $('#id_clefs_wrapper input[type=checkbox]').prop('checked', false);
+        $('#id_level option:first').prop('selected', true);
+        $('#id_size option:first').prop('selected', true);
       }
       else if (response_data.status === 'form_validation_error') {
         update_form_body(form, response_data);
