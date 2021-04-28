@@ -113,15 +113,15 @@ class Program(models.TextChoices):
     consort_coop = 'consort_coop', 'Consort Cooperative'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     advanced_projects = 'advanced_projects', 'Advanced Projects'
-    exhibitor = 'exhibitor', 'Vendors'
     faculty_guest_other = 'faculty_guest_other', 'Faculty/Guest/Other'
+    # exhibitor = 'exhibitor', 'Vendors'
     # non_playing_attendee = 'non_playing_attendee'
 
 
 ADVANCED_PROGRAMS = [Program.consort_coop, Program.seasoned_players, Program.advanced_projects]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
-    Program.exhibitor,
+    # Program.exhibitor,
     # Program.non_playing_attendee,
 ]
 
