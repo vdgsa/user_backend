@@ -21,9 +21,10 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig,
-    InstrumentBringing, Period, Program, RegistrationEntry, RegistrationPhase,
-    RegularProgramClassChoices, TShirts, WorkStudyApplication, get_classes_by_period
+    ADVANCED_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef,
+    ConclaveRegistrationConfig, InstrumentBringing, Period, Program, RegistrationEntry,
+    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication,
+    get_classes_by_period
 )
 
 from .permissions import is_conclave_team
@@ -252,7 +253,7 @@ class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.fields['liability_release'].required = True
+        # self.fields['liability_release'].required = True
         self.fields['buddy_willingness'].label = ''
         self.fields['other_info'].label = ''
 

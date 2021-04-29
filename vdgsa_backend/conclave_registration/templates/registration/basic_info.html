@@ -95,12 +95,13 @@
 
 <script>
   $().ready(function() {
-    if ($('#id_is_first_time_attendee').prop('checked')) {
+    // NOTE: Remove the "!" from these two if statements next year
+    if (!$('#id_is_first_time_attendee').prop('checked')) {
       $('#buddy-willingness-wrapper').hide();
     }
 
     $('#id_is_first_time_attendee').change(function() {
-      if ($('#id_is_first_time_attendee').prop('checked')) {
+      if (!$('#id_is_first_time_attendee').prop('checked')) {
         $('#buddy-willingness-wrapper').hide();
       }
       else {

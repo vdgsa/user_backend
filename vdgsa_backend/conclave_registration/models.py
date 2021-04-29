@@ -229,7 +229,8 @@ class BasicRegistrationInfo(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if not self.is_first_time_attendee and not self.buddy_willingness:
+        # "is_first_time_attendee" is inverted for 2021--it's actually "did you attend nonclave"
+        if self.is_first_time_attendee and not self.buddy_willingness:
             raise ValidationError({'buddy_willingness': 'This field is required.'})
 
 
