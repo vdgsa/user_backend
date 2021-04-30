@@ -8,13 +8,19 @@ urlpatterns = [
          name='create-conclave'),
     path('admin/<int:pk>/settings/', views.EditConclaveRegistrationConfigView.as_view(),
          name='edit-conclave'),
+    path('admin/<int:conclave_config_pk>/registration_entries/',
+         views.ListRegistrationEntriesView.as_view(),
+         name='list-registration-entries'),
     path('admin/<int:conclave_config_pk>/add_class/', views.CreateConclaveClassView.as_view(),
          name='create-class'),
+    path('admin/<int:conclave_config_pk>/class_csv_upload/', views.ConclaveClassCSVView.as_view(),
+         name='class-csv-upload'),
     path('admin/<int:pk>/', views.ConclaveRegistrationConfigView.as_view(),
          name='conclave-detail'),
+    path('admin/class/<int:pk>/', views.EditConclaveClassView.as_view(), name='edit-class'),
+    path('admin/class/<int:pk>/delete/', views.DeleteConclaveClassView.as_view(),
+         name='delete-class'),
     path('admin/', views.ListConclaveRegistrationConfigView.as_view(), name='list-conclaves'),
-    path('class/<int:pk>/', views.EditConclaveClassView.as_view(), name='edit-class'),
-    path('class/<int:pk>/delete/', views.DeleteConclaveClassView.as_view(), name='delete-class'),
 
     path('register/<int:conclave_reg_pk>/basic_info/', views.BasicInfoView.as_view(),
          name='conclave-basic-info'),
@@ -42,5 +48,6 @@ urlpatterns = [
 
     # redirect registration for current year
     # (only show link in navbar if there's an open registration)
-    # re_path('^$', views., lambda _: _, name='conclave-reg-landing-current-user'),
+    re_path('^$', views.current_year_conclave_redirect_view,
+            name='conclave-reg-landing-current-user'),
 ]

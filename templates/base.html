@@ -1,3 +1,5 @@
+{% load conclave_tags %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,16 +100,34 @@
           {% if perms.conclave_registration.conclave_team %}
           <li
             class="
-              {% url 'list-conclaves' as url %}
-              {% if request.path == url %}
-                current-tab
-              {% endif %}
+              {% with is_current_page=request.path|url_path_is_conclave_admin %}
+                {% if is_current_page %}
+                  current-tab
+                {% endif %}
+              {% endwith %}
               nav-item
             "
           >
             <a class="nav-link" href="{% url 'list-conclaves' %}">Conclave Admin</a>
           </li>
           {% endif %}
+
+          {% with get_current_conclave as conclave %}
+            {% if conclave is not None %}
+            <li
+              class="
+                {% with is_current_page=request.path|url_path_is_conclave_registration %}
+                  {% if is_current_page %}
+                    current-tab
+                  {% endif %}
+                {% endwith %}
+                nav-item
+              "
+            >
+              <a class="nav-link" href="{% url 'conclave-reg-landing-current-user' %}">Conclave</a>
+            </li>
+            {% endif %}
+          {% endwith %}
 
           {% if perms.accounts.board_member %}
           <li class="nav-item">

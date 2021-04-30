@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+import itertools
 from abc import abstractmethod
 from itertools import chain
-import itertools
 from typing import Any, Dict, Final, Type, cast
-from django.forms.fields import ChoiceField
 
 import stripe  # type: ignore
 from django import forms
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models.base import Model
 from django.forms import widgets
+from django.forms.fields import ChoiceField
+from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls.base import reverse
@@ -24,15 +26,24 @@ from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
     ADVANCED_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef,
-    ConclaveRegistrationConfig, InstrumentBringing, Period, Program, RegistrationEntry,
-    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe,
-    get_classes_by_period
+    ConclaveRegistrationConfig, InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry,
+    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob,
+    YesNo, YesNoMaybe, get_classes_by_period
 )
+from vdgsa_backend.conclave_registration.templatetags.conclave_tags import get_current_conclave
 
 from .permissions import is_conclave_team
 
-# @login_required
-# def current_year_conclave_redirect_view(request)
+
+@login_required
+def current_year_conclave_redirect_view(request: HttpRequest) -> HttpResponse:
+    conclave_config = get_current_conclave()
+    if conclave_config is None:
+        return HttpResponse(404)
+
+    return HttpResponseRedirect(
+        reverse('conclave-reg-landing', kwargs={'conclave_config_pk': conclave_config.pk})
+    )
 
 
 class ChooseProgramForm(forms.Form):
@@ -625,7 +636,11 @@ def _credit_card_number_validator(card_number: str) -> None:
             raise ValidationError('Invalid card number')
 
 
-class PaymentForm(_RegistrationStepFormBase, forms.Form):
+class PaymentForm(_RegistrationStepFormBase, forms.ModelForm):
+    class Meta:
+        model = PaymentInfo
+        fields = []
+
     name_on_card = forms.CharField()
     card_number = forms.CharField(
         min_length=16, max_length=16, validators=[_credit_card_number_validator]
@@ -673,6 +688,12 @@ class PaymentView(_RegistrationStepViewBase):
         payment_info.save()
 
         return HttpResponseRedirect(self.get_next_step_url())
+
+    def get_step_instance(self) -> PaymentInfo | None:
+        if hasattr(self.registration_entry, 'payment_info'):
+            return self.registration_entry.payment_info
+
+        return None
 
     def get_render_context(self, form: _RegistrationStepFormBase | None) -> dict[str, object]:
         context = super().get_render_context(form)

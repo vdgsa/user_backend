@@ -76,7 +76,7 @@
                       <table class="class-info-table">
                         <tr>
                           <td class="class-info-label">Level:</td>
-                          <td class="class-info-cell">{{class_.level | format_level_list}}</td>
+                          <td class="class-info-cell">{{class_.level}}</td>
                         </tr>
                         <tr>
                           <td class="class-info-label">Instructor:</td>
@@ -86,7 +86,10 @@
                       <a data-bs-toggle="collapse" href="#class-{{class_.pk}}-description" aria-expanded="false" aria-controls="class-{{class_.pk}}-description">
                         Show Description
                       </a>
-                      <div id="class-{{class_.pk}}-description" class="collapse">{{class_.description}}</div>
+                      <div id="class-{{class_.pk}}-description" class="collapse">
+                        {{class_.description}}
+                        <div class="mt-2">{{class_.notes}}</div>
+                      </div>
                     </td>
                   </tr>
                 {% endfor %}

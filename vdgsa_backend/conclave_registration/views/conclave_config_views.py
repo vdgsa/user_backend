@@ -1,15 +1,22 @@
 from __future__ import annotations
 
+import csv
 from typing import Any
 
+import tempfile
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db import transaction
 from django.forms import widgets
+from django.http.response import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.urls.base import reverse, reverse_lazy
+from django.utils.functional import cached_property
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic.base import View
 
 from vdgsa_backend.conclave_registration.models import (
-    Class, ConclaveRegistrationConfig, Level, get_classes_by_period
+    Class, ConclaveRegistrationConfig, Period, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.views.permissions import is_conclave_team
 
@@ -87,6 +94,25 @@ class EditConclaveRegistrationConfigView(LoginRequiredMixin, UserPassesTestMixin
         return is_conclave_team(self.request.user)
 
 
+class ListRegistrationEntriesView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    template_name = 'registration_config/list_registration_entries.html'
+
+    @cached_property
+    def conclave_config(self) -> ConclaveRegistrationConfig:
+        return get_object_or_404(ConclaveRegistrationConfig, pk=self.kwargs['conclave_config_pk'])
+
+    def get_queryset(self) -> QuerySet:
+        return self.conclave_config.registration_entries.order_by('user__last_name')
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['conclave_config'] = self.conclave_config
+        return context
+
+    def test_func(self) -> bool | None:
+        return is_conclave_team(self.request.user)
+
+
 class _PassThroughField(forms.Field):
     pass
 
@@ -100,21 +126,17 @@ class ConclaveClassForm(forms.ModelForm):
             'instructor',
             'level',
             'description',
+            'notes',
         ]
 
         widgets = {
             'description': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'notes': widgets.Textarea(attrs={'rows': 3, 'cols': None}),
         }
-
-    # We don't want the field to process the "level" data in any way,
-    # just pass it through to the underlying postgres array field.
-    level = _PassThroughField(widget=widgets.CheckboxSelectMultiple(choices=Level.choices))
 
     def __init__(self, conclave_config_pk: int | None = None, **kwargs: Any):
         self.conclave_config_pk = conclave_config_pk
         super().__init__(**kwargs)
-        if 'level' not in self.initial and self.instance is not None:
-            self.initial['level'] = self.instance.level
 
     def save(self, *args: Any, **kwargs: Any) -> Any:
         class_ = super().save(commit=False)
@@ -172,6 +194,47 @@ class DeleteConclaveClassView(LoginRequiredMixin, UserPassesTestMixin, DeleteVie
             'conclave-detail',
             kwargs={'pk': self.object.conclave_config_id}  # type: ignore
         )
+
+    def test_func(self) -> bool | None:
+        return is_conclave_team(self.request.user)
+
+
+class ConclaveClassCSVView(LoginRequiredMixin, UserPassesTestMixin, View):
+    template_name = 'registration_config/class_csv_upload.html'
+
+    def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        return render(self.request, self.template_name)
+
+    def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        file_ = self.request.FILES['class_csv']
+        with tempfile.NamedTemporaryFile('w+', newline='') as f:
+            for chunk in file_.chunks():
+                f.write(chunk.decode(encoding='utf-8', errors='surrogateescape'))
+
+            f.seek(0)
+
+            reader = csv.DictReader(f)
+            with transaction.atomic():
+                for row in reader:
+                    Class.objects.update_or_create(
+                        conclave_config=self.conclave_config,
+                        name=row['Title'].strip(),
+                        period=Period(int(row['Period'])),
+                        defaults={
+                            'level': row['Level'],
+                            'instructor': row['Teacher'],
+                            'description': row['Description'],
+                            'notes': row['Notes'],
+                        }
+                    )
+
+        return HttpResponseRedirect(
+            reverse('conclave-detail', kwargs={'pk': self.conclave_config.pk})
+        )
+
+    @cached_property
+    def conclave_config(self) -> ConclaveRegistrationConfig:
+        return get_object_or_404(ConclaveRegistrationConfig, pk=self.kwargs['conclave_config_pk'])
 
     def test_func(self) -> bool | None:
         return is_conclave_team(self.request.user)

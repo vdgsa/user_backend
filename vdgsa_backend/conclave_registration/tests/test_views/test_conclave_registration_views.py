@@ -543,7 +543,7 @@ def _make_classes(conclave_config: ConclaveRegistrationConfig, num_classes: int)
             conclave_config=conclave_config,
             name=f'Class {i}',
             period=Period(i % 4 + 1),
-            level=[Level.any],
+            level=Level.any.label,
             instructor=f'Instructo {i}',
             description=f'This is Class {i}',
         )
@@ -944,7 +944,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             conclave_config=self.conclave_config,
             name='Classy',
             period=Period.first,
-            level=[Level.any],
+            level=Level.any.label,
             instructor='Steve',
             description='Wee',
         )

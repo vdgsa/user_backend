@@ -1,3 +1,4 @@
+from .conclave_config_views import ConclaveClassCSVView as ConclaveClassCSVView
 from .conclave_config_views import ConclaveRegistrationConfigView as ConclaveRegistrationConfigView
 from .conclave_config_views import CreateConclaveClassView as CreateConclaveClassView
 from .conclave_config_views import (
@@ -11,6 +12,7 @@ from .conclave_config_views import (
 from .conclave_config_views import (
     ListConclaveRegistrationConfigView as ListConclaveRegistrationConfigView
 )
+from .conclave_config_views import ListRegistrationEntriesView as ListRegistrationEntriesView
 from .conclave_registration_views import BasicInfoView as BasicInfoView
 from .conclave_registration_views import (
     ConclaveRegistrationLandingPage as ConclaveRegistrationLandingPage
@@ -25,3 +27,6 @@ from .conclave_registration_views import (
 from .conclave_registration_views import StartOverView as StartOverView
 from .conclave_registration_views import TShirtsView as TShirtsView
 from .conclave_registration_views import WorkStudyApplicationView as WorkStudyApplicationView
+from .conclave_registration_views import (
+    current_year_conclave_redirect_view as current_year_conclave_redirect_view
+)

@@ -1,10 +1,38 @@
 from __future__ import annotations
 
 from django import template
+from django.utils import timezone
 
-from ..models import Clef, InstrumentChoices, Program, RegistrationPhase, TuitionOption
+from ..models import (
+    Clef, ConclaveRegistrationConfig, InstrumentChoices, Program, RegistrationPhase, TuitionOption
+)
 
 register = template.Library()
+
+
+@register.simple_tag
+def get_current_conclave() -> ConclaveRegistrationConfig | None:
+    query = ConclaveRegistrationConfig.objects.filter(
+        year=timezone.now().year,
+        phase__in=[RegistrationPhase.open, RegistrationPhase.late]
+    )
+    if query.exists():
+        print('weee', flush=True)
+        return query.get()
+
+    print('noooo', flush=True)
+    return None
+
+
+def url_path_is_conclave_registration(url_path: str) -> bool:
+    return (
+        url_path.startswith('/conclave/register/')
+        or url_path.startswith('/conclave') and url_path.endswith('register/')
+    )
+
+
+def url_path_is_conclave_admin(url_path: str) -> bool:
+    return url_path.startswith('/conclave/admin')
 
 
 def format_registration_phase(registration_phase: str) -> str:
@@ -21,10 +49,6 @@ _PERIOD_STRS = {
 
 def format_period_long(period: int) -> str:
     return f'{_PERIOD_STRS[period]} Period'
-
-
-def format_level_list(levels: list[str]) -> str:
-    return '/'.join(levels)
 
 
 def format_instrument_size(instrument_size: str) -> str:
@@ -45,8 +69,9 @@ def format_program(program: str) -> str:
 
 register.filter('format_registration_phase', format_registration_phase)
 register.filter('format_period_long', format_period_long)
-register.filter('format_level_list', format_level_list)
 register.filter('format_instrument_size', format_instrument_size)
 register.filter('format_clef_list', format_clef_list)
 register.filter('format_tuition_option', format_tuition_option)
 register.filter('format_program', format_program)
+register.filter('url_path_is_conclave_registration', url_path_is_conclave_registration)
+register.filter('url_path_is_conclave_admin', url_path_is_conclave_admin)
