@@ -12,16 +12,18 @@ register = template.Library()
 
 @register.simple_tag
 def get_current_conclave() -> ConclaveRegistrationConfig | None:
-    query = ConclaveRegistrationConfig.objects.filter(
-        year=timezone.now().year,
-        phase__in=[RegistrationPhase.open, RegistrationPhase.late]
-    )
-    if query.exists():
-        print('weee', flush=True)
-        return query.get()
+    try:
+        query = ConclaveRegistrationConfig.objects.filter(
+            year=timezone.now().year,
+            phase__in=[RegistrationPhase.open, RegistrationPhase.late]
+        )
+        if query.exists():
+            return query.get()
 
-    print('noooo', flush=True)
-    return None
+        return None
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
 
 
 def url_path_is_conclave_registration(url_path: str) -> bool:

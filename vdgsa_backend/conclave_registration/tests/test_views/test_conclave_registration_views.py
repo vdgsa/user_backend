@@ -12,7 +12,7 @@ from vdgsa_backend.conclave_registration.models import (
     ADVANCED_PROGRAMS, BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
     InstrumentChoices, Level, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase,
     RegularProgramClassChoices, TShirts, TShirtSizes, TuitionOption, WorkStudyApplication,
-    WorkStudyJob, YesNoMaybe
+    WorkStudyJob, YesNo, YesNoMaybe
 )
 from vdgsa_backend.conclave_registration.views.conclave_registration_views import BasicInfoForm
 from vdgsa_backend.selenium_test_base import SeleniumTestCaseBase
@@ -35,11 +35,11 @@ class _SetUp:
 class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
     def test_select_regular_program(self) -> None:
         self.login_as(self.user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
-        self.assertEqual(
+        self.assertIn(
             f'Conclave {self.conclave_config.year} Registration',
             self.find('#registration-landing-header').text
         )
-        self.assertEqual('regular', self.get_value('#id_program'))
+        self.click_on(self.find_all('#id_program option')[1])
 
         button = self.find('form button')
         self.assertEqual('Start Registration', button.text)
@@ -62,7 +62,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.conclave_config.save()
         self.login_as(self.user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
         self.assertFalse(self.find('#id_faculty_registration_password').is_displayed())
-        self.click_on(self.find_all('#id_program option')[1])
+        self.click_on(self.find_all('#id_program option')[-1])
         self.set_value('#id_faculty_registration_password', password)
         self.click_on(self.find('form button'))
         self.assertEqual(
@@ -113,6 +113,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         user = self.make_conclave_team()
         self.login_as(user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
 
+        self.click_on(self.find_all('#id_program option')[1])
         button = self.find('form button')
         self.assertEqual('Start Registration', button.text)
         self.click_on(button)
@@ -135,6 +136,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.login_as(self.user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
         self.assertIn('(Late)', self.find('#registration-landing-header').text)
 
+        self.click_on(self.find_all('#id_program option')[1])
         button = self.find('form button')
         self.assertEqual('Start Registration', button.text)
         self.click_on(button)
@@ -180,6 +182,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         user = self.make_conclave_team()
         self.login_as(user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
 
+        self.click_on(self.find_all('#id_program option')[1])
         button = self.find('form button')
         self.assertEqual('Start Registration', button.text)
         self.click_on(button)
@@ -518,22 +521,18 @@ class ClassesViewTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
 
 _WORK_STUDY_DATA = {
-    'first_time_applying': True,
-    'alternate_address': 'nreostn',
-    'phone_number': '1234',
-    'age_if_under_22': '19',
-    'is_full_time_student': True,
-    'student_school': 'Schooly',
-    'student_degree': 'Poke Master',
-    'student_graduation_date': '2020',
-    'can_arrive_before_sunday_morning': True,
-    'earliest_could_arrive': 'Sunday',
-    'has_car': True,
-    'job_first_choice': WorkStudyJob.hospitality,
-    'job_second_choice': WorkStudyJob.copy_crew_auction,
-    'interest_in_work_study': 'Worky',
-    'other_skills': 'Spam',
-    'questions_comments': 'Hi',
+    'nickname_and_pronouns': '',
+    'phone_number': '1111111111',
+    'can_receive_texts_at_phone_number': YesNo.yes,
+    'home_timezone': 'EDT',
+    'other_timezone': '',
+    'has_been_to_conclave': YesNo.yes,
+    'has_done_work_study': YesNo.yes,
+    'student_info': '',
+    'job_preferences': [WorkStudyJob.tech_support],
+    'relevant_job_experience': 'noristearst',
+    'other_skills': '',
+    'other_info': '',
 }
 
 
@@ -555,12 +554,12 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         BasicRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            is_first_time_attendee=False,
+            is_first_time_attendee=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
-            willing_to_help_with_small_jobs=False,
-            wants_display_space=False,
-            photo_release_auth=True,
-            liability_release=True,
+            # willing_to_help_with_small_jobs=False,
+            wants_display_space=YesNo.yes,
+            photo_release_auth=YesNo.yes,
+            # liability_release=True,
             other_info=''
         )
         self.empty_class_choices = RegularProgramClassChoices.objects.create(
@@ -668,12 +667,12 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         BasicRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            is_first_time_attendee=False,
+            is_first_time_attendee=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
-            willing_to_help_with_small_jobs=False,
-            wants_display_space=False,
-            photo_release_auth=True,
-            liability_release=True,
+            # willing_to_help_with_small_jobs=False,
+            wants_display_space=YesNo.yes,
+            photo_release_auth=YesNo.yes,
+            # liability_release=True,
             other_info=''
         )
 
@@ -950,12 +949,12 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
         self.basic_info = BasicRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            is_first_time_attendee=False,
+            is_first_time_attendee=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
-            willing_to_help_with_small_jobs=False,
-            wants_display_space=False,
-            photo_release_auth=True,
-            liability_release=True,
+            # willing_to_help_with_small_jobs=False,
+            wants_display_space=YesNo.yes,
+            photo_release_auth=YesNo.yes,
+            # liability_release=True,
             other_info=''
         )
         self.regular_class_choices = RegularProgramClassChoices.objects.create(
@@ -963,7 +962,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             period1_choice1=class_,
         )
 
-    def test_submit_payment_no_donation(self) -> None:
+    def test_submit_payment(self) -> None:
         self.login_as(
             self.user,
             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
@@ -974,36 +973,16 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         self.set_value('#id_cvc', '111')
 
         self.click_on(self.find('form button'))
-        self.assertEqual('Registration Complete', self.find('#registration-complete-header').text)
+        self.assertEqual('Registration Complete!', self.find('#registration-complete-header').text)
 
         self.registration_entry.refresh_from_db()
         self.assertNotEqual('', self.registration_entry.payment_info.stripe_payment_method_id)
-        self.assertEqual(0, self.registration_entry.payment_info.donation)
-
-    def test_submit_payment_with_donation(self) -> None:
-        self.login_as(
-            self.user,
-            dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
-        )
-        self.set_value('#id_donation', '42')
-        self.set_value('#id_name_on_card', 'Steve the Llama')
-        self.set_value('#id_card_number', '4242424242424242')
-        self.click_on(self.find_all('#id_expiration_year option')[-1])
-        self.set_value('#id_cvc', '111')
-
-        self.click_on(self.find('form button'))
-        self.assertEqual('Registration Complete', self.find('#registration-complete-header').text)
-
-        self.registration_entry.refresh_from_db()
-        self.assertNotEqual('', self.registration_entry.payment_info.stripe_payment_method_id)
-        self.assertEqual(42, self.registration_entry.payment_info.donation)
 
     def test_stripe_card_error(self) -> None:
         self.login_as(
             self.user,
             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
         )
-        self.set_value('#id_donation', '42')
         self.set_value('#id_name_on_card', 'Steve the Llama')
         self.set_value('#id_card_number', '3331023948438710')
         self.click_on(self.find_all('#id_expiration_year option')[-1])
