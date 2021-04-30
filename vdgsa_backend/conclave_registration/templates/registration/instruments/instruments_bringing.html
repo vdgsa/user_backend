@@ -5,25 +5,30 @@
 
 <h3 data-testid="registration_section_header">Instruments</h3>
 
-<p>
-  Please list the instruments you'll be playing at Conclave. <br>
+<div>
+  Please add the instruments you'll be playing at Conclave. <br>
   Don't know what level you are? Use our
   <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
      target="_blank">
     self-rating guide
-  </a>.
-</p>
+  </a>. <br><br>
+  To add an instrument, select the size, your level, <br>
+  and the clefs you read,
+  and click the "Add" button. <br>
+  Repeat this process for each instrument you'll be playing.
+</div>
 
-<div class="add-instrument-header">Add an instrument</div>
+<div class="add-instrument-header mt-3">Add an instrument</div>
 <form method="post" id="add-instrument-form">
   {% include 'registration/instruments/add_instrument_form_body.tmpl' %}
 
   <div class="mt-2">
-    <button type="submit" class="btn btn-secondary">Add</button>
+    <button type="submit" class="btn btn-primary">Add</button>
   </div>
 </form>
 
-<table id="instruments" class="table table-striped my-3">
+<h3 class="mt-3">My Instruments</h3>
+<table id="instruments" class="table table-striped">
   <tbody>
   {% for instrument in instruments %}
     <tr class="instrument-row">

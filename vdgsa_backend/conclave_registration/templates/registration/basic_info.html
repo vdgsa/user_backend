@@ -15,7 +15,7 @@
   </div>
   <div class="row">
     <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.is_first_time_attendee label='Yes'%}
+      {% include 'utils/form_field.tmpl' with field=form.is_first_time_attendee %}
     </div>
   </div>
 
@@ -33,6 +33,7 @@
     </div>
   </div>
 
+  {% comment %}
   <!-- <div class="row mt-2">
     <div class="col-md-6">
       There are always many small jobs that need to be done at Conclave.
@@ -44,6 +45,7 @@
       {% include 'utils/form_field.tmpl' with field=form.willing_to_help_with_small_jobs %}
     </div>
   </div> -->
+  {% endcomment %}
 
   <div class="row mt-3">
     <div class="col-md-6">
@@ -52,7 +54,7 @@
   </div>
   <div class="row">
     <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.wants_display_space label='Yes' %}
+      {% include 'utils/form_field.tmpl' with field=form.wants_display_space %}
     </div>
   </div>
 
@@ -64,15 +66,17 @@
   </div>
   <div class="row mt-1">
     <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.photo_release_auth label='I agree' %}
+      {% include 'utils/form_field.tmpl' with field=form.photo_release_auth %}
     </div>
   </div>
 
+  {% comment %}
   <!-- <div class="row">
     <div class="col-md-6">
       {% include 'utils/form_field.tmpl' with field=form.liability_release %}
     </div>
   </div> -->
+  {% endcomment %}
 
   <div class="row mt-3">
     <div class="col-md-8">
@@ -95,13 +99,13 @@
 
 <script>
   $().ready(function() {
-    // NOTE: Remove the "!" from these two if statements next year
-    if (!$('#id_is_first_time_attendee').prop('checked')) {
+    // NOTE: chande !== to === next year
+    if ($('input[name="is_first_time_attendee"]:checked').val() !== 'yes') {
       $('#buddy-willingness-wrapper').hide();
     }
 
-    $('#id_is_first_time_attendee').change(function() {
-      if (!$('#id_is_first_time_attendee').prop('checked')) {
+    $('input[name="is_first_time_attendee"]').change(function() {
+      if ($(this).val() !== 'yes') {
         $('#buddy-willingness-wrapper').hide();
       }
       else {
