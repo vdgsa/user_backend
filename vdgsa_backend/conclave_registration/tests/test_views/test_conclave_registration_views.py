@@ -573,7 +573,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
         )
 
-        self.assertIn('Applying for a work study position', self.find('#work-study-summary').text)
+        self.assertIn('Applying for a work-study position', self.find('#work-study-summary').text)
         self.assertIn('No', self.find('#work-study-summary').text)
 
         WorkStudyApplication.objects.create(
@@ -581,7 +581,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         self.selenium.refresh()
 
-        self.assertIn('Applying for a work study position', self.find('#work-study-summary').text)
+        self.assertIn('Applying for a work-study position', self.find('#work-study-summary').text)
         self.assertIn('Yes', self.find('#work-study-summary').text)
 
     def test_summary_of_instruments(self) -> None:

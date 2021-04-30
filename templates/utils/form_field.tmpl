@@ -25,7 +25,9 @@
     {{field.errors}}
   </div>
 {% elif input_type == 'radio' or input_type == 'checkbox' and widget.allow_multiple_selected %}
-  <label class="form-label">{{field.label}}</label>
+  {% if label or field.label %}
+  <label class="form-label">{% firstof label field.label %}</label>
+  {% endif %}
   {% for radio in field %}
   <div class="form-check">
     {{radio | add_classes:"form-check-input"}}

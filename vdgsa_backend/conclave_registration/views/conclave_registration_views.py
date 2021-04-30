@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from itertools import chain
+import itertools
 from typing import Any, Dict, Final, Type, cast
+from django.forms.fields import ChoiceField
 
 import stripe  # type: ignore
 from django import forms
@@ -23,7 +25,7 @@ from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
     ADVANCED_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef,
     ConclaveRegistrationConfig, InstrumentBringing, Period, Program, RegistrationEntry,
-    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication,
+    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe,
     get_classes_by_period
 )
 
@@ -234,16 +236,49 @@ class _RegistrationStepViewBase(LoginRequiredMixin, UserPassesTestMixin, SingleO
         )
 
 
+# class BooleanRadioField(forms.BooleanField):
+#     def __init__(
+#         self,
+#         true_label: str = 'Yes',
+#         false_label: str = 'No',
+#         **kwargs: Any
+#     ) -> None:
+#         kwargs['widget'] = forms.RadioSelect(choices=((True, true_label), (False, false_label)))
+#         super().__init__(**kwargs)
+
+
+class YesNoRadioField(forms.ChoiceField):
+    def __init__(
+        self,
+        yes_label: str = YesNo.yes.label,
+        no_label: str = YesNo.no.label,
+        widget: widgets.Widget | Type[widgets.Widget] | None = forms.RadioSelect,
+        **kwargs: Any
+    ) -> None:
+        kwargs['choices'] = ((YesNo.yes, yes_label), (YesNo.no, no_label))
+        super().__init__(widget=widget, **kwargs)
+
+
+class YesNoMaybeRadioField(forms.ChoiceField):
+    def __init__(
+        self,
+        widget: widgets.Widget | Type[widgets.Widget] | None = forms.RadioSelect,
+        **kwargs: Any
+    ) -> None:
+        kwargs['choices'] = YesNoMaybe.choices
+        super().__init__(widget=widget, **kwargs)
+
+
 class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = BasicRegistrationInfo
         fields = [
             'is_first_time_attendee',
             'buddy_willingness',
-            'willing_to_help_with_small_jobs',
+            # 'willing_to_help_with_small_jobs',
             'wants_display_space',
             'photo_release_auth',
-            'liability_release',
+            # 'liability_release',
             'other_info',
         ]
 
@@ -251,11 +286,26 @@ class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'other_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
+        labels = {
+            'is_first_time_attendee': '',
+            'buddy_willingness': '',
+            'wants_display_space': '',
+            'photo_release_auth': '',
+            'other_info': '',
+        }
+
+    is_first_time_attendee = YesNoRadioField(label='')
+    buddy_willingness = YesNoMaybeRadioField(label='', required=False)
+    photo_release_auth = YesNoRadioField(
+        yes_label='I agree',
+        no_label="I don't agree",
+        label='',
+    )
+    wants_display_space = YesNoRadioField(label='')
+
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         # self.fields['liability_release'].required = True
-        self.fields['buddy_willingness'].label = ''
-        self.fields['other_info'].label = ''
 
 
 class BasicInfoView(_RegistrationStepViewBase):
@@ -276,39 +326,61 @@ class BasicInfoView(_RegistrationStepViewBase):
         return None
 
 
+# A dummy field that won't modify the values passed through it to/from
+# whatever widget we specify.
+class _PassThroughField(forms.Field):
+    pass
+
+
 class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = WorkStudyApplication
         fields = [
-            'first_time_applying',
-            'alternate_address',
+            'nickname_and_pronouns',
             'phone_number',
-            'age_if_under_22',
-            'is_full_time_student',
-            'student_school',
-            'student_degree',
-            'student_graduation_date',
-            'can_arrive_before_sunday_morning',
-            'earliest_could_arrive',
-            'has_car',
-            'job_first_choice',
-            'job_second_choice',
-            'interest_in_work_study',
+            'can_receive_texts_at_phone_number',
+            'home_timezone',
+            'other_timezone',
+            'has_been_to_conclave',
+            'has_done_work_study',
+            'student_info',
+            'job_preferences',
+            'relevant_job_experience',
             'other_skills',
-            'questions_comments',
+            'other_info',
         ]
 
         widgets = {
-            'alternate_address': widgets.TextInput,
-            'student_school': widgets.TextInput,
-            'student_degree': widgets.TextInput,
-            'student_graduation_date': widgets.TextInput,
-            'earliest_could_arrive': widgets.TextInput,
-
-            'interest_in_work_study': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'student_info': widgets.Textarea(attrs={'rows': 3, 'cols': None}),
+            'relevant_job_experience': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'other_skills': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
-            'questions_comments': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'other_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
+
+        labels = dict(zip(fields, itertools.repeat('')))
+
+    can_receive_texts_at_phone_number = YesNoRadioField(label='')
+
+    has_been_to_conclave = YesNoRadioField(label='')
+    has_done_work_study = YesNoRadioField(label='')
+
+    home_timezone = ChoiceField(
+        choices=(
+            ('EDT', 'EDT (Eastern Daylight Time) UTC/GMT -4 hours -- '
+                    'this is CONCLAVE OFFICIAL TIME'),
+            ('CDT', 'CDT (Central)'),
+            ('MDT', 'MDT (Mountain)'),
+            ('PDT', 'PDT (Pacific Daylight Time) UTC/GMT -7 hours -- this is where Koren, '
+                    'the work-study coordinator, lives!'),
+            ('other', 'Other'),
+        ),
+        widget=widgets.RadioSelect
+    )
+
+    job_preferences = _PassThroughField(
+        widget=widgets.CheckboxSelectMultiple(choices=WorkStudyJob.choices),
+        label=''
+    )
 
 
 class WorkStudyApplicationView(_RegistrationStepViewBase):
@@ -321,10 +393,6 @@ class WorkStudyApplicationView(_RegistrationStepViewBase):
             return self.registration_entry.work_study
 
         return None
-
-
-class _PassThroughField(forms.Field):
-    pass
 
 
 class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):

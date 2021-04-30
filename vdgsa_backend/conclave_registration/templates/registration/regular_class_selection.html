@@ -2,6 +2,7 @@
 {% block content %}
 
 {% load vdgsa_tags %}
+{% load conclave_tags %}
 
 <h3>Class Selection</h3>
 
@@ -30,12 +31,6 @@
 </div>
 
 <form method="post" class="mt-3">
-  <!-- <div class="row my-3">
-    <div class="col-md-8">
-      TODO: Add add-on class instructions per program
-    </div>
-  </div> -->
-
   <div id="hide-classes-button-wrapper">
     <a href="#class-list" data-bs-toggle="collapse" aria-controls="class-list">
       Show/hide class descriptions
@@ -44,7 +39,64 @@
 
   <div id="class-selection-wrapper">
     <div id="class-list" class="collapse show">
-      {% include 'class_list.tmpl' with classes_by_period=classes_by_period allow_editing=False %}
+      <h3>Class Descriptions</h3>
+      <div class="accordion accordion-flush" id="class-periods-accordion">
+      {% for period, classes in classes_by_period.items %}
+        <div class="accordion-item">
+          <h2
+            class="accordion-header"
+            id="class-period-{{forloop.counter}}-header"
+          >
+            <button
+              class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#class-period-{{forloop.counter}}-collapse"
+              aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+              aria-controls="class-period-{{forloop.counter}}-collapse"
+            >
+              {{period | format_period_long}}
+            </button>
+          </h2>
+          <div
+            id="class-period-{{forloop.counter}}-collapse"
+            class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+            aria-labelledby="class-period-{{forloop.counter}}-header"
+            data-bs-parent="#class-periods-accordion"
+          >
+            <div class="accordion-body">
+              <table class="table">
+                <tbody>
+                {% for class_ in classes %}
+                  <tr>
+                    <td>
+                      <div class="row">
+                        <div class="class-name">{{class_.name}}</div>
+                      </div>
+                      <table class="class-info-table">
+                        <tr>
+                          <td class="class-info-label">Level:</td>
+                          <td class="class-info-cell">{{class_.level | format_level_list}}</td>
+                        </tr>
+                        <tr>
+                          <td class="class-info-label">Instructor:</td>
+                          <td class="class-info-cell">{{class_.instructor}}</td>
+                        </tr>
+                      </table>
+                      <a data-bs-toggle="collapse" href="#class-{{class_.pk}}-description" aria-expanded="false" aria-controls="class-{{class_.pk}}-description">
+                        Show Description
+                      </a>
+                      <div id="class-{{class_.pk}}-description" class="collapse">{{class_.description}}</div>
+                    </td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
     </div>
 
     <div id="class-choices">
@@ -178,6 +230,18 @@
     border-left: 1px solid rgb(220, 220, 220);
     padding-left: .5rem;
   }
+}
+
+.class-name {
+  font-weight: bold;
+}
+
+.class-info-label {
+  font-weight: bold;
+}
+
+.class-info-cell {
+  padding-left: 1rem;
 }
 </style>
 {% endblock %}

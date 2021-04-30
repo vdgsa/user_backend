@@ -33,6 +33,8 @@ class ConclaveRegistrationConfig(models.Model):
     third_period_time_label = models.CharField(max_length=255, blank=True)
     fourth_period_time_label = models.CharField(max_length=255, blank=True)
 
+    tshirt_image_url = models.URLField(blank=True)
+
     @property
     def is_open(self) -> bool:
         return self.phase in [RegistrationPhase.open, RegistrationPhase.late]
@@ -99,6 +101,12 @@ def get_classes_by_period(conclave_config_pk: int) -> dict[int, list[Class]]:
 
 
 # =================================================================================================
+
+
+# We use this instead of a bool when we want to have "yes/no" radio buttons.
+class YesNo(models.TextChoices):
+    yes = 'yes'
+    no = 'no'
 
 
 class YesNoMaybe(models.TextChoices):
@@ -217,29 +225,65 @@ class BasicRegistrationInfo(models.Model):
         related_name='basic_info'
     )
 
-    is_first_time_attendee = models.BooleanField()
+    is_first_time_attendee = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
-    willing_to_help_with_small_jobs = models.BooleanField(blank=True)
-    wants_display_space = models.BooleanField(blank=True)
+    # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
+    wants_display_space = models.TextField(choices=YesNo.choices)
 
-    photo_release_auth = models.BooleanField()
-    liability_release = models.BooleanField()
+    photo_release_auth = models.TextField(choices=YesNo.choices)
+    # liability_release = models.BooleanField()
 
     other_info = models.TextField(blank=True)
 
     def clean(self) -> None:
         super().clean()
         # "is_first_time_attendee" is inverted for 2021--it's actually "did you attend nonclave"
-        if self.is_first_time_attendee and not self.buddy_willingness:
+        # Compare with YesNo.no next year.
+        if self.is_first_time_attendee == YesNo.yes and not self.buddy_willingness:
             raise ValidationError({'buddy_willingness': 'This field is required.'})
 
 
 class WorkStudyJob(models.TextChoices):
-    hospitality = 'hospitality'
-    moving_crew = 'moving_crew'
-    copy_crew_auction = 'copy_crew_auction', 'Copy Crew/Auction'
-    money_store = 'money_store', 'Money/Store'
-    any = 'any'
+    google_drive_file_organizing = (
+        'google_drive_file_organizing',
+        'Collecting and organizing files on Google Drive (before Conclave)',
+    )
+    video_editing = (
+        'video_editing',
+        'Video editing (before Conclave)',
+    )
+    assist_music_director_before_conclave = (
+        'assist_music_director_before_conclave',
+        'Assisting the music director (before Conclave)',
+    )
+    auction_prep_before_conclave = (
+        'auction_prep_before_conclave',
+        'Auction preparation: collecting photos, writing descriptions of '
+        'items (mostly in the few days before Conclave)',
+    )
+    auction_prep_during_conclave = (
+        'auction_prep_during_conclave',
+        'Auction preparation: collecting photos, writing descriptions of '
+        'items (mostly Sun-Tues during Conclave)',
+    )
+    social_event_helper = (
+        'social_event_helper',
+        'Social event helpers '
+        '(specific times, e.g. lunchtime, ice cream social, Conclave banquet)',
+    )
+    tech_support = (
+        'tech_support',
+        'Answering tech-support type questions, like Zoom help, accessing YouTube, '
+        'downloading files, etc. (specific shifts during Conclave)',
+    )
+    auction_event_helper = (
+        'auction_event_helper',
+        'Auction event helpers (during the Conclave auction)',
+    )
+    assist_music_director_during_conclave = (
+        'assist_music_director_during_conclave',
+        'Assisting the music director (during Conclave)',
+    )
 
 
 class WorkStudyApplication(models.Model):
@@ -249,36 +293,55 @@ class WorkStudyApplication(models.Model):
         related_name='work_study'
     )
 
-    first_time_applying = models.BooleanField()
-    alternate_address = models.TextField(blank=True)
-    phone_number = models.CharField(max_length=50, blank=True)
-    age_if_under_22 = models.IntegerField(blank=True, null=True, default=None)
+    nickname_and_pronouns = models.CharField(max_length=255, blank=True)
+    phone_number = models.CharField(max_length=50)
+    can_receive_texts_at_phone_number = models.TextField(choices=YesNo.choices)
+    home_timezone = models.TextField()  # We'll specify choices in the form
+    other_timezone = models.CharField(max_length=255, blank=True)
 
-    is_full_time_student = models.BooleanField()
-    student_school = models.TextField(blank=True)
-    student_degree = models.TextField(blank=True)
-    student_graduation_date = models.TextField(blank=True)
+    # Do we need "which conclave program are you enrolling in?"
 
-    can_arrive_before_sunday_morning = models.BooleanField()
-    earliest_could_arrive = models.TextField()
-    has_car = models.BooleanField()
+    has_been_to_conclave = models.TextField(choices=YesNo.choices)
+    has_done_work_study = models.TextField(choices=YesNo.choices)
 
-    job_first_choice = models.TextField(choices=WorkStudyJob.choices)
-    job_second_choice = models.TextField(choices=WorkStudyJob.choices)
+    student_info = models.TextField(blank=True)
 
-    interest_in_work_study = models.TextField(max_length=500)
-    other_skills = models.TextField(max_length=500, blank=True)
-    questions_comments = models.TextField(max_length=500, blank=True)
+    job_preferences = ArrayField(models.CharField(max_length=100, choices=WorkStudyJob.choices))
+    relevant_job_experience = models.TextField()
 
-    def clean(self) -> None:
-        super().clean()
-        if self.is_full_time_student:
-            if not self.student_school:
-                raise ValidationError({'student_school': 'This field is required'})
-            if not self.student_degree:
-                raise ValidationError({'student_degree': 'This field is required'})
-            if not self.student_graduation_date:
-                raise ValidationError({'student_graduation_date': 'This field is required'})
+    other_skills = models.TextField(blank=True)
+    other_info = models.TextField(blank=True)
+
+    # first_time_applying = models.BooleanField()
+    # alternate_address = models.TextField(blank=True)
+    # phone_number = models.CharField(max_length=50, blank=True)
+    # age_if_under_22 = models.IntegerField(blank=True, null=True, default=None)
+
+    # is_full_time_student = models.BooleanField()
+    # student_school = models.TextField(blank=True)
+    # student_degree = models.TextField(blank=True)
+    # student_graduation_date = models.TextField(blank=True)
+
+    # can_arrive_before_sunday_morning = models.BooleanField()
+    # earliest_could_arrive = models.TextField()
+    # has_car = models.BooleanField()
+
+    # job_first_choice = models.TextField(choices=WorkStudyJob.choices)
+    # job_second_choice = models.TextField(choices=WorkStudyJob.choices)
+
+    # interest_in_work_study = models.TextField(max_length=500)
+    # other_skills = models.TextField(max_length=500, blank=True)
+    # questions_comments = models.TextField(max_length=500, blank=True)
+
+    # def clean(self) -> None:
+    #     super().clean()
+    #     if self.is_full_time_student:
+    #         if not self.student_school:
+    #             raise ValidationError({'student_school': 'This field is required'})
+    #         if not self.student_degree:
+    #             raise ValidationError({'student_degree': 'This field is required'})
+    #         if not self.student_graduation_date:
+    #             raise ValidationError({'student_graduation_date': 'This field is required'})
 
 
 class Clef(models.TextChoices):

@@ -27,6 +27,8 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'second_period_time_label',
             'third_period_time_label',
             'fourth_period_time_label',
+
+            'tshirt_image_url',
         ]
 
         labels = {
@@ -93,10 +95,10 @@ class ConclaveClassForm(forms.ModelForm):
     class Meta:
         model = Class
         fields = [
-            'name',
             'period',
-            'level',
+            'name',
             'instructor',
+            'level',
             'description',
         ]
 
