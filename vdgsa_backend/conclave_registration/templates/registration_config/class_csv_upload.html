@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load conclave_tags %}
+
+<h3>Upload CSV of Classes</h3>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="mb-3">
+    <input required class="form-control" type="file" name="class_csv" id="class-csv-input">
+  </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </div>
+</form>
+
+{% endblock %}

@@ -79,12 +79,13 @@ class Class(models.Model):
     )
     name = models.CharField(max_length=255)
     period = models.IntegerField(choices=Period.choices)
-    level = ArrayField(models.CharField(max_length=50, choices=Level.choices))
-    instructor = models.CharField(max_length=100)
+    level = models.CharField(max_length=255)
+    instructor = models.CharField(max_length=255)
     description = models.TextField()
+    notes = models.TextField(blank=True)
 
     def __str__(self) -> str:
-        return f'{self.name} | {"/".join(self.level)} | {self.instructor}'
+        return f'{self.instructor} | {self.name} | {self.level}'
 
 
 def get_classes_by_period(conclave_config_pk: int) -> dict[int, list[Class]]:
