@@ -313,37 +313,6 @@ class WorkStudyApplication(models.Model):
     other_skills = models.TextField(blank=True)
     other_info = models.TextField(blank=True)
 
-    # first_time_applying = models.BooleanField()
-    # alternate_address = models.TextField(blank=True)
-    # phone_number = models.CharField(max_length=50, blank=True)
-    # age_if_under_22 = models.IntegerField(blank=True, null=True, default=None)
-
-    # is_full_time_student = models.BooleanField()
-    # student_school = models.TextField(blank=True)
-    # student_degree = models.TextField(blank=True)
-    # student_graduation_date = models.TextField(blank=True)
-
-    # can_arrive_before_sunday_morning = models.BooleanField()
-    # earliest_could_arrive = models.TextField()
-    # has_car = models.BooleanField()
-
-    # job_first_choice = models.TextField(choices=WorkStudyJob.choices)
-    # job_second_choice = models.TextField(choices=WorkStudyJob.choices)
-
-    # interest_in_work_study = models.TextField(max_length=500)
-    # other_skills = models.TextField(max_length=500, blank=True)
-    # questions_comments = models.TextField(max_length=500, blank=True)
-
-    # def clean(self) -> None:
-    #     super().clean()
-    #     if self.is_full_time_student:
-    #         if not self.student_school:
-    #             raise ValidationError({'student_school': 'This field is required'})
-    #         if not self.student_degree:
-    #             raise ValidationError({'student_degree': 'This field is required'})
-    #         if not self.student_graduation_date:
-    #             raise ValidationError({'student_graduation_date': 'This field is required'})
-
 
 class Clef(models.TextChoices):
     treble = 'treble', 'Treble clef'
