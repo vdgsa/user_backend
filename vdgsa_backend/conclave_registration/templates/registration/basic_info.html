@@ -15,7 +15,7 @@
   </div>
   <div class="row">
     <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.is_first_time_attendee %}
+      {% include 'utils/form_field.tmpl' with field=form.attended_nonclave %}
     </div>
   </div>
 
@@ -60,6 +60,18 @@
 
   <div class="row mt-3">
     <div class="col-md-8">
+      <b>Archival video release:</b>
+      {{registration_entry.conclave_config.archival_video_release_text}}
+    </div>
+  </div>
+  <div class="row mt-1">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.archival_video_release %}
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-8">
       <b>Photo and Video Release:</b>
       {{registration_entry.conclave_config.photo_release_text}}
     </div>
@@ -98,20 +110,21 @@
 </form>
 
 <script>
-  $().ready(function() {
-    // NOTE: chande !== to === next year
-    if ($('input[name="is_first_time_attendee"]:checked').val() !== 'yes') {
-      $('#buddy-willingness-wrapper').hide();
-    }
+  radio_button_hide('attended_nonclave', '#buddy-willingness-wrapper');
+  // $().ready(function() {
+  //   // NOTE: change !== to === next year
+  //   if ($('input[name="attended_nonclave"]:checked').val() !== 'yes') {
+  //     $('#buddy-willingness-wrapper').hide();
+  //   }
 
-    $('input[name="is_first_time_attendee"]').change(function() {
-      if ($(this).val() !== 'yes') {
-        $('#buddy-willingness-wrapper').hide();
-      }
-      else {
-        $('#buddy-willingness-wrapper').show();
-      }
-    });
-  });
+  //   $('input[name="attended_nonclave"]').change(function() {
+  //     if ($(this).val() !== 'yes') {
+  //       $('#buddy-willingness-wrapper').hide();
+  //     }
+  //     else {
+  //       $('#buddy-willingness-wrapper').show();
+  //     }
+  //   });
+  // });
 </script>
 {% endblock %}

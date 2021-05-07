@@ -21,12 +21,24 @@
     "freebie" offerings). Part time participants in the regular curriculum my
     choose classes in any one period
   {% elif registration_entry.program == 'beginners' %}
-    Participants in the Beginners program who want to add a class
-    may choose classes in any one period other than second period.
-  {% elif registration_entry.is_advanced_program %}
-    Participants in the CC, AP, or SP programs who want to add one or two
-    classes may choose classes in any period that isn't the period their
-    program meets during (CC meets third period, SP meets second period, etc.).
+    Participants in the Adult Beginners Program who want to add a class may
+    choose classes in any one period other than 2nd Period, when their
+    "Introduction to the Viol" class will be taking place.
+  {% elif registration_entry.program == 'teen_beginners' %}
+    Participants in the Teen Beginners Program who want to add a class may
+    choose classes in any one period, since their class meets after 4th Period.
+  {% elif registration_entry.program == 'consort_coop' %}
+    Participants in the Consort Cooperative Program who want to add one or
+    two classes may choose classes in any period other than 3rd Period,
+    when their program meets.
+  {% elif registration_entry.program == 'seasoned_players' %}
+    Participants in the Seasoned Players Program who want to add one or
+    two classes may choose classes in any period other than 2nd Period,
+    when their program meets.
+  {% elif registration_entry.program == 'advanced_projects' %}
+    Participants in the Advanced Projects Program who want to add one or
+    two classes may choose classes in any period other than 4th Period,
+    when their program meets.
   {% endif %}
 </div>
 
@@ -121,6 +133,7 @@
           {% include 'utils/small_select.tmpl' with field=form.period1_choice3_instrument label='Instrument Preference'%}
         </div>
       </div>
+      <!-- NOTE: The teen beginners program meets after 4th period -->
       {% if registration_entry.program != 'beginners' and registration_entry.program != 'seasoned_players' %}
       <div class="period-header fs-4 mt-2">
         2nd Period: {{registration_entry.conclave_config.second_period_time_label}}
@@ -159,6 +172,7 @@
         </div>
       </div>
       {% endif %}
+      {% if registration_entry.program != 'advanced_projects' %}
       <div class="period-header fs-4 mt-2">
         4th Period: {{registration_entry.conclave_config.fourth_period_time_label}}
       </div>
@@ -176,6 +190,7 @@
           {% include 'utils/small_select.tmpl' with field=form.period4_choice3_instrument label='Instrument Preference'%}
         </div>
       </div>
+      {% endif %}
 
       <div class=me-2>
         {% include 'utils/form_field.tmpl' with field=form.comments %}
