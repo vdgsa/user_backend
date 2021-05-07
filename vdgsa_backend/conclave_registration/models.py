@@ -315,6 +315,11 @@ class WorkStudyApplication(models.Model):
     other_skills = models.TextField(blank=True)
     other_info = models.TextField(blank=True)
 
+    def clean(self) -> None:
+        super().clean()
+        if len(self.job_preferences) < 2:
+            raise ValidationError({'job_preferences': 'Please choose at least two options.'})
+
 
 class Clef(models.TextChoices):
     treble = 'treble', 'Treble clef'
