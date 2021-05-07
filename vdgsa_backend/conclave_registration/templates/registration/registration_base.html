@@ -19,7 +19,7 @@
         >
           <div class="d-flex justify-content-between">
             Instruments
-            {% if registration_entry.instruments_bringing.count %}
+            {% if registration_entry.instruments_bringing.count or registration_entry.beginner_instruments %}
             <i class="bi bi-check"></i>
             {% endif %}
           </div>
