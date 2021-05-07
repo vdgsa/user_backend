@@ -9,7 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, TSHIRT_SIZES, BasicRegistrationInfo, Class, Clef,
+    ADVANCED_PROGRAMS, BeginnerInstrumentInfo, TSHIRT_SIZES, BasicRegistrationInfo, Class, Clef,
     ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo, Period,
     Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
     WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe
@@ -559,6 +559,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
             photo_release_auth=YesNo.yes,
+            archival_video_release=True,
             # liability_release=True,
             other_info=''
         )
@@ -624,7 +625,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
         self.assertEqual(0, len(self.find_all('#classes-summary li')))
         self.assertEqual(
-            'You have not selected any classes.', self.find('#no-classes-message').text
+            'No classes selected.', self.find('#no-classes-message').text
         )
 
     def test_summary_of_tshirts(self) -> None:
@@ -673,6 +674,7 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
             photo_release_auth=YesNo.yes,
+            archival_video_release=True,
             # liability_release=True,
             other_info=''
         )
@@ -825,6 +827,10 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         RegularProgramClassChoices.objects.create(registration_entry=self.registration_entry)
         self.registration_entry.program = Program.beginners
         self.registration_entry.save()
+        BeginnerInstrumentInfo.objects.create(
+            registration_entry=self.registration_entry,
+            needs_instrument=YesNo.yes,
+        )
         self.login_as(
             self.user,
             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
@@ -840,6 +846,10 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
     def test_one_class_beginner_tuition(self) -> None:
         self.registration_entry.program = Program.beginners
         self.registration_entry.save()
+        BeginnerInstrumentInfo.objects.create(
+            registration_entry=self.registration_entry,
+            needs_instrument=YesNo.yes,
+        )
         RegularProgramClassChoices.objects.create(
             registration_entry=self.registration_entry,
             period2_choice1=self.conclave_config.classes.all()[1],
@@ -955,6 +965,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
             photo_release_auth=YesNo.yes,
+            archival_video_release=True,
             # liability_release=True,
             other_info=''
         )
@@ -1028,7 +1039,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
         missing_sections = self.find_all('#missing-sections-msg li')
         self.assertEqual(2, len(missing_sections))
-        self.assertIn('Additional Info', missing_sections[0].text)
-        self.assertIn('Classes', missing_sections[1].text)
+        self.assertIn('Classes', missing_sections[0].text)
+        self.assertIn('Additional Info', missing_sections[1].text)
         self.assertFalse(self.exists('#summary'))
         self.assertFalse(self.exists('#conclave-go-to-payment-form'))
