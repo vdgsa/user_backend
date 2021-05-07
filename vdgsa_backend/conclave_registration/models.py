@@ -26,6 +26,7 @@ class ConclaveRegistrationConfig(models.Model):
     )
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
+    archival_video_release_text = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
 
     first_period_time_label = models.CharField(max_length=255, blank=True)
@@ -118,7 +119,8 @@ class YesNoMaybe(models.TextChoices):
 
 class Program(models.TextChoices):
     regular = 'regular', 'Regular Curriculum (part- and full-time)'
-    beginners = 'beginners', 'Beginner Programs (both teen and adult)'
+    beginners = 'beginners', 'Introduction to the Viol (free)'
+    teen_beginners = 'teen_beginners', 'Teen Beginners (free)'
     consort_coop = 'consort_coop', 'Consort Cooperative'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     advanced_projects = 'advanced_projects', 'Advanced Projects'
@@ -127,6 +129,7 @@ class Program(models.TextChoices):
     # non_playing_attendee = 'non_playing_attendee'
 
 
+BEGINNER_PROGRAMS = [Program.beginners, Program.teen_beginners]
 ADVANCED_PROGRAMS = [Program.consort_coop, Program.seasoned_players, Program.advanced_projects]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
@@ -226,11 +229,12 @@ class BasicRegistrationInfo(models.Model):
         related_name='basic_info'
     )
 
-    is_first_time_attendee = models.TextField(choices=YesNo.choices)
+    attended_nonclave = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
 
+    archival_video_release = models.BooleanField()
     photo_release_auth = models.TextField(choices=YesNo.choices)
     # liability_release = models.BooleanField()
 
@@ -238,16 +242,14 @@ class BasicRegistrationInfo(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        # "is_first_time_attendee" is inverted for 2021--it's actually "did you attend nonclave"
-        # Compare with YesNo.no next year.
-        if self.is_first_time_attendee == YesNo.yes and not self.buddy_willingness:
+        if self.attended_nonclave == YesNo.yes and not self.buddy_willingness:
             raise ValidationError({'buddy_willingness': 'This field is required.'})
 
 
 class WorkStudyJob(models.TextChoices):
     google_drive_file_organizing = (
         'google_drive_file_organizing',
-        'Collecting and organizing files on Google Drive (before Conclave)',
+        'Collecting and organizing files on DropBox and Google Drive (before Conclave)',
     )
     video_editing = (
         'video_editing',
@@ -353,6 +355,24 @@ class InstrumentBringing(models.Model):
             return self.name_if_other
 
         return InstrumentChoices(self.size).label
+
+
+class BeginnerInstrumentInfo(models.Model):
+    registration_entry = models.OneToOneField(
+        RegistrationEntry,
+        on_delete=models.CASCADE,
+        related_name='beginner_instrument_info',
+    )
+
+    needs_instrument = models.TextField(choices=YesNo.choices)
+    instrument_bringing = models.TextField(
+        blank=True,
+        choices=InstrumentChoices.choices[:-1]  # Don't include "other"
+    )
+
+    def clean(self) -> None:
+        if self.needs_instrument == YesNo.no and not self.instrument_bringing:
+            raise ValidationError({'instrument_bringing': 'This field is required.'})
 
 
 def _make_class_choice_field() -> Any:
@@ -467,17 +487,22 @@ class RegularProgramClassChoices(models.Model):
 #     pass
 
 
-class TShirtSizes(models.TextChoices):
-    x_small = 'XS'
-    x_small_fitted = 'XS (Fitted)'
-    small = 'S'
-    small_fitted = 'S (Fitted)'
-    medium = 'M'
-    medium_fitted = 'M (Fitted)'
-    large = 'L'
-    large_fitted = 'L (Fitted)'
-    x_large = 'XL'
-    x_large_fitted = 'XL (Fitted)'
+TSHIRT_SIZES: Final = [
+    "Men's S",
+    "Men's M",
+    "Men's L",
+    "Men's XL",
+    "Men's XXL",
+    "Men's XXXL",
+
+    "Women's Fitted S",
+    "Women's Fitted M",
+    "Women's Fitted L",
+    "Women's V-neck S",
+    "Women's V-neck M",
+    "Women's V-neck L",
+    "Women's V-neck XL",
+]
 
 
 class TShirts(models.Model):
@@ -487,8 +512,16 @@ class TShirts(models.Model):
         related_name='tshirts',
     )
 
-    tshirt1 = models.CharField(max_length=50, choices=TShirtSizes.choices, blank=True)
-    tshirt2 = models.CharField(max_length=50, choices=TShirtSizes.choices, blank=True)
+    tshirt1 = models.CharField(
+        max_length=50,
+        choices=tuple(zip(TSHIRT_SIZES, TSHIRT_SIZES)),
+        blank=True
+    )
+    tshirt2 = models.CharField(
+        max_length=50,
+        choices=tuple(zip(TSHIRT_SIZES, TSHIRT_SIZES)),
+        blank=True
+    )
     donation = models.IntegerField(blank=True, default=0)
 
 

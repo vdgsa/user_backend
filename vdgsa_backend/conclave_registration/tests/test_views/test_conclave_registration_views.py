@@ -9,10 +9,10 @@ from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, BasicRegistrationInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
-    InstrumentChoices, Level, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase,
-    RegularProgramClassChoices, TShirts, TShirtSizes, TuitionOption, WorkStudyApplication,
-    WorkStudyJob, YesNo, YesNoMaybe
+    ADVANCED_PROGRAMS, TSHIRT_SIZES, BasicRegistrationInfo, Class, Clef,
+    ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo, Period,
+    Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
+    WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe
 )
 from vdgsa_backend.conclave_registration.views.conclave_registration_views import BasicInfoForm
 from vdgsa_backend.selenium_test_base import SeleniumTestCaseBase
@@ -554,7 +554,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         BasicRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            is_first_time_attendee=YesNo.yes,
+            attended_nonclave=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
@@ -628,8 +628,9 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
 
     def test_summary_of_tshirts(self) -> None:
-        shirts = TShirts.objects.create(
-            registration_entry=self.registration_entry, tshirt1=TShirtSizes.small)
+        shirt1 = TSHIRT_SIZES[2]
+        shirt2 = TSHIRT_SIZES[-1]
+        shirts = TShirts.objects.create(registration_entry=self.registration_entry, tshirt1=shirt1)
 
         self.login_as(
             self.user,
@@ -637,16 +638,16 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
         tshirts = self.find_all('#tshirt-summary li')
         self.assertEqual(1, len(tshirts))
-        self.assertEqual('T-Shirt 1: S', tshirts[0].text)
+        self.assertEqual(f'T-Shirt 1: {shirt1}', tshirts[0].text)
 
-        shirts.tshirt2 = TShirtSizes.large
+        shirts.tshirt2 = shirt2
         shirts.save()
         self.selenium.refresh()
 
         tshirts = self.find_all('#tshirt-summary li')
         self.assertEqual(2, len(tshirts))
-        self.assertEqual('T-Shirt 1: S', tshirts[0].text)
-        self.assertEqual('T-Shirt 2: L', tshirts[1].text)
+        self.assertEqual(f'T-Shirt 1: {shirt1}', tshirts[0].text)
+        self.assertEqual(f'T-Shirt 2: {shirt2}', tshirts[1].text)
 
     def test_summary_no_tshirts(self) -> None:
         self.login_as(
@@ -667,7 +668,7 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         BasicRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            is_first_time_attendee=YesNo.yes,
+            attended_nonclave=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
@@ -701,14 +702,14 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         self.assertEqual('100', self.find('#total-charges-cell').text)
 
         shirts = TShirts.objects.create(
-            registration_entry=self.registration_entry, tshirt1=TShirtSizes.small)
+            registration_entry=self.registration_entry, tshirt1=TSHIRT_SIZES[0])
         self.selenium.refresh()
         self.assertEqual('T-Shirts: 1', self.find('#tshirts-charge-row td:first-child').text)
         self.assertEqual('25', self.find('#tshirts-charge-row td:last-child').text)
 
         self.assertEqual('125', self.find('#total-charges-cell').text)
 
-        shirts.tshirt2 = TShirtSizes.large
+        shirts.tshirt2 = TSHIRT_SIZES[4]
         shirts.save()
         self.selenium.refresh()
 
@@ -738,14 +739,14 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         self.assertEqual('200', self.find('#total-charges-cell').text)
 
         shirts = TShirts.objects.create(
-            registration_entry=self.registration_entry, tshirt1=TShirtSizes.small)
+            registration_entry=self.registration_entry, tshirt1=TSHIRT_SIZES[1])
         self.selenium.refresh()
         self.assertEqual('T-Shirts: 1', self.find('#tshirts-charge-row td:first-child').text)
         self.assertEqual('25', self.find('#tshirts-charge-row td:last-child').text)
 
         self.assertEqual('225', self.find('#total-charges-cell').text)
 
-        shirts.tshirt2 = TShirtSizes.large
+        shirts.tshirt2 = TSHIRT_SIZES[-2]
         shirts.save()
         self.selenium.refresh()
 
@@ -949,7 +950,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
         self.basic_info = BasicRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            is_first_time_attendee=YesNo.yes,
+            attended_nonclave=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,

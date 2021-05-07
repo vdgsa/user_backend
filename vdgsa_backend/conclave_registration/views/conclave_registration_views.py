@@ -12,7 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models.base import Model
 from django.forms import widgets
-from django.forms.fields import ChoiceField
+from django.forms.fields import BooleanField, ChoiceField
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -25,7 +25,7 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef,
+    ADVANCED_PROGRAMS, BEGINNER_PROGRAMS, BeginnerInstrumentInfo, NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef,
     ConclaveRegistrationConfig, InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry,
     RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob,
     YesNo, YesNoMaybe, get_classes_by_period
@@ -247,17 +247,6 @@ class _RegistrationStepViewBase(LoginRequiredMixin, UserPassesTestMixin, SingleO
         )
 
 
-# class BooleanRadioField(forms.BooleanField):
-#     def __init__(
-#         self,
-#         true_label: str = 'Yes',
-#         false_label: str = 'No',
-#         **kwargs: Any
-#     ) -> None:
-#         kwargs['widget'] = forms.RadioSelect(choices=((True, true_label), (False, false_label)))
-#         super().__init__(**kwargs)
-
-
 class YesNoRadioField(forms.ChoiceField):
     def __init__(
         self,
@@ -284,10 +273,11 @@ class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = BasicRegistrationInfo
         fields = [
-            'is_first_time_attendee',
+            'attended_nonclave',
             'buddy_willingness',
             # 'willing_to_help_with_small_jobs',
             'wants_display_space',
+            'archival_video_release',
             'photo_release_auth',
             # 'liability_release',
             'other_info',
@@ -298,18 +288,19 @@ class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         }
 
         labels = {
-            'is_first_time_attendee': '',
+            'attended_nonclave': '',
             'buddy_willingness': '',
             'wants_display_space': '',
             'photo_release_auth': '',
             'other_info': '',
         }
 
-    is_first_time_attendee = YesNoRadioField(label='')
+    attended_nonclave = YesNoRadioField(label='')
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
+    archival_video_release = BooleanField(required=True, label='I agree')
     photo_release_auth = YesNoRadioField(
-        yes_label='I agree',
-        no_label="I don't agree",
+        yes_label='I allow',
+        no_label="I don't allow",
         label='',
     )
     wants_display_space = YesNoRadioField(label='')
@@ -433,16 +424,54 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
             self.initial['clefs'] = self.instance.clefs
 
 
+
+class BeginnerInstrumentsForm(_RegistrationStepFormBase, forms.ModelForm):
+    class Meta:
+        model = BeginnerInstrumentInfo
+        fields = [
+            'needs_instrument',
+            'instrument_bringing',
+        ]
+
+        labels = {
+            'instrument_bringing': ''
+        }
+
+    needs_instrument = YesNoRadioField(
+        yes_label='Yes, I need help getting an instrument',
+        no_label='No, I will be bringing an instrument',
+        label='',
+    )
+
+
 class InstrumentsBringingView(_RegistrationStepViewBase):
-    template_name = 'registration/instruments/instruments_bringing.html'
-    form_class = InstrumentBringingForm
+    @property
+    def template_name(self) -> str:
+        if self.registration_entry.program in BEGINNER_PROGRAMS:
+            return 'registration/instruments/beginner_instruments.html'
+
+        return 'registration/instruments/instruments_bringing.html'
+
+    @property
+    def form_class(self) -> Type[_RegistrationStepFormBase]:
+        if self.registration_entry.program in BEGINNER_PROGRAMS:
+            return BeginnerInstrumentsForm
+
+        return InstrumentBringingForm
+
     next_step_url_name = 'conclave-class-selection'
 
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
-        return self.render_page(InstrumentBringingForm(self.registration_entry))
+        if self.registration_entry.program in BEGINNER_PROGRAMS:
+            return super().get(*args, **kwargs)
+
+        return self.render_page(self.form_class(self.registration_entry))
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
-        form = InstrumentBringingForm(self.registration_entry, self.request.POST)
+        if self.registration_entry.program in BEGINNER_PROGRAMS:
+            return super().post(*args, **kwargs)
+
+        form = self.form_class(self.registration_entry, self.request.POST)
         if not form.is_valid():
             return get_ajax_form_response(
                 'form_validation_error',
@@ -462,6 +491,13 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
         context = super().get_render_context(form)
         context['instruments'] = self.registration_entry.instruments_bringing.all()
         return context
+
+    def get_step_instance(self) -> BasicRegistrationInfo | None:
+        if (self.registration_entry.program in BEGINNER_PROGRAMS
+                and hasattr(self.registration_entry, 'beginner_instrument_info')):
+            return self.registration_entry.beginner_instrument_info
+
+        return None
 
 
 class DeleteInstrumentView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -704,12 +740,16 @@ class PaymentView(_RegistrationStepViewBase):
     def _get_missing_sections(self) -> list[str]:
         missing_sections = []
 
-        if not hasattr(self.registration_entry, 'basic_info'):
-            missing_sections.append('Additional Info')
+        if (self.registration_entry.program in BEGINNER_PROGRAMS
+                and not hasattr(self.registration_entry, 'beginner_instrument_info')):
+            missing_sections.append('Instruments')
 
         if (self.registration_entry.class_selection_is_required
                 and not hasattr(self.registration_entry, 'regular_class_choices')):
             missing_sections.append('Classes')
+
+        if not hasattr(self.registration_entry, 'basic_info'):
+            missing_sections.append('Additional Info')
 
         return missing_sections
 
