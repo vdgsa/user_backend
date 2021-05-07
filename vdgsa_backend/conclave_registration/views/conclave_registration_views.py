@@ -10,12 +10,14 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.mail import send_mail
 from django.db.models.base import Model
 from django.forms import widgets
 from django.forms.fields import BooleanField, ChoiceField
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.urls.base import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -25,10 +27,10 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, BEGINNER_PROGRAMS, BeginnerInstrumentInfo, NO_CLASS_PROGRAMS, BasicRegistrationInfo, Class, Clef,
-    ConclaveRegistrationConfig, InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry,
-    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob,
-    YesNo, YesNoMaybe, get_classes_by_period
+    ADVANCED_PROGRAMS, BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo,
+    BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
+    PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
+    TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.templatetags.conclave_tags import get_current_conclave
 
@@ -424,7 +426,6 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
             self.initial['clefs'] = self.instance.clefs
 
 
-
 class BeginnerInstrumentsForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = BeginnerInstrumentInfo
@@ -494,8 +495,8 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
 
     def get_step_instance(self) -> BasicRegistrationInfo | None:
         if (self.registration_entry.program in BEGINNER_PROGRAMS
-                and hasattr(self.registration_entry, 'beginner_instrument_info')):
-            return self.registration_entry.beginner_instrument_info
+                and hasattr(self.registration_entry, 'beginner_instruments')):
+            return self.registration_entry.beginner_instruments
 
         return None
 
@@ -741,7 +742,7 @@ class PaymentView(_RegistrationStepViewBase):
         missing_sections = []
 
         if (self.registration_entry.program in BEGINNER_PROGRAMS
-                and not hasattr(self.registration_entry, 'beginner_instrument_info')):
+                and not hasattr(self.registration_entry, 'beginner_instruments')):
             missing_sections.append('Instruments')
 
         if (self.registration_entry.class_selection_is_required
@@ -775,3 +776,19 @@ class StartOverView(_RegistrationStepViewBase):
 class RegistrationDoneView(View):
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
         return render(self.request, 'registration/done.html')
+
+
+def send_confirmation_email(registration_entry: RegistrationEntry) -> None:
+    send_mail(
+        subject=f'VdGSA Conclave {registration_entry.conclave_config.year} '
+                '- Thank you for registering!',
+        from_email=None,
+        recipient_list=[registration_entry.user.username],
+        message=render_to_string(
+            'registration/confirmation_email.tmpl',
+            {
+                'registration_entry': registration_entry,
+                'class_selection_required': registration_entry.class_selection_is_required
+            }
+        )
+    )

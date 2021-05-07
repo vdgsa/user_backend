@@ -366,7 +366,7 @@ class BeginnerInstrumentInfo(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
-        related_name='beginner_instrument_info',
+        related_name='beginner_instruments',
     )
 
     needs_instrument = models.TextField(choices=YesNo.choices)

@@ -4,7 +4,8 @@ from django import template
 from django.utils import timezone
 
 from ..models import (
-    Clef, ConclaveRegistrationConfig, InstrumentChoices, Program, RegistrationPhase, TuitionOption
+    BEGINNER_PROGRAMS, Clef, ConclaveRegistrationConfig, InstrumentChoices, Program,
+    RegistrationPhase, TuitionOption
 )
 
 register = template.Library()
@@ -69,6 +70,10 @@ def format_program(program: str) -> str:
     return Program(program).label
 
 
+def is_beginner_program(program: str) -> bool:
+    return program in BEGINNER_PROGRAMS
+
+
 register.filter('format_registration_phase', format_registration_phase)
 register.filter('format_period_long', format_period_long)
 register.filter('format_instrument_size', format_instrument_size)
@@ -77,3 +82,4 @@ register.filter('format_tuition_option', format_tuition_option)
 register.filter('format_program', format_program)
 register.filter('url_path_is_conclave_registration', url_path_is_conclave_registration)
 register.filter('url_path_is_conclave_admin', url_path_is_conclave_admin)
+register.filter('is_beginner_program', is_beginner_program)
