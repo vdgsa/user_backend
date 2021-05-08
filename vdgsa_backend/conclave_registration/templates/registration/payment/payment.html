@@ -30,13 +30,14 @@
 <form method="post" id="conclave-go-to-payment-form">
   {% csrf_token %}
 
-  <p style="color: hotpink">
-    Some text here about when we'll charge their card, how they won't
-    be able to make changes after they enter their payment info, and how
-    we don't store their credit card number.
-  </p>
+  <div class="credit-card-disclaimer">
+    Your credit card information will be processed through Stripe.<br>
+    <b>We do not store your credit card information on our servers.</b><br>
+    <br>
+    For work-study applicants, we will not charge your card until after June 1.
+  </div>
 
-  <div class="row">
+  <div class="row mt-2">
     <div class="col-md-4">
       {% include 'utils/form_field.tmpl' with field=form.name_on_card %}
     </div>
@@ -100,7 +101,7 @@ $().ready(function() {
   font-weight: bold;
 }
 
-#summary {
+#summary, .credit-card-disclaimer {
   border: 1px solid black;
   padding: .75rem 1rem;
 }
@@ -109,8 +110,13 @@ $().ready(function() {
   color: crimson;
 }
 
+.credit-card-disclaimer {
+  background-color: #cfe2ff;
+  border-color: #cfe2ff;
+}
+
 @media only screen and (min-width: 768px) {
-  #summary {
+  #summary, .credit-card-disclaimer {
     width: 85%;
   }
 }
