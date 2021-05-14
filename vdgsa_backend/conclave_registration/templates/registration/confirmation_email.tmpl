@@ -1,7 +1,9 @@
 {% load conclave_tags %}{% load vdgsa_tags %}Dear {{registration_entry.user | show_name}},
 
 Thank you for registering for Conclave! Below is a summary of your registration.
-
+{% if registration_entry.program == 'advanced_projects' %}
+Please take a moment to fill out this questionnaire for Advanced Projects participants: https://forms.gle/8FFvnoPBmztjRqA3A
+{% endif %}
 Program
 -------------------------------------------------------------------------------
 {{registration_entry.program | format_program}}
@@ -11,7 +13,6 @@ Work-Study
 -------------------------------------------------------------------------------
 Applying for a work-study position: {% if registration_entry.work_study %}Yes{% else %}No{% endif %}
 
-{% endif %}
 Instruments
 -------------------------------------------------------------------------------
 {% with is_beginner=registration_entry.program|is_beginner_program %}{% if is_beginner %}{% if registration_entry.beginner_instruments.needs_instrument == 'yes' %}Needs help finding an instrument{% else %}Bringing a {{registration_entry.beginner_instruments.instrument_bringing}} viol
@@ -45,8 +46,7 @@ Period 4
   - 1st Choice: {% firstof registration_entry.regular_class_choices.period4_choice1 'No class' %}
   - 2nd Choice: {% firstof registration_entry.regular_class_choices.period4_choice2 'No class' %}
   - 3rd Choice: {% firstof registration_entry.regular_class_choices.period4_choice3 'No class' %}
-{% endif %}
-
+{% endif %}{% endif %}
 T-Shirts
 -------------------------------------------------------------------------------
 {% with registration_entry.tshirts as tshirts %}{% if not tshirts or not tshirts.tshirt1 and not tshirts.tshirt2 %}No T-Shirts{% else %}

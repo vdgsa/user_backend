@@ -723,6 +723,7 @@ class PaymentView(_RegistrationStepViewBase):
 
         payment_info.stripe_payment_method_id = payment_method.id
         payment_info.save()
+        send_confirmation_email(self.registration_entry)
 
         return HttpResponseRedirect(self.get_next_step_url())
 
