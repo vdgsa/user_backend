@@ -31,14 +31,17 @@
     Participants in the Consort Cooperative Program who want to add one or
     two classes may choose classes in any period other than 3rd Period,
     when their program meets.
+    Adding any classes will increase your registration fee by $100.
   {% elif registration_entry.program == 'seasoned_players' %}
     Participants in the Seasoned Players Program who want to add one or
     two classes may choose classes in any period other than 2nd Period,
     when their program meets.
+    Adding any classes will increase your registration fee by $100.
   {% elif registration_entry.program == 'advanced_projects' %}
     Participants in the Advanced Projects Program who want to add one or
     two classes may choose classes in any period other than 4th Period,
     when their program meets.
+    Adding any classes will increase your registration fee by $100.
   {% endif %}
 </div>
 
@@ -135,6 +138,9 @@
       </div>
       <!-- NOTE: The teen beginners program meets after 4th period -->
       {% if registration_entry.program != 'beginners' and registration_entry.program != 'seasoned_players' %}
+
+      <div class="divider"></div>
+
       <div class="period-header fs-4 mt-2">
         2nd Period: {{registration_entry.conclave_config.second_period_time_label}}
       </div>
@@ -154,6 +160,9 @@
       </div>
       {% endif %}
       {% if registration_entry.program != 'consort_coop' %}
+
+      <div class="divider"></div>
+
       <div class="period-header fs-4 mt-2">
         3rd Period: {{registration_entry.conclave_config.third_period_time_label}}
       </div>
@@ -173,6 +182,9 @@
       </div>
       {% endif %}
       {% if registration_entry.program != 'advanced_projects' %}
+
+      <div class="divider"></div>
+
       <div class="period-header fs-4 mt-2">
         4th Period: {{registration_entry.conclave_config.fourth_period_time_label}}
       </div>
@@ -207,6 +219,12 @@
 {% block page_style %}
 {{block.super}}
 <style>
+
+.divider {
+  border-bottom: 1px solid rgb(220, 220, 220);
+  margin-right: .5rem;
+}
+
 .period-header {
   font-weight: bold;
 }

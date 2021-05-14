@@ -7,6 +7,7 @@
 
 <div>
   Please add the instruments you'll be playing at Conclave. <br>
+  The official Conclave tuning pitch is A=415. <br>
   Don't know what level you are? Use our
   <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
      target="_blank">
@@ -55,11 +56,11 @@
 </div>
 
 <script>
-$().ready(function() {
-  $('.delete-instrument').on('click', function(event) {
+function add_delete_instrument_handler(jquery_elt) {
+  jquery_elt.on('click', function(event) {
     event.preventDefault();
-    let row = $(this).parents('.instrument-row');
-    let pk = $(this).data()['instrumentpk'];
+    let row = jquery_elt.parents('.instrument-row');
+    let pk = jquery_elt.data()['instrumentpk'];
 
     if (confirm('Remove this instrument?')) {
       $.ajax({
@@ -75,22 +76,33 @@ $().ready(function() {
       });
     }
   });
+}
+
+$().ready(function() {
+  $('.delete-instrument').each(function(index, elt) {
+    console.log(elt);
+    add_delete_instrument_handler($(elt));
+  });
 
   setup_ajax_submit('add-instrument-form', {
     success: function(form, response_data) {
       if (response_data.status === 'success') {
-        $('#instruments').append(
+        let new_elt = $(
           '<tr class="instrument-row"><td>'
           + response_data.rendered_form
           + '</tr></td>'
         );
+        $('#instruments').append(new_elt);
         $('#id_clefs_wrapper input[type=checkbox]').prop('checked', false);
         $('#id_level option:first').prop('selected', true);
         $('#id_size option:first').prop('selected', true);
+        $('#id_name_if_other').val('');
+        $('#id_name_if_other_wrapper').hide();
+
+        add_delete_instrument_handler(new_elt.find('.delete-instrument'));
       }
       else if (response_data.status === 'form_validation_error') {
         update_form_body(form, response_data);
-
       }
       else if (response_data.status === 'other_error' && response_data.extra_data.error_msg) {
         window.alert(response_data.extra_data.error_msg);
@@ -105,7 +117,6 @@ $().ready(function() {
 {{block.super}}
 <style>
 .add-instrument-header {
-  /* font-weight: bold; */
   font-size: 1.125rem;
 }
 </style>

@@ -124,7 +124,7 @@ class Program(models.TextChoices):
     consort_coop = 'consort_coop', 'Consort Cooperative'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     advanced_projects = 'advanced_projects', 'Advanced Projects'
-    faculty_guest_other = 'faculty_guest_other', 'Faculty/Guest/Other'
+    faculty_guest_other = 'faculty_guest_other', 'Faculty'
     # exhibitor = 'exhibitor', 'Vendors'
     # non_playing_attendee = 'non_playing_attendee'
 
@@ -198,7 +198,7 @@ class RegistrationEntry(models.Model):
             else:
                 return 200
 
-        if self.program == Program.beginners:
+        if self.program in BEGINNER_PROGRAMS:
             return 0 if self.regular_class_choices.num_classes_selected == 0 else 100
 
         if self.program in ADVANCED_PROGRAMS:
