@@ -679,12 +679,10 @@ class PaymentForm(_RegistrationStepFormBase, forms.ModelForm):
         fields = []
 
     name_on_card = forms.CharField()
-    card_number = forms.CharField(
-        min_length=16, max_length=16, validators=[_credit_card_number_validator]
-    )
+    card_number = forms.CharField(validators=[_credit_card_number_validator])
     expiration_month = forms.ChoiceField(choices=list(zip(_MONTHS, _MONTHS)))
     expiration_year = forms.ChoiceField(choices=list(zip(_YEARS, _YEARS)))
-    cvc = forms.CharField(min_length=3, max_length=3)
+    cvc = forms.CharField()
 
 
 class PaymentView(_RegistrationStepViewBase):
