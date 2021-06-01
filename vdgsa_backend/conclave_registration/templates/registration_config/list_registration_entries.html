@@ -6,6 +6,12 @@
 
 <h3>Conclave {{conclave_config.year}} Registration Entries</h3>
 
+<div>
+  <a href="{% url 'download-registration-entries' conclave_config_pk=conclave_config.pk %}" download>
+    Download CSV
+  </a>
+</div>
+
 <table class="table">
   <thead>
     <tr>

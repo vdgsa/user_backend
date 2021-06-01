@@ -30,3 +30,6 @@ from .conclave_registration_views import WorkStudyApplicationView as WorkStudyAp
 from .conclave_registration_views import (
     current_year_conclave_redirect_view as current_year_conclave_redirect_view
 )
+from .registration_csv_view import (
+    DownloadRegistrationEntriesCSVView as DownloadRegistrationEntriesCSVView
+)
