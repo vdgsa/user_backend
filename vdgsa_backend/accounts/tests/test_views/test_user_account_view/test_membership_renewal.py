@@ -12,10 +12,11 @@ from selenium.common.exceptions import NoSuchElementException  # type: ignore
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
-from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
 from vdgsa_backend.accounts.views.user_account_view.membership_renewal import (
     create_or_renew_subscription
 )
+from vdgsa_backend.templatetags.filters import format_datetime_impl
+
 
 from ..selenium_test_base import SeleniumTestCaseBase
 

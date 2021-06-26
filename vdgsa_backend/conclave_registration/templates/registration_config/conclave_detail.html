@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load conclave_tags %}
+
+<h2>Conclave {{object.year}} Registration Admin</h2>
+
+<div class="mt-3">
+  <div>Registration phase: <b>{{object.phase | format_registration_phase}}</b></div>
+  <div>
+    <a href="{% url 'edit-conclave' pk=object.pk %}">Edit Settings</a>
+  </div>
+</div>
+
+<div class="my-2">
+  <a href="{% url 'conclave-reg-landing' conclave_config_pk=object.pk %}">
+    Go to registration
+  </a>
+</div>
+
+<div class="my-2">
+  <a href="{% url 'list-registration-entries' conclave_config_pk=object.pk %}">
+    View this year's registration entries
+  </a>
+</div>
+
+<h3 class="mt-4">Classes</h3>
+<div><a href="{% url 'create-class' conclave_config_pk=object.pk %}">Add a class</a></div>
+<div>
+  <a href="{% url 'class-csv-upload' conclave_config_pk=object.pk %}">Load classes from CSV</a>
+</div>
+
+{% for period, classes in classes_by_period.items %}
+<div class="mt-4 period-wrapper">
+  <table class="table">
+    <thead>
+      <tr><th class="fs-4">{{period | format_period_long}}</th></tr>
+    </thead>
+    <tbody>
+    {% for class_ in classes %}
+      <tr
+        class="class-row"
+        onclick="window.location = '{% url 'edit-class' pk=class_.pk %}'"
+      >
+        <td>
+          <div class="row">
+            <div class="class-name">{{class_.name}}</div>
+          </div>
+          <table class="class-info-table">
+            <tr>
+              <td class="class-info-label">Instructor:</td>
+              <td class="class-info-cell">{{class_.instructor}}</td>
+            </tr>
+            <tr>
+              <td class="class-info-label">Level:</td>
+              <td class="class-info-cell">{{class_.level}}</td>
+            </tr>
+          </table>
+          <div>{{class_.description}}</div>
+          <div class="mt-2">{{class_.notes}}</div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block page_style %}
+<style>
+.class-row:hover {
+  cursor: pointer;
+  background-color: rgb(240, 240, 240);
+}
+
+.class-name {
+  font-weight: bold;
+}
+
+.class-info-label {
+  font-weight: bold;
+}
+
+.class-info-cell {
+  padding-left: 1rem;
+}
+</style>
+
+{% endblock %}

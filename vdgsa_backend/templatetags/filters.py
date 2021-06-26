@@ -1,8 +1,9 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import pytz
 from django import template
 from django.forms import BoundField
+from django.forms.boundfield import BoundWidget
 from django.http.request import HttpRequest
 from django.urls.base import reverse
 from django.utils import timezone
@@ -37,12 +38,18 @@ def show_name_and_email(user: User) -> str:
     return user.username
 
 
-def add_classes(field: BoundField, classes: str) -> SafeText:
+def add_classes(field: Union[BoundField, BoundWidget], classes: str) -> SafeText:
     """
     Adds "classes" (a space-separated string of classes) to "field".
     Example usage: {{form.some_field | add_classes:"form-control"}}
     """
-    return field.as_widget(attrs={'class': field.css_classes(classes)})  # type: ignore
+    if isinstance(field, BoundField):
+        return field.as_widget(attrs={'class': field.css_classes(classes)})  # type: ignore
+
+    class_str = field.data['attrs'].get('class', '')
+    class_str += classes
+    field.data['attrs']['class'] = class_str
+    return field.tag()
 
 
 def current_page_is_my_account_page(request: HttpRequest) -> bool:

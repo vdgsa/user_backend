@@ -1,0 +1,73 @@
+{% load conclave_tags %}{% load vdgsa_tags %}Dear {{registration_entry.user | show_name}},
+
+Thank you for registering for Conclave! Below is a summary of your registration.
+{% if registration_entry.program == 'advanced_projects' %}
+Please take a moment to fill out this questionnaire for Advanced Projects participants: https://forms.gle/8FFvnoPBmztjRqA3A
+{% endif %}
+Program
+-------------------------------------------------------------------------------
+{{registration_entry.program | format_program}}
+
+{% if class_selection_required %}
+Work-Study
+-------------------------------------------------------------------------------
+Applying for a work-study position: {% if registration_entry.work_study %}Yes{% else %}No{% endif %}
+
+Instruments
+-------------------------------------------------------------------------------
+{% with is_beginner=registration_entry.program|is_beginner_program %}{% if is_beginner %}{% if registration_entry.beginner_instruments.needs_instrument == 'yes' %}Needs help finding an instrument{% else %}Bringing a {{registration_entry.beginner_instruments.instrument_bringing}} viol
+{% endif %}{% elif not registration_entry.instruments_bringing.count %}You are not bringing any instruments.
+{% else %}{% for instrument in registration_entry.instruments_bringing.all %}- {{instrument}}
+{% endfor %}{% endif %}{% endwith %}
+
+Class Preferences
+-------------------------------------------------------------------------------
+{% if class_selection_required and registration_entry.regular_class_choices.num_classes_selected == 0 %}No classes selected.
+{% else %}Period 1
+=================
+  - 1st Choice: {% firstof registration_entry.regular_class_choices.period1_choice1 'No class' %}
+  - 2nd Choice: {% firstof registration_entry.regular_class_choices.period1_choice2 'No class' %}
+  - 3rd Choice: {% firstof registration_entry.regular_class_choices.period1_choice3 'No class' %}
+
+Period 2
+=================
+  - 1st Choice: {% firstof registration_entry.regular_class_choices.period2_choice1 'No class' %}
+  - 2nd Choice: {% firstof registration_entry.regular_class_choices.period2_choice2 'No class' %}
+  - 3rd Choice: {% firstof registration_entry.regular_class_choices.period2_choice3 'No class' %}
+
+Period 3
+=================
+  - 1st Choice: {% firstof registration_entry.regular_class_choices.period3_choice1 'No class' %}
+  - 2nd Choice: {% firstof registration_entry.regular_class_choices.period3_choice2 'No class' %}
+  - 3rd Choice: {% firstof registration_entry.regular_class_choices.period3_choice3 'No class' %}
+
+Period 4
+=================
+  - 1st Choice: {% firstof registration_entry.regular_class_choices.period4_choice1 'No class' %}
+  - 2nd Choice: {% firstof registration_entry.regular_class_choices.period4_choice2 'No class' %}
+  - 3rd Choice: {% firstof registration_entry.regular_class_choices.period4_choice3 'No class' %}
+{% endif %}{% endif %}
+T-Shirts
+-------------------------------------------------------------------------------
+{% with registration_entry.tshirts as tshirts %}{% if not tshirts or not tshirts.tshirt1 and not tshirts.tshirt2 %}No T-Shirts{% else %}
+{% if tshirts.tshirt1 %}- T-Shirt 1: {{tshirts.tshirt1}}{% endif %}
+{% if tshirts.tshirt2 %}- T-Shirt 2: {{tshirts.tshirt2}}{% endif %}{% endif %}{% endwith %}
+
+
+Summary of Charges So Far
+-------------------------------------------------------------------------------
+{% if registration_entry.class_selection_is_required %}- {{registration_entry.regular_class_choices.num_classes_selected}} {% if registration_entry.program != 'regular' %}Add-on {% endif %}Classes Selected: ${{registration_entry.tuition_charge}}
+{% endif %}{% if registration_entry.late_fee %}- Late registration: ${{registration_entry.late_fee}}
+{% endif %}- {{registration_entry.num_tshirts}} T-Shirts: ${{registration_entry.tshirts_charge}}
+- Donation: ${{registration_entry.donation}}
+
+Total: ${{registration_entry.total_charges}}
+
+{% if registration_entry.work_study %}If you receive your ${{registration_entry.tuition_charge}}
+Work-Study fee waiver, the total will be ${{registration_entry.total_minus_work_study}}.
+Work-Study positions will be awarded by June 15. Work-Study applicants
+will not be charged until positions are finalized.
+{% endif %}
+
+Sincerely,
+VdGSA Conclave and Web Teams

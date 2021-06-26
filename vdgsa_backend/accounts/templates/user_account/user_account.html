@@ -2,7 +2,8 @@
 
 {% block content %}
 
-{% load filters %}
+{% load static %}
+{% load vdgsa_tags %}
 
 <div id="membership-subscription-wrapper">
   {% with user=object form=membership_renewal_form MAX_NUM_FAMILY_MEMBERS=MAX_NUM_FAMILY_MEMBERS %}
@@ -37,7 +38,6 @@
     method="post"
     action="{% url 'change-email-request' pk=object.pk %}"
   >
-    {% csrf_token %}
     {% include 'utils/form_body.tmpl' with form=change_email_form %}
 
     <div id="email-in-use-msg"></div>
@@ -70,7 +70,6 @@
 <div class="mt-4">
   <h2>Profile</h2>
   <form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
-    {% csrf_token %}
     <div class='form-body-wrapper'>
       {% include 'user_account/user_profile_form.tmpl' with form=edit_profile_form %}
     </div>
@@ -157,107 +156,7 @@ $().ready(function() {
 
   let purchase_subscription_form = $('#purchase-subscription-form');
   purchase_subscription_form.on('submit', on_purchase_subscription_form_submit);
-
-  setup_ajax_submit('add-family-member-form', {
-    success: function(form, response_data) {
-      if (response_data.status === 'success') {
-        window.location.reload();
-      }
-      else if (response_data.status === 'other_error' && response_data.extra_data.error_msg) {
-        window.alert(response_data.extra_data.error_msg);
-      }
-    },
-  });
-
-  $('.remove-family-member-form').each(function(index, element) {
-    let form = $(element);
-    form.on('submit', function(event) {
-      event.preventDefault();
-
-      let username = form.find('input[name=username]').val();
-      console.log(username);
-      if (!confirm(`Remove ${username} from your membership?`)) {
-        return;
-      }
-
-      $.post(
-        form.attr('action'),
-        form.serialize(),
-        function() {
-          window.location.reload();
-        }
-      ).fail(function(response) {
-        // TODO: better error message
-        alert('An unexpected error occured');
-      });
-    });
-  });
 });
-
-function toggle_element(id) {
-  $(`#${id}`).toggle();
-}
-
-function hide_element(id) {
-  document.getElementById(id).style.display = 'none';
-}
-
-function remove_family_member(url, username, index) {
-  $.post(url, {'username': username}).then(function() {
-    $('.family-member').eq(index).remove();
-  }).error(function(response) {
-    // TODO: better error message
-    alert('An unexpected error occured');
-  });
-}
-
-function disable_form_buttons(form) {
-  form.find('button').attr('disabled', true);
-}
-
-// IMPORTANT: This default class selector should match the class used in
-// templates/utils/form_body.tmpl
-// Check for other occurrences of this class when changing.
-function update_form_body(form, response_data, body_selector = '.form-body-wrapper') {
-  if (response_data.rendered_form) {
-    form.find(body_selector).html(response_data.rendered_form);
-  }
-}
-
-function reenable_form_buttons(form) {
-  form.find('button').attr('disabled', false);
-}
-
-function setup_ajax_submit(
-  form_id,
-  {
-    before_submit = disable_form_buttons,
-    success = update_form_body,
-    complete = reenable_form_buttons,
-  }
-) {
-  let form = $('#' + form_id);
-  form.on('submit', function(event) {
-    event.preventDefault();
-    before_submit(form);
-
-    $.ajax(form.attr('action'), {
-      type: 'POST',
-      data: form.serialize(),
-      success: function(data) {
-        success(form, data)
-      },
-      error: function(response) {
-        console.log(response);
-        // TODO: detect network/other errors and adjust message
-        alert('An unexpected error occured');
-      },
-      complete: function() {
-        complete(form);
-      }
-    });
-  });
-}
 </script>
 
 {% endblock %}

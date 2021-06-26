@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h2 id="registration-landing-header">
+  {{request.user | show_name}},
+  Welcome to Conclave {{conclave_config.year}} Registration!
+  {% if conclave_config.phase == 'late' %}
+  (Late)
+  {% endif %}
+</h2>
+
+{% if not request.user.subscription_is_current %}
+<div data-testid="membership_renewal_message">
+  Your membership is not up to date. Please visit the
+  <a data-testid="accounts_link" href="{% url 'current-user-account' %}">My Account</a> page,
+  renew your membership, and then return here to register.
+</div>
+{% elif conclave_config.phase == 'closed' and not perms.conclave_registration.conclave_team %}
+<div data-testid="registration_closed_message">
+  Registration for this year's conclave has closed.
+</div>
+{% else %}
+
+<div class="row">
+  <div class="col-md-8">
+    <p>
+      Before you begin your Conclave registration, make sure that you have
+      familiarized yourself with the options and decided whether you want to
+      be in the Regular Program (either full time or part time) or in one of
+      the special programs, such as Consort Cooperative, Seasoned Players, etc.,
+      or one of the free Beginners' Programs. You should also have an idea
+      about which classes you would like to request. Remember that you can
+      find more complete information in the
+      <a href="https://www.vdgsa.org/conclave-2021-programs">Conclave Brochure</a>.
+    </p>
+
+    <p>
+      The contact information from your membership account will be used for Conclave.
+      If you'd like to change it, please do so on the
+      <a href="{% url 'current-user-account' %}">My Account</a> section of the website.
+    </p>
+
+    <p>
+      Once you select your program, you'll go to a series of pages that will need
+      to be filled out and saved. Clicking the yellow "Save and Continue" button
+      on the bottom of each page will take you through them sequentially; you can
+      navigate to any page by clicking on the left-hand menu.
+    </p>
+
+    <p>
+      If you select a program other than Regular, please be aware that there may
+      be more requirements listed on the
+      <a href="https://www.vdgsa.org/conclave-2021-programs">Programs page</a>.
+      Vendors should register for the Regular Curriculum
+      (part-time for 0-1 class, full-time for 2-3 classes) unless they plan
+      to participate in one of the special programs.
+    </p>
+
+    <p>
+      If you have any questions while applying, please contact the
+      <a href="https://www.vdgsa.org/conclave-2021-contacts">
+        Conclave Management Team Spork or the Website Committee
+      </a>.
+      If you would like help by telephone, please call or send a text message
+      (saying "Conclave registration help needed") to Kathy Schenley or Becca Humphrey.
+      Their telephone numbers can be found
+      <a href="https://www.vdgsa.org/conclave-2021-contacts">here</a>.
+    </p>
+  </div>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="row mt-4">
+    <div class="col-auto ">
+      {% include 'utils/form_field.tmpl' with field=choose_program_form.program %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div id="faculty-registration-password" class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=choose_program_form.faculty_registration_password %}
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Start Registration</button>
+  </div>
+
+  {% if form.non_field_errors %}
+  <div class="non-field-errors">
+  {% for err in form.non_field_errors %}
+    <p class="form-error">{{ err }}</p>
+  {% endfor %}
+  </div>
+  {% endif %}
+</form>
+{% endif %}
+
+<script>
+$().ready(function() {
+  if ($('#id_program').val() === 'faculty_guest_other') {
+    $('#faculty-registration-password').show();
+  }
+
+  $('#id_program').on('change', function(event) {
+    if (event.target.value === 'faculty_guest_other') {
+      $('#faculty-registration-password').show();
+    }
+    else {
+      $('#faculty-registration-password').hide();
+    }
+  });
+});
+</script>
+{% endblock %}
+
+{% block page_style %}
+<style>
+  #faculty-registration-password {
+    display: none;
+  }
+</style>
+{% endblock %}

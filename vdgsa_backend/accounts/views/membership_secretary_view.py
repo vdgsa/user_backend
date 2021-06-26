@@ -14,8 +14,8 @@ from django.views.generic.base import View
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 
-from vdgsa_backend.accounts.templatetags.filters import format_datetime_impl
 from vdgsa_backend.accounts.views.permissions import is_membership_secretary
+from vdgsa_backend.templatetags.filters import format_datetime_impl
 
 from ..models import User
 

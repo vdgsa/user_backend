@@ -3,7 +3,6 @@ Contains forms and views involved with the user changing their login
 email address.
 """
 
-from functools import cached_property
 from typing import Any, Optional, cast
 
 from django import forms
@@ -17,6 +16,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.views.generic.base import View
 
 from vdgsa_backend.accounts.models import ChangeEmailRequest, User

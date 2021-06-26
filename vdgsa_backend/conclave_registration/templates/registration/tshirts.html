@@ -1,0 +1,67 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h3>Extras</h3>
+
+<div class="row">
+  <div class="col-md-6 order-md-2">
+    {% if registration_entry.conclave_config.tshirt_image_url %}
+    <img src="{{registration_entry.conclave_config.tshirt_image_url}}"
+        alt="T-shirt design"
+        crossOrigin="anonymous"
+        class="img-fluid mb-3">
+    {% endif %}
+  </div>
+  <div class="col-md-6 order-md-1">
+    <p>
+      If you would like to buy one or more Conclave t-shirts, select the size(s) and style(s) below.
+      <br>
+      T-shirts cost $25 each, which includes shipping. <br>
+      T-shirts will be shipped in time that we hope they will arrive before Conclave.
+    </p>
+
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row">
+        <div class="col-md-8">
+          {% include 'utils/form_field.tmpl' with field=form.tshirt1 %}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8">
+          {% include 'utils/form_field.tmpl' with field=form.tshirt2 %}
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-auto">
+          <label for="id_donation">
+            Would you like to make a donation to help make Conclave more affordable to others?
+          </label>
+          <div class="row">
+            <div class="col-6">
+              <div class="d-flex align-items-center mb-3">
+                <div class="me-1">$</div>
+                {{form.donation | add_classes:"form-control"}}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-field-errors mt-1">
+            {{field.errors}}
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Save and continue</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

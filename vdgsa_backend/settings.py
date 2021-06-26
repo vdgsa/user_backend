@@ -59,8 +59,8 @@ INSTALLED_APPS = [
     'vdgsa_backend.rental_viols',
     'vdgsa_backend.stripe_wix_proxy',
     'vdgsa_backend.stripe_email_webhook',
-
-    'corsheaders'
+    'vdgsa_backend.conclave_registration',
+    'corsheaders',
 ]
 
 CORS_ALLOWED_ORIGINS: List[str] = []
@@ -90,6 +90,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'vdgsa_tags': 'vdgsa_backend.templatetags.filters',
+            }
         },
     },
 ]
