@@ -2,8 +2,9 @@
 {% load rental_tags %}
 {% block content %}
 <p>Case detail</p>
-<div >
 
+<div class="card text-end">
+  <div class="card-header">
     {% if object.viol_num %}
     <a href="{% url 'viol-detach' %}?case_num={{ object.case_num }}&viol_num={{ object.viol_num.viol_num }}" class="btn btn-primary" >Detach from viol</a> 
     {% else %}
@@ -12,6 +13,7 @@
     <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" disabled>Retire</a> 
     <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" disabled>Unretire</a> 
     <a href="{% url 'case-update' object.case_num %}" class="btn btn-primary" >Edit</a> 
+  </div>
 </div>
 
 <div class="container border mt-3 mb-3 p-3">

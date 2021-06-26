@@ -1,0 +1,84 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+{% block content %}
+<p>Custodian</p>
+
+<div class="card text-end">
+  <div class="card-header">
+
+  </div>
+</div>
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      <p class="h3">{{object.first_name}} {{object.last_name}}</p>
+      <p>email: {{object.username}}</p>
+      <p>
+          {{object.address_line_1}}<br>
+          {% if object.address_line_2 %}Phone: {{object.address_line_2}}<br>{% endif%}
+          {{object.address_city}},{{object.address_state}} 
+          {{object.address_postal_code}}<br>
+          {{object.address_country}}<br>
+      </p>
+      <p>Phone: {{object.phone1}}</p>
+      {% if object.phone2 %}<p>Phone: {{object.phone2}}</p> {% endif%}
+      <p>Record last modified: {{object.last_modified}}</p>
+
+   
+    </div>
+  </div>
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      <p class="h3">Viols</p>
+      <table id="viol-table" class="table sortable table-striped">
+        <thead>
+          <tr>
+            <th>VdGSA #</th>
+            <th>Size</th>
+            <th># Strings</th>
+            <th>Maker</th>
+            <th>Value</th>
+            <th>Program</th>
+            <th>State</th>
+            <th>Reserved for</th>
+            <th>Status</th>
+          
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in viols %}
+          <tr>
+            <td>
+              <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+            </td>
+            <td>{{item.size}}</td>
+            <td>{{item.strings}}</td>
+            <td>{{item.maker}}</td>
+            <td>{{item.value | currency}}</td>
+            <td>{{item.program}}</td>
+            <td>{{item.state}}</td>
+            <td>
+            {% if item.waitingList.all %}
+
+                {% for wl in item.waitingList.all %}
+                <div>
+                  {{ wl }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            </td>
+            <td>{{item.status}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+   
+    </div>
+  </div>
+
+
+
+{% endblock %}

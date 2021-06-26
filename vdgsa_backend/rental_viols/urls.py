@@ -6,8 +6,8 @@ urlpatterns = [
     path('', views.RentalHomeView.as_view(), name='rentals'),
 
 
+    path('user/search', views.UserSearchView.as_view(), name='user-search'), 
     path('viol/rentOut/', views.RentOutView.as_view(), name='viol-rentOut'),
-
     path('rentals/', views.ListRentersView.as_view(), name='list-renters'),
     path('rental/renew/<int:entry_num>/', views.RentalRenewView.as_view(), name='rental-renew'),
     path('rental/return/<int:entry_num>/', views.RentalReturnView.as_view(), name='rental-return'),
@@ -16,7 +16,6 @@ urlpatterns = [
     path('rental/submit/', views.RentalSubmitView.as_view(), name='rental-submit'),
     path('rental/upload/<int:entry_num>', views.UploadRentalView.as_view(), name='rental-upload'),
     # path('rental/view/<int:entry_num>', views.ViewRentalAgreement.as_view(), name='view-agree'),
-    
     path('renterInfo/<int:pk>', views.ViewUserInfo.as_view(), name='renter-info'),
 
 
@@ -41,11 +40,15 @@ urlpatterns = [
     path('viol/detach/', views.DetachFromViolView.as_view(), name='viol-detach'),
     path('viol/reserve/', views.ReserveViolView.as_view(), name='viol-reserve'),
     path('viol/retire/<int:viol_num>/', views.RetireViolView.as_view(), name='viol-retire'),
+    path('viol/available/<int:viol_num>/', views.AvailableViolView.as_view(), name='viol-avail'),
+
     path('viols/<int:pk>/', views.ViolDetailView.as_view(), name='viol-detail'),
     path('viol/update/<int:pk>/', views.UpdateViolView.as_view(), name='viol-update'),
 
 
     path('waiting/', views.ListWaitingView.as_view(), name='list-waiting'),
+    path('custodian/', views.ListCustodianView.as_view(), name='list-cust'),
+    path('custodian/<int:pk>/', views.CustodianDetailView.as_view(), name='cust-detail'),
 
     path('delete/<str:class>/<int:pk>/', views.SoftDeleteView.as_view(), name='soft-delete'),
 ]

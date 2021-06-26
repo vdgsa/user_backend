@@ -1,14 +1,19 @@
 {% block rental_nav %}
+{% load django_bootstrap_icons %}
+
 <nav class="navbar bg-light">
    <ul class="navbar-nav">
+      <li class="nav-item mx-2"><a class="nav-link" id="viols-link" href="{% url 'rentals' %}" title="Rental Viol Home">{% bs_icon 'house-door-fill' %}</a></li>
       <li class="nav-item mx-2"><a class="nav-link" id="viols-link" href="{% url 'list-viols' %}">Viols</a></li>
       <li class="nav-item mx-2"><a class="nav-link" id="bows-link" href="{% url 'list-bows' %}">Bows</a></li>
       <li class="nav-item mx-2"><a class="nav-link" id="cases-link" href="{% url 'list-cases' %}">Cases</a></li>
       
       <li class="nav-item mx-2"><a class="nav-link" id="renters-link" href="{% url 'list-renters' %}">Renters</a></li>
+      <li class="nav-item mx-2"><a class="nav-link" id="renters-link" href="{% url 'list-cust' %}">Custodians</a></li>
       <li class="nav-item mx-2"><a class="nav-link" id="waiting-link" href="{% url 'list-waiting' %}">Waiting List</a></li>
     </ul>
 </nav>
+
 {% comment %} 
 --Original application menu
 Viols

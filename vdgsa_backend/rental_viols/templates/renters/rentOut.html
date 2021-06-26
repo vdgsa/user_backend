@@ -3,6 +3,41 @@
 {% block content %}
 
 
+<style>
+/* The container <div> - needed to position the dropdown content */
+.user-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+#user-select {
+  display: none;
+}
+
+/* Dropdown Content (Hidden by Default) 
+.user-dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f6f6f6;
+  min-width: 230px;
+  border: 1px solid #ddd;
+  z-index: 1;
+}*/
+
+/* Links inside the dropdown */
+.user-dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of dropdown links on hover */
+.user-dropdown-content a:hover {background-color: #f1f1f1}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
+</style>
 
 <div class="container border mt-3 mb-3 p-3">
   <div class="row">
@@ -21,27 +56,32 @@
     </div>
   </div>
 {% endif %}
-
 </div>
-
-  TODO: Add filter - Find User
-<form id="rental-create-form" method="post" action="{% url 'rental-create' %}">
-  {% csrf_token %} 
-
+<form id="rental-create-form" method="post" action="{% url 'viol-rentOut' %}">
   {% include 'utils/form_body.tmpl' with form=form %}
     <input type='hidden' name="viol_num" value="{{ viol.viol_num }}"/>
     <div class="form-row">
         <div class="form-group col-md-6">
-        <select class="form-control" name="user_id" id="user_id">
-            {% for user in users %}
-            <option value="{{user.pk}}">{{user.username}}</option>
-            {% endfor %}
-        </select>
+          <label for="user_id">Select User </label>
+          <input class="form-control" id="user-input" placeholder="Start typing to Search" >
         </div>
+    </div>    
+
+    {% include '../users/user-results-partial.html' %}
+
+    <div class="form-group col-md-6">
+     <label for="viol_num">Select Viol </label>
+      <select class="form-control" name="viol_num" id="viol_num">
+        {% for v in avail_viols.all %}
+          <option value="{{v.pk}}">{{v}}</option>
+        {% empty %}
+          <option>None available</option>
+        {% endfor %}
+      </select>
     </div>
 
   <div class="mt-2">
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="submit" class="btn btn-primary">Rent Out</button>
   </div>
 </form>
 

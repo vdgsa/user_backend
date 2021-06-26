@@ -153,6 +153,11 @@ STATICFILES_DIRS = [
 # In docker container, ends up being /usr/src/static
 STATIC_ROOT = BASE_DIR.parent / 'static'
 
+STATICFILES_FINDERS = (
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+)
+
 # Misc custom settings --------------------------------------------------------
 MAX_NUM_FAMILY_MEMBERS = 3
 

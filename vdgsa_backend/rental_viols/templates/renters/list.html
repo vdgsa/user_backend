@@ -2,7 +2,11 @@
 {% load django_bootstrap_icons %}
 
 {% block content %}
-
+<div class="card text-end">
+  <div class="card-header">
+    <button class="btn btn-primary " onclick="location.href='{% url 'viol-rentOut' %}'">New Rental</button>
+  </div>
+</div>
 <table id="viol-table" class="table table-striped">
   <thead>
     <tr>

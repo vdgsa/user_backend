@@ -2,40 +2,41 @@
 
 {% block content %}
 
-<div class="card">
-  <div class="card-body">
+<div class="card text-end">
+  <div class="card-header">
     <div className="buttonbar-ctr d-flex justify-content-around ">
+
       {% if not object.renter %}
-      <a
-        href="{% url 'viol-rentOut'%}?viol_num={{ object.viol_num }}"
+        {% if object.status == RentalEvent.active %}
+          <a href="{% url 'viol-rentOut'%}?viol_num={{ object.viol_num }}"
+            class="btn btn-primary"
+            >Rent out</a>
+        {% endif %}
+      {% if object.status == RentalEvent.active %}
+        <a href="{% url 'viol-retire' object.viol_num %}" class="btn btn-primary"
+          >Retire</a>
+      {% endif %}
+
+      <a href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}"
         class="btn btn-primary"
-        >Rent out</a
-      >
-      <a href="{% url 'viol-retire' object.viol_num %}" class="btn btn-primary"
-        >Retire</a
-      >
-      <a
-        href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}"
-        class="btn btn-primary"
-        >Reserve</a
-      >
-      <a
-        href="{% url 'viol-attach' %}?case_num={{ object.case_num }}"
-        class="btn disabled"
-      >
-        Make available</a
-      >
+        >Reserve</a>
+
+        {% if object.status == RentalEvent.new %}
+          <a href="{% url 'viol-avail' object.viol_num %}"
+            class="btn btn-primary">Make available</a>
+        {% endif %}
       {% else %}
-      <a
-        href="{% url 'viol-attach' %}?case_num={{ object.case_num }}"
-        class="btn disabled"
+       
+     <a
+        href="{% url 'rental-renew' rental.entry_num %}"
+        class="btn btn-primary"
         >Renew rental</a
       >
       <a
-        href="{% url 'viol-attach' %}?case_num={{ object.case_num }}"
-        class="btn disabled"
+        href="{% url 'rental-return' rental.entry_num %}"
+        class="btn btn-primary"
         >Return from rental</a
-      >
+      > 
       {% endif %}
       <a href="{% url 'viol-update' object.viol_num %}" class="btn btn-primary"
         >Edit</a
@@ -47,38 +48,13 @@
 <div class="container border mt-3 mb-3 p-3">
   <div class="row">
     <div class="col">
-      <p class="h3">{{object}}</p>
+      <p class="h3">{{object}}</p>({{object.status}})
     </div>
   </div>
 
   {% instrument_detail object %}
   <div class="row">
-    <div class="col">
-      {% if not object.cases.all %}
-      <a
-        href="{% url 'viol-attach' %}?viol_num={{ object.viol_num }}"
-        class="btn btn-outline-success btn-sm float-end"
-        >Attach a Case</a
-      >
-      {% endif%} 
-      {% for case in object.cases.all %}
-      <div>
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Case</h5>
-            <p class="card-text">
-              <a href="{% url 'case-detail' case.case_num %}"> {{ case }} </a>
-            </p>
-            <a
-              href="{% url 'viol-detach' %}?case_num={{ case.case_num }}&viol_num={{ object.viol_num }}"
-              class="btn btn-outline-danger btn-sm float-end"
-              >Detach from viol</a
-            >
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
+
     <div class="col">
       {% if not object.bows.all %}
       <a
@@ -97,6 +73,32 @@
             </p>
             <a
               href="{% url 'viol-detach' %}?bow_num={{ bow.bow_num }}&viol_num={{ object.viol_num }}"
+              class="btn btn-outline-danger btn-sm float-end"
+              >Detach from viol</a
+            >
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="col">
+      {% if not object.cases.all %}
+      <a
+        href="{% url 'viol-attach' %}?viol_num={{ object.viol_num }}"
+        class="btn btn-outline-success btn-sm float-end"
+        >Attach a Case</a
+      >
+      {% endif%} 
+      {% for case in object.cases.all %}
+      <div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Case</h5>
+            <p class="card-text">
+              <a href="{% url 'case-detail' case.case_num %}"> {{ case }} </a>
+            </p>
+            <a
+              href="{% url 'viol-detach' %}?case_num={{ case.case_num }}&viol_num={{ object.viol_num }}"
               class="btn btn-outline-danger btn-sm float-end"
               >Detach from viol</a
             >

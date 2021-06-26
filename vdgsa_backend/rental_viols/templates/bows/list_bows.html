@@ -2,19 +2,22 @@
 {% load rental_tags %}
 
 {% block content %}
-
- <button class="btn btn-primary" onclick="location.href='{% url 'add-bow' %}'">Add Bow</button>
-<table id="bow-table" class="table table-striped">
+<div class="card text-end">
+  <div class="card-header">
+    <a class="btn btn-primary" href="{% url 'add-bow' %}">Add Bow</a>
+  </div>
+</div>
+<table id="bow-table" class="table sortable table-striped">
   <thead>
     <tr>
-      <td>Bow VdGSA number</td>
-      <td>Size</td>
-      <td>Maker</td>
-      <td>Value</td>
-      <td>Attached to (viol)</td>
-      <td>Program</td>
-      <td>State</td>
-      <td>Status</td>
+      <th>VdGSA #</th>
+      <th>Size</th>
+      <th>Maker</th>
+      <th>Value</th>
+      <th>Attached to (viol)</th>
+      <th>Program</th>
+      <th>State</th>
+      <th>Status</th>
     </tr>
   </thead>
   <tbody>

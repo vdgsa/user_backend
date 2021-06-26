@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models import Q
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
+    RentalItemBaseManager, RentalEvent)
 
 
 class AccessoryQuerySet(models.QuerySet):
@@ -14,9 +17,15 @@ class AccessoryQuerySet(models.QuerySet):
 
 class ViolQuerySet(models.QuerySet):
     def get_rented_status(self, rented, size):
+        
         if size:
-            return self.filter(size=size).filter(renter__isnull=not rented)
-        return self.filter(renter__isnull=not rented)
+            return self.filter(size=size).filter(renter__isnull=not rented).filter(
+            Q(status=RentalEvent.active) | Q(status=RentalEvent.returned)
+            )
+
+        return self.filter(renter__isnull=not rented).filter(
+            Q(status=RentalEvent.active) | Q(status=RentalEvent.returned)
+            )
 
     def get_status(self, status, size):
         if size:

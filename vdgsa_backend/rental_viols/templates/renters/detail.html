@@ -3,8 +3,8 @@
 {% load django_bootstrap_icons %}
 {% block content %}
 
-<div class="card">
-<div class="card-body">
+<div class="card text-end">
+  <div class="card-header">
   <div className="buttonbar-ctr d-flex justify-content-around ">
 
     <a href="{% url 'rental-renew' object.entry_num  %}" class="btn disabled" >Renew rental</a> 
