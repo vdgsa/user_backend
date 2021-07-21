@@ -1,5 +1,5 @@
 {% extends '../rentals.html' %}
-{% load rental_tags %}{% load filters %}
+{% load rental_tags %}
 {% block content %}
 
 
@@ -33,6 +33,7 @@
 
   <div class="mt-2">
     <button type="submit" class="btn btn-primary">Renew</button>
+    <a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a>
   </div>
 </form>
 

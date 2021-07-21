@@ -7,75 +7,87 @@
   <div class="card-header">
     <a class="btn btn-primary" href="{% url 'add-viol' %}">Add Viol</a>
   </div>
-  </div>
+</div>
 </div>
 <div class="card">
   <div class="card-body">
     <form method="get" action="{% url 'list-viols' %}">
-      <div class="form-row">
-        <div class="form-group ">
-        <label for="filter">Filter {{filter}}</label>
+      <div class="row">
+        <div class="col">
+          <label for="filter">Filter:</label>
           <select class="form-control" name="filter" id="filter" onchange="javascript:this.form.submit()">
-            <option value="available"{% ifequal 'available' filter  %}selected{% endifequal %}>Available</option>
-            <option value='rented' {% ifequal 'rented' filter  %}selected{% endifequal %}>Rented</option>
-            <option value='retired' {% ifequal 'retired' filter  %}selected{% endifequal %}>Retired</option>
-            <option value='all' {% ifequal 'all' filter  %}selected{% endifequal %}>All</option>
+            <option value="available" {% ifequal 'available' filter.state  %}selected{% endifequal %}>Available</option>
+            <option value='rented' {% ifequal 'rented' filter.state  %}selected{% endifequal %}>Rented</option>
+            <option value='retired' {% ifequal 'retired' filter.state  %}selected{% endifequal %}>Retired</option>
+            <option value='all' {% ifequal 'all' filter.state  %}selected{% endifequal %}>All</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="filter">Program Type:</label>
+          <select class="form-control" name="program" id="program" onchange="javascript:this.form.submit()">
+            <option value='regular' {% ifequal 'regular' filter.program  %}selected{% endifequal %}>Regular</option>
+            <option value='select_reserve' {% ifequal 'select_reserve' filter.program  %}selected{% endifequal %}>Select
+              Reserve</option>
+            <option value='consort_loan' {% ifequal 'consort_loan' filter.program  %}selected{% endifequal %}>Consort Loan
+            </option>
+            <option value='all' {% ifequal 'all' filter.program  %}selected{% endifequal %}>All</option>
           </select>
         </div>
       </div>
     </form>
-<table id="viol-table" class="table sortable table-striped">
-  <thead>
-    <tr>
-      <th>VdGSA #</th>
-      <th>Size</th>
-      <th># Strings</th>
-      <th>Maker</th>
-      <th>Value</th>
-      <th>Program</th>
-      <th>State</th>
-      <th>Reserved for</th>
-      <th>Status</th>
-     
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in object_list %}
-    <tr>
-      <td>
-        <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
-      </td>
-      <td>{{item.size}}</td>
-      <td>{{item.strings}}</td>
-      <td>{{item.maker}}</td>
-      <td>{{item.value | currency}}</td>
-      <td>{{item.program}}</td>
-      <td>{{item.state}}</td>
-      <td>
-      {% if item.waitingList.all %}
+    <table id="viol-table" class="table sortable table-striped">
+      <thead>
+        <tr>
+          <th>VdGSA #</th>
+          <th>Size</th>
+          <th># Strings</th>
+          <th>Maker</th>
+          <th>Value</th>
+          <th>Program</th>
+          <th>State</th>
+          <th>Reserved for</th>
+          <th>Status</th>
 
-          {% for wl in item.waitingList.all %}
-          <div>
-            {{ wl }}
-          </div>
-          {% endfor %}
-      {% endif %}
-      </td>
-      <td>{{item.status}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in object_list %}
+        <tr>
+          <td>
+            <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+          </td>
+          <td>{{item.size}}</td>
+          <td>{{item.strings}}</td>
+          <td>{{item.maker}}</td>
+          <td>{{item.value | currency}}</td>
+          <td>{{item.program}}</td>
+          <td>{{item.state}}</td>
+          <td>
+            {% if item.waitingList.all %}
 
-</div>
+            {% for wl in item.waitingList.all %}
+            <div>
+              {{ wl }}
+            </div>
+            {% endfor %}
+            {% endif %}
+          </td>
+          <td>{{item.status}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
 </div>
 
 <script>
-$(document).ready(function() {
+  $(document).ready(function () {
     $('#viol-table').DataTable({
-        "paging":   false,
-        "info":     false
-    } );
-} );
+      "paging": false,
+      "info": false
+    });
+  });
+
 </script>
 {% endblock %}

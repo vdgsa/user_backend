@@ -1,5 +1,5 @@
 {% extends '../rentals.html' %}
-{% load rental_tags %}{% load filters %}
+{% load rental_tags %}
 {% block content %}
 
 
@@ -11,14 +11,13 @@
     </div>
   </div>
 </div>
-<form id="rental-create-form" method="post" action="{% url 'rental-create' %}">
-  {% csrf_token %} 
-
+<form id="viol-retire-form" method="post" action="{% url 'viol-retire' viol.viol_num %}">
   {% include 'utils/form_body.tmpl' with form=form %}
 
 
   <div class="mt-2">
     <button type="submit" class="btn btn-primary">Retire</button>
+    <a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a>
   </div>
 </form>
 

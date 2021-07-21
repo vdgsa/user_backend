@@ -6,103 +6,104 @@
 <hr>
 
 <div class="container border mt-3 mb-3 p-3">
-<form method="post" action="{% url 'viol-attach' %}">
-  {% csrf_token %}
+  <form method="post" action="{% url 'viol-attach' %}">
+    {% csrf_token %}
 
 
-{% if viol %}
+    {% if viol %}
 
-  <input type='hidden' name="viol_num" value="{{ viol.viol_num }}"/>
+    <input type='hidden' name="viol_num" value="{{ viol.viol_num }}" />
 
-  <div class="row">
-    <div class="col">
-      <p class="h3">{{viol}}</p>
+    <div class="row">
+      <div class="col">
+        <p class="h3">{{viol}}</p>
+      </div>
     </div>
-  </div>
 
 
 
- <div class="row mb-3 ">
-  <div class="col">
-    {% if viol.cases.count > 0 %}
-    {{viol.cases.all.0 }}
+    <div class="row mb-3 ">
+        <div class="form-group col-md-6">
+        {% if viol.bows.count > 0 %}
+        {{viol.bows.all.0 }}
+        {% else %}
+          <label for="viol_num">Select Bow </label>
+
+          {% if avail_bows %}
+          <select class="form-control" name="bow_num" id="bow_num">
+            {% for v in avail_bows %}
+            <option value="{{v.pk}}">{{v}}</option>
+            {% endfor %}
+
+          </select>
+          {% else %}
+          <p>No available bows found</p>
+          {% endif %}
+
+          {% endif %}
+        </div>
+
+        <div class="form-group col-md-6">
+        {% if viol.cases.count > 0 %}
+        {{viol.cases.all.0 }}
+        {% else %}
+          <label for="viol_num">Select Case </label>
+          {% if avail_cases %}
+          <select class="form-control" name="case_num" id="case_num">
+            {% for v in avail_cases %}
+            <option value="{{v.pk}}">{{v}}</option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <p>No available cases found</p>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+
+
+    </div>
+
     {% else %}
-    <div class="form-group col-md-6">
-     <label for="viol_num">Select Case </label>
-      {% if avail_cases %}
-      <select class="form-control" name="case_num" id="case_num">
-        {% for v in avail_cases %}
-        <option value="{{v.pk}}">{{v}}</option>
-        {% endfor %}
-   
-      </select>
-      {% else %}
-      <p>No available cases found</p>
-      {% endif %}
-    </div>
-    {% endif %}
-    </div>
 
-    <div class="col">
-    {% if viol.bows.count > 0 %}
-    {{viol.bows.all.0 }}
-    {% else %}
-    <div class="form-group col-md-6">
-     <label for="viol_num">Select Bow </label>
 
-      {% if avail_cases %}
-      <select class="form-control" name="bow_num" id="bow_num">
-        {% for v in avail_bows %}
-        <option value="{{v.pk}}">{{v}}</option>
-        {% endfor %}
-  
-      </select>
-      {% else %}
-      <p>No available bows found</p>
-      {% endif %}
+    {% if case %}<div>{{ case }}</div>{% endif %}
+    {% if bow %}<div>{{ bow }}</div>{% endif %}
+
+    <input type='hidden' name="bow_num" value="{{ bow.bow_num }}" />
+    <input type='hidden' name="case_num" value="{{ case.case_num }}" />
+
+    <div class="row mb-3">
+      <div class="col">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="viol_num">Select Viol </label>
+            {% if viols %}
+            <select class="form-control" name="viol_num" id="viol_num">
+              {% for v in viols %}
+              <option value="{{v.pk}}">{{v}}</option>
+              {% endfor %}
+            </select>
+            {% else %}
+            <p>No available viols found</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  </div>
 
     {% endif %}
-{% else %}
 
-
-{% if case %}<div>{{ case }}</div>{% endif %}
-{% if bow %}<div>{{ bow }}</div>{% endif %}
-
-  <input type='hidden' name="bow_num" value="{{ bow.bow_num }}"/>
-  <input type='hidden' name="case_num" value="{{ case.case_num }}"/>
-
-   <div class="row mb-3">
-  <div class="col">
-  <div class="form-row">
-    <div class="form-group col-md-6">
-     <label for="viol_num">Select Viol </label>
-      {% if viols %}
-      <select class="form-control" name="viol_num" id="viol_num">
-        {% for v in viols %}
-        <option value="{{v.pk}}">{{v}}</option>
-        {% endfor %}
-      </select>
-      {% else %}
-      <p>No available viols found</p>
-      {% endif %}
+    <div class="row">
+      <div class="col">
+        <div class="form-row">
+          <input class="btn btn-primary" type="submit" value="Attach">
+          <a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a>
+        </div>
+      </div>
     </div>
-  </div>
-    </div>
-  </div>
-
-{% endif %}
-
- <div class="row">
-  <div class="col">
-    <div class="form-row">    
-      <input class="btn btn-primary" type="submit" value="Attach">
-    </div>
-    </div>
-  </div>
-</form>
+  </form>
 </div>
 
 {% endblock %}

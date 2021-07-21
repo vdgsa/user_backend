@@ -1,5 +1,5 @@
 {% extends '../rentals.html' %}
-{% load rental_tags %}{% load filters %}
+{% load rental_tags %}
 {% block content %}
 <p>To Reserve 
     {{viol}} , please select a user</p>
@@ -24,6 +24,7 @@
 
   <div class="mt-2">
     <button type="submit" class="btn btn-primary">Reserve</button>
+    <a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a>
   </div>
 </form>
 

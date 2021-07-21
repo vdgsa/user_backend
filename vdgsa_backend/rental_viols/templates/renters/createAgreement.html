@@ -1,14 +1,16 @@
 {% extends '../rentals.html' %}
-{% load rental_tags %}{% load filters %}
+{% load rental_tags %}
 {% block content %}
-
-createAgreement
+ {% if form.data.event == RentalEvent.rented %}
+  Create New Agreement
+ {% else %}
+  Create Renew Agreement
+ {% endif %}
 <form id="rental-submit-form" method="post" action="{% url 'rental-submit' %}">
-  {% csrf_token %} 
+  {% csrf_token %}
 
-    <input type='hidden' name="viol_num" value="{{ viol.viol_num }}"/>
-    <input type='hidden' name="user_id" value="{{ user.id }}"/>
-
+  <input type='hidden' name="viol_num" value="{{ viol.viol_num }}" />
+  <input type='hidden' name="user_id" value="{{ user.id }}" />
 
   <div class="container border mt-3 mb-3 p-3">
     <div class="row">
@@ -17,51 +19,38 @@ createAgreement
         <p>Rent Out {{viol}} to {{user}}</p>
       </div>
     </div>
-   <div class="row">
+    <div class="row">
       <div class="col">
         {% if not viol.bows.all %}
-          <div class="text-danger"> No bow in rental!</div>
-        {% else %} 
-          {% for bow in viol.bows.all %}
-          <div> {{ bow }}</div>
-          {% endfor %}
+        <div class="text-danger"> No bow in rental!</div>
+        {% else %}
+        {% for bow in viol.bows.all %}
+        <div> {{ bow }}</div>
+        {% endfor %}
         {% endif%}
       </div>
       <div class="col">
         {% if not viol.cases.all %}
-          <div class="text-danger"> No case in rental!</div>
-        {% else %} 
-          {% for case in viol.cases.all %}
-          <div>
-            {{ case }}
-          </div>
-          {% endfor %}
+        <div class="text-danger"> No case in rental!</div>
+        {% else %}
+        {% for case in viol.cases.all %}
+        <div>
+          {{ case }}
+        </div>
+        {% endfor %}
         {% endif%}
 
-    </div>    
       </div>
     </div>
-   <div class="row">
-      <div class="col">
-        Start Date
-      </div>
-      <div class="col">
-        End Date
-
-    </div>    
-      </div>
-    </div>
-    <div class="form-row">
-        <div class="form-group col-md-6">
-          Add Rental agreement info?
-            This page may not be necesary. 
-        </div>
-    </div>
+  </div>
 
   </div>
+  {% include 'utils/form_body.tmpl' with form=form %}
   <div class="mt-2">
     <button type="submit" class="btn btn-primary">Save</button>
+    <a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a>
   </div>
 </form>
 
+</div>
 {% endblock %}

@@ -4,7 +4,12 @@
 <table id="viol-table" class="table table-striped">
   <thead>
     <tr>
-      <td>VdGSA</td>
+      <td>Waiting list Id</td>
+      <td>Requester</td>
+      <td>Instrument</td>
+      <td>Size</td>
+      <td>Date</td>
+      <td></td>
 
     </tr>
   </thead>
@@ -12,10 +17,14 @@
     {% for item in object_list %}
     <tr>
       <td>
-        <a href="{% url 'viol-detail' pk=item.pk %}">{{item.entry_num}}</a>
+        {{item.entry_num}}
       </td>
       <td>{{item.renter_num}}</td>
-      <td><a href="{% url 'viol-detail' pk=item.viol_num.pk %}">{{item.viol_num}}</a></td>
+      <td>
+      {% if item.viol_num %}
+        <a href="{% url 'viol-detail' pk=item.viol_num.pk %}">{{item.viol_num}}</a>
+      {% endif %} 
+      </td>
       <td>{{item.size}}</td>
       <td>{{item.date_req}}</td>
       <td class="text-nowrap">

@@ -1,5 +1,5 @@
 from vdgsa_backend.rental_viols.models import (
-    Bow, Case, RentalEvent, RentalHistory, Viol, WaitingList
+    Bow, Case, RentalEvent, RentalState, RentalHistory, Viol, WaitingList
 )
 from django import template
 

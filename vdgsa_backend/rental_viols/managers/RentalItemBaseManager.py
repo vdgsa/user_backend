@@ -4,22 +4,35 @@ from django.db.models.enums import TextChoices
 
 # created_at = DateTimeField(auto_now_add=True)
 # last_modified = DateTimeField(auto_now=True)
-# status = TextField(choices=RentalEvent.choices, default=RentalEvent.active)
+# status = TextField(choices=RentalState.choices, default=RentalState.available)
 
 # def get_fields(obj):
 #     return obj._meta.get_fields()
 
 
 class RentalEvent(TextChoices):
-    active = 'active'
-    attached = 'attached'
-    deleted = 'deleted'
-    detached = 'detached'
-    new = 'new'
-    reserved = 'reserved_for'
-    rented = 'rented'
-    retired = 'retired'
-    returned = 'returned'
+    available = 'Available'
+    attached = 'Attached'
+    deleted = 'Deleted'
+    detached = 'Detached'
+    new = 'New'
+    rented = 'Rented'
+    retired = 'Retired'
+    renewed = 'Renewed'
+    reserved = 'Reserved'
+    returned = 'Returned'
+
+
+class RentalState(TextChoices):
+    attached = 'Attached'
+    available = 'Available'
+    deleted = 'Deleted'
+    detached = 'Detached'
+    new = 'New'
+    rented = 'Rented'
+    reserved = 'Reserved'
+    retired = 'Retired'
+    Unattached = 'Unattached'
 
     # shipped = 'shipped; ?
     # invoiced = 'invoiced' ? if we integrate stripe payment
@@ -27,16 +40,16 @@ class RentalEvent(TextChoices):
 
 class RentalItemBaseQuerySet(QuerySet):
     def delete(self):
-        return super(RentalItemBaseQuerySet, self).update(status=RentalEvent.deleted)
+        return super(RentalItemBaseQuerySet, self).update(status=RentalState.deleted)
 
     def hard_delete(self):
         return super(RentalItemBaseQuerySet, self).delete()
 
     # def alive(self):
-    #     return self.filter(status=RentalEvent.active)
+    #     return self.filter(status=RentalState.available)
 
     # def dead(self):
-    #     return self.exclude(status=RentalEvent.deleted)
+    #     return self.exclude(status=RentalState.deleted)
 
 
 class RentalItemBaseManager(Manager):
@@ -46,6 +59,6 @@ class RentalItemBaseManager(Manager):
 
     def get_queryset(self):
         if self.active_only:
-            return RentalItemBaseQuerySet(self.model).exclude(status__in=[RentalEvent.deleted,
-                                                                          RentalEvent.retired])
+            return RentalItemBaseQuerySet(self.model).exclude(status__in=[RentalState.deleted,
+                                                                          RentalState.retired])
         return RentalItemBaseQuerySet(self.model)

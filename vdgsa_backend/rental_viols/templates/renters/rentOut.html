@@ -1,20 +1,20 @@
 {% extends '../rentals.html' %}
-{% load rental_tags %}{% load filters %}
+{% load rental_tags %}
 {% block content %}
 
 
 <style>
-/* The container <div> - needed to position the dropdown content */
-.user-dropdown {
-  position: relative;
-  display: inline-block;
-}
+  /* The container <div> - needed to position the dropdown content */
+  .user-dropdown {
+    position: relative;
+    display: inline-block;
+  }
 
-#user-select {
-  display: none;
-}
+  #user-select {
+    display: none;
+  }
 
-/* Dropdown Content (Hidden by Default) 
+  /* Dropdown Content (Hidden by Default) 
 .user-dropdown-content {
   display: none;
   position: absolute;
@@ -24,19 +24,24 @@
   z-index: 1;
 }*/
 
-/* Links inside the dropdown */
-.user-dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
+  /* Links inside the dropdown */
+  .user-dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
 
-/* Change color of dropdown links on hover */
-.user-dropdown-content a:hover {background-color: #f1f1f1}
+  /* Change color of dropdown links on hover */
+  .user-dropdown-content a:hover {
+    background-color: #f1f1f1
+  }
 
-/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
-.show {display:block;}
+  /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+  .show {
+    display: block;
+  }
+
 </style>
 
 <div class="container border mt-3 mb-3 p-3">
@@ -45,46 +50,56 @@
       <p>To Rent Out {{viol}} , please select a user</p>
     </div>
   </div>
-  
-{% if waiting %}
-    <div class="row">
+
+  {% if waiting %}
+  <div class="row">
     <div class="col">
-      <p >Waiting list</p>
+      <p>Waiting list</p>
       {% for wait in waiting %}
-       <div>{{wait}}</div>
+      <div>{{wait}}</div>
       {% endfor %}
     </div>
   </div>
-{% endif %}
-</div>
-<form id="rental-create-form" method="post" action="{% url 'viol-rentOut' %}">
-  {% include 'utils/form_body.tmpl' with form=form %}
-    <input type='hidden' name="viol_num" value="{{ viol.viol_num }}"/>
+  {% endif %}
+
+  <form id="rental-create-form" method="post" action="{% url 'viol-rentOut' %}">
+  {% csrf_token %}
+    <input type='hidden' name="viol_num" value="{{ viol.viol_num }}" />
     <div class="form-row">
-        <div class="form-group col-md-6">
-          <label for="user_id">Select User </label>
-          <input class="form-control" id="user-input" placeholder="Start typing to Search" >
-        </div>
-    </div>    
-
-    {% include '../users/user-results-partial.html' %}
-
-    <div class="form-group col-md-6">
-     <label for="viol_num">Select Viol </label>
-      <select class="form-control" name="viol_num" id="viol_num">
-        {% for v in avail_viols.all %}
-          <option value="{{v.pk}}">{{v}}</option>
-        {% empty %}
-          <option>None available</option>
-        {% endfor %}
-      </select>
+      <div class="form-group col-md-6">
+        <label for="user_id">Select User </label>
+        <input class="form-control" id="user-input" placeholder="Start typing to Search">
+      </div>
     </div>
 
-  <div class="mt-2">
-    <button type="submit" class="btn btn-primary">Rent Out</button>
-  </div>
-</form>
+    {% include '../users/user-results-partial.html' %}
+    
+    
+    <div class="form-row">
+      <div class="form-group col-md-6">
+    {% if viol_num %}
+      <label for="viol_num">Viol </label>
+      <div>{{viol}}</div>
+    {% else %}
+      <label for="viol_num">Select Viol </label>
+      <select class="form-control" name="viol_num" id="viol_num">
+        {% for v in avail_viols.all %}
+        <option value="{{v.pk}}">{{v}}</option>
+        {% empty %}
+        <option>None available</option>
+        {% endfor %}
+      </select>
 
+  {% endif %}
+    </div>
+  </div>
+
+    <div class="mt-2">
+      <button type="submit" class="btn btn-primary">Rent Out</button>
+      <a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a>
+    </div>
+  </form>
+</div>
 {% endblock %}
 
 {% comment %} <div id="user-table-wrapper" class="table-responsive">
@@ -104,8 +119,7 @@
     </thead>
     <tbody>
       {% for user in users %}
-      <tr
-        class="
+      <tr class="
           user-row
           {% if not user.subscription_is_current %}
             subscription-not-current
@@ -113,11 +127,8 @@
           {% if not perms.accounts.membership_secretary %}
             readonly
           {% endif %}
-        "
-        {% if perms.accounts.membership_secretary %}
-        onclick="window.location = '{% url 'user-profile' pk=user.pk %}'"
-        {% endif %}
-      >
+        " {% if perms.accounts.membership_secretary %}
+        onclick="window.location = '{% url 'user-profile' pk=user.pk %}'" {% endif %}>
         <td>{{user.last_name}}</td>
         <td>{{user.first_name}}</td>
         <td>{{user.username}}</td>
@@ -155,4 +166,3 @@
     </tbody>
   </table>
 </div> {% endcomment %}
-

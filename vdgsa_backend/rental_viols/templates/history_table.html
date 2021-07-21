@@ -16,15 +16,16 @@
   </tr>
   {% for event in history.all %}
   <tr>
-    <td>{% if event.event == 'rented' %}
+    <td>{% if event.event == 'Rented' %}
           <a href="{% url 'rental-detail' pk=event.pk  %}" >{{ event.event }}</a>
         {% else %}
           {{ event.event }}
-        {% endif  %}</td>
-    <td>{{ event.viol_num }}</td>
+        {% endif  %}
+      </td>
+    <td><a href="{% url 'viol-detail' pk=event.viol_num.pk  %}" >{{ event.viol_num }}</a></td>
     <td>{{ event.bow_num }}</td>
     <td>{{ event.case_num }}</td>
-    <td>{{ event.renter_num }}</td>
+    <td>{% if event.renter_num %}<a href="{% url 'renter-info' pk=event.renter_num.id  %}" >{{ event.renter_num }}</a> {% endif  %}</td>
     <td>{{ event.rental_start }}</td>
     <td>{{ event.rental_end }}</td>
   </tr>

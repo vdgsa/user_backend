@@ -19,33 +19,36 @@
 
 
  <div class="row mb-3 ">
-  <div class="col">
     {% if item == 'case' %}
-    {{avail_cases}}
     <div class="form-group col-md-6">
      <label for="case_num">Select Case </label>
+      {% if avail_cases.all %}
       <select class="form-control" name="case_num" id="case_num">
         {% for v in avail_cases.all %}
         <option value="{{v.pk}}">{{v}}</option>
         {% endfor %}
    
       </select>
-    </div>
+    {% else %}
+      <p>No cases available</p>
     {% endif %}
     </div>
+    {% endif %}
 
-    <div class="col">
     {% if item == 'bow'%}
     <div class="form-group col-md-6">
      <label for="bow_num">Select Bow </label>
+      {% if avail_bows.all %}
       <select class="form-control" name="bow_num" id="bow_num">
         {% for v in avail_bows.all %}
         <option value="{{v.pk}}">{{v}}</option>
         {% endfor %}
   
       </select>
+    {% else %}
+      <p>No bows available</p>
+    {% endif %}
     </div>
-  </div>
   </div>
 
     {% endif %}
@@ -54,7 +57,7 @@
  <div class="row">
   <div class="col">
     <div class="form-row">    
-      <input  class="btn btn-primary"  type="submit" value="Attach">
+      <input  class="btn btn-primary" type="submit" value="Attach">
     </div>
     </div>
   </div>

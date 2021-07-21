@@ -5,35 +5,35 @@
 <div class="card text-end">
   <div class="card-header">
     <div className="buttonbar-ctr d-flex justify-content-around ">
-
+      {% if object.status == RentalState.new %}
+        <a href="{% url 'viol-avail' object.viol_num %}"
+          class="btn btn-primary">Make available</a>
+      {% endif %} 
       {% if not object.renter %}
-        {% if object.status == RentalEvent.active %}
+        {% if object.status == RentalState.available %}
           <a href="{% url 'viol-rentOut'%}?viol_num={{ object.viol_num }}"
             class="btn btn-primary"
             >Rent out</a>
         {% endif %}
-      {% if object.status == RentalEvent.active %}
-        <a href="{% url 'viol-retire' object.viol_num %}" class="btn btn-primary"
-          >Retire</a>
-      {% endif %}
-
-      <a href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}"
-        class="btn btn-primary"
-        >Reserve</a>
-
-        {% if object.status == RentalEvent.new %}
-          <a href="{% url 'viol-avail' object.viol_num %}"
-            class="btn btn-primary">Make available</a>
+        {% if object.status == RentalState.available %}
+          <a href="{% url 'viol-retire' object.viol_num %}" class="btn btn-primary"
+            >Retire</a>
         {% endif %}
-      {% else %}
-       
+
+        <a href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}"
+          class="btn btn-primary"
+          >Reserve</a>
+
+
+
+      {% elif object.status == RentalState.rented and last_rental.entry_num%}
      <a
-        href="{% url 'rental-renew' rental.entry_num %}"
+        href="{% url 'rental-renew' last_rental.entry_num %}"
         class="btn btn-primary"
         >Renew rental</a
       >
       <a
-        href="{% url 'rental-return' rental.entry_num %}"
+        href="{% url 'rental-return' last_rental.entry_num %}"
         class="btn btn-primary"
         >Return from rental</a
       > 
@@ -48,7 +48,8 @@
 <div class="container border mt-3 mb-3 p-3">
   <div class="row">
     <div class="col">
-      <p class="h3">{{object}}</p>({{object.status}})
+      <p class="h3">{{object}}</p>
+      <div class="text-end">({{object.status}})</div>
     </div>
   </div>
 

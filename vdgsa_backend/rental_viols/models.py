@@ -1,6 +1,6 @@
 from __future__ import annotations
 from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
-    RentalItemBaseManager, RentalEvent)
+    RentalItemBaseManager, RentalEvent, RentalState)
 from django.db import models
 from django.db.models.enums import TextChoices
 from django.utils import timezone
@@ -10,9 +10,9 @@ from vdgsa_backend.rental_viols.managers.InstrumentManager import (AccessoryMana
 
 
 class RentalProgram(TextChoices):
-    regular = 'regular'
-    select_reserve = 'select_reserve'
-    consort_loan = 'consort_loan'
+    regular = 'Regular'
+    select_reserve = 'Select Reserve'
+    consort_loan = 'Consort Loan'
 
 
 class ItemType(TextChoices):
@@ -40,7 +40,7 @@ class RentalItemBase(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
-    status = models.TextField(choices=RentalEvent.choices, default=RentalEvent.new)
+    status = models.TextField(choices=RentalState.choices, default=RentalState.new)
 
     objects = RentalItemBaseManager()
 
@@ -199,7 +199,7 @@ class WaitingList(RentalItemBase):
 
     def __str__(self) -> str:
         return (
-            f'{self.entry_num}: {self.renter_num}, {self.viol_num.maker} '
+            f'{self.entry_num}: {self.renter_num}, { self.viol_num.maker if self.viol_num else self.size} '
         )
 
 
@@ -221,7 +221,8 @@ class RentalHistory(RentalItemBase):
         related_name='history'
     )
     renter_num = models.ForeignKey(User, blank=True, null=True,
-                                   default=None, on_delete=models.SET_NULL, related_name='+')
+                                   default=None, on_delete=models.SET_NULL)
+                                   #, related_name='+'
 
     event = models.TextField(choices=RentalEvent.choices)
     # date = models.DateField(blank=True, null=True) in RentalItemBase

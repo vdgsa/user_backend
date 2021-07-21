@@ -6,9 +6,11 @@
 <div class="card text-end">
   <div class="card-header">
   <div className="buttonbar-ctr d-flex justify-content-around ">
-
-    <a href="{% url 'rental-renew' object.entry_num  %}" class="btn disabled" >Renew rental</a> 
-    <a href="{% url 'rental-return' object.entry_num %}" class="btn disabled" >Return from rental</a> 
+  ({{object.status}})
+    {% if object.status == RentalState.rented%}
+    <a href="{% url 'rental-renew' object.entry_num  %}" class="btn btn-primary" >Renew rental</a> 
+    <a href="{% url 'rental-return' object.entry_num %}" class="btn btn-primary" >Return from rental</a> 
+    {% endif%}
     <a href="{% url 'rental-update' object.entry_num  %}" class="btn btn-primary" >Edit</a> 
  </div> </div> </div>
 
@@ -20,7 +22,19 @@
   <div class="row">
     <div class="col">
       {% comment %} <p class="h3">{{object.entry_num}}</p> {% endcomment %}
-      <p class="h3">{{object.renter_num}}</p>
+
+      <p class="h3">{{object.renter_num.first_name}} {{object.renter_num.last_name}}</p>
+      <p>email: {{object.renter_num.username}}</p>
+      <p>
+          {{object.renter_num.address_line_1}}<br>
+          {% if object.renter_num.address_line_2 %}Phone: {{object.renter_num.address_line_2}}<br>{% endif%}
+          {{object.renter_num.address_city}},{{object.renter_num.address_state}} 
+          {{object.renter_num.address_postal_code}}<br>
+          {{object.renter_num.address_country}}<br>
+      </p>
+      <p>Phone: {{object.phone1}}</p>
+      {% if object.phone2 %}<p>Phone: {{object.phone2}}</p> {% endif%}
+
       <p class="h3">{{object.notes}}</p>
       <p class="h3">{{object.rental_start}}</p>
       <p class="h3">{{object.rental_end}}</p>
