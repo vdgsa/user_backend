@@ -1,5 +1,4 @@
 {% extends 'rentals.html' %}
-{% load django_bootstrap_icons %}
 {% block content %} Waiting List
 <table id="viol-table" class="table table-striped">
   <thead>
@@ -28,7 +27,7 @@
       <td>{{item.size}}</td>
       <td>{{item.date_req}}</td>
       <td class="text-nowrap">
-        <a href="{% url 'soft-delete' 'WaitingList' item.entry_num %}" title="Remove">{% bs_icon 'trash' %}</a>
+        <a href="{% url 'soft-delete' 'WaitingList' item.entry_num %}" title="Remove"><i class="bi bi-trash"></i></a>
       </td>
     </tr>
     {% endfor %}
