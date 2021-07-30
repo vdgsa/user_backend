@@ -12,9 +12,6 @@ from vdgsa_backend.rental_viols.models import RentalEvent
 # rental_end
 # contract_scan
 
-# Insert all the values of advert_obj here and their field names as keys.
-# data = {"event": advert_obj.some_val}
-# form = AdvertForm(initial=data
 
 
 class RentalHistoryQuerySet(models.QuerySet):

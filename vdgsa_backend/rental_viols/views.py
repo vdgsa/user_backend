@@ -806,7 +806,8 @@ class BowForm(forms.ModelForm):
 class AddBowView(RentalViewBase, SuccessMessageMixin, CreateView):
     model = Bow
     form_class = BowForm
-    initial = {'vdgsa_number': Bow.objects.get_next_vdgsa_num(),
+    initial = {
+        #'vdgsa_number': Bow.objects.get_next_vdgsa_num(),
                'accession_date': datetime.date.today}
     success_message = "%(size)s bow was created successfully"
     template_name = 'bows/add_bow.html'
@@ -860,7 +861,8 @@ class CaseForm(forms.ModelForm):
 class AddCaseView(RentalViewBase, SuccessMessageMixin, CreateView):
     model = Case
     form_class = CaseForm
-    initial = {'vdgsa_number': Case.objects.get_next_vdgsa_num(),
+    initial = {
+        #'vdgsa_number': Case.objects.get_next_vdgsa_num(),
                'accession_date': datetime.date.today}
     success_message = "%(size)s case was created successfully"
     template_name = 'cases/add.html'
@@ -922,7 +924,8 @@ class ViolForm(forms.ModelForm):
 class AddViolView(RentalViewBase, SuccessMessageMixin, CreateView):
     model = Viol
     form_class = ViolForm
-    initial = {'vdgsa_number': Viol.objects.get_next_vdgsa_num(),
+    initial = {
+        #'vdgsa_number': Viol.objects.get_next_vdgsa_num(),
                'accession_date': datetime.date.today}
     template_name = 'viols/add.html'
     success_message = "%(size)s viol was created successfully"
