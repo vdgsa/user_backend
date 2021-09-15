@@ -1,11 +1,10 @@
 from django.urls import path
 
-from . import views
+from . import views, legacyImport
 
 urlpatterns = [
     path('', views.RentalHomeView.as_view(), name='rentals'),
-
-
+    
     path('user/search', views.UserSearchView.as_view(), name='user-search'), 
     path('viol/rentOut/', views.RentOutView.as_view(), name='viol-rentOut'),
     path('rentals/', views.ListRentersView.as_view(), name='list-renters'),
@@ -51,4 +50,8 @@ urlpatterns = [
     path('custodian/<int:pk>/', views.CustodianDetailView.as_view(), name='cust-detail'),
 
     path('delete/<str:class>/<int:pk>/', views.SoftDeleteView.as_view(), name='soft-delete'),
+
+    path('import', legacyImport.ImportView.as_view(), name='import'),
+    path('import/run', legacyImport.ImportRunView.as_view(), name='importRun'),
+    path('import/delete', legacyImport.ImportDeleteView.as_view(), name='importDelete'),
 ]

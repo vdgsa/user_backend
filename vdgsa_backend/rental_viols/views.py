@@ -410,7 +410,7 @@ class RetireViolView(RentalViewBase, FormView):
 #         super(RentalRenewForm, self).__init__(*args, **kwargs)
 #         self.fields['viol_num'].widget = HiddenInput()
 #         self.fields['renter_num'].widget = HiddenInput()
-           
+
 #     class Meta:
 #         model = RentalHistory
 #         fields = ('notes', 'rental_start', 'rental_end', 'viol_num', 'renter_num')
@@ -435,7 +435,7 @@ class RentalRenewView(RentalViewBase, FormView):
             oldrental = RentalHistory.objects.get(pk=self.kwargs['entry_num'])
             context['oldrental'] = oldrental
             context['form'] = RentalAgreementForm(
-                {"event": RentalEvent.renewed, "viol_num": oldrental.viol_num, 
+                {"event": RentalEvent.renewed, "viol_num": oldrental.viol_num,
                  "case_num": oldrental.viol_num.cases.first().case_num if oldrental.viol_num.cases.exists() else None,
                  "bow_num": oldrental.viol_num.bows.first().bow_num if oldrental.viol_num.bows.exists() else None,
                  "renter_num": oldrental.renter_num.id})
@@ -459,7 +459,7 @@ class RentalRenewView(RentalViewBase, FormView):
 class RentalReturnForm(forms.ModelForm):
     class Meta:
         model = RentalHistory
-        fields = ('rental_end','notes')
+        fields = ('rental_end', 'notes')
         labels = {'rental_end': 'Date Returned', }
         widgets = {
             'rental_end': forms.DateInput(format=('%Y-%m-%d'),
@@ -616,7 +616,7 @@ class UpdateRentalView(RentalViewBase, SuccessMessageMixin, UpdateView):
 class ReserveViolModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
-        super(ReserveViolModelForm, self).__init__(*args, **kwargs) 
+        super(ReserveViolModelForm, self).__init__(*args, **kwargs)
         self.fields['viol_num'].queryset = Viol.objects.get_available()
 
     class Meta:
@@ -646,7 +646,7 @@ class ReserveViolView(RentalViewBase, FormView):
             renter = User.objects.get(pk=self.request.GET.get('user_id'))
             initial['renter_num'] = renter
         return initial
-    
+
     # def get_context_data(self, **kwargs):
     #     data = super().get_context_data(**kwargs)
     #     return data
@@ -699,7 +699,7 @@ class ViolsMultiListView(RentalViewBase, ListView):
             filter = self.request.session.get(self.filterSessionName, None)
 
         if filter is None:
-            filter = {'state': 'all', 'program': 'all',}
+            filter = {'state': 'all', 'program': 'all', }
 
         self.request.session[self.filterSessionName] = filter
         return filter
@@ -741,7 +741,8 @@ class ListRentersView(RentalViewBase, ListView):
 
     def get_queryset(self, *args: Any, **kwargs: Any):
         # queryset = RentalHistory.objects.all().filter(event=RentalEvent.rented)
-        queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented).annotate(num_rentals=Count('rentalhistory'))
+        queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented).annotate(
+            num_rentals=Count('rentalhistory'))
         print(queryset)
         return queryset
 
@@ -751,7 +752,7 @@ class ListRentersView(RentalViewBase, ListView):
 class ListCustodianView(RentalViewBase, ListView):
 
     def get_queryset(self, *args: Any, **kwargs: Any):
-        queryset = (Viol.objects.values('storer__username', 'storer__first_name', 'storer__last_name','storer__address_state', 'storer')
+        queryset = (Viol.objects.values('storer__username', 'storer__first_name', 'storer__last_name', 'storer__address_state', 'storer')
                     .filter(storer__isnull=False).distinct().order_by('storer__last_name'))
         print(queryset)
         return queryset
@@ -779,6 +780,8 @@ class ListWaitingView(RentalViewBase, ListView):
     template_name = 'waitinglist.html'
 
 # CRUD
+
+
 class BowForm(forms.ModelForm):
     class Meta:
         model = Bow
@@ -797,9 +800,9 @@ class BowForm(forms.ModelForm):
         ]
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
-                                          attrs={'class': 'form-control',
-                                                 'placeholder': 'Select a date',
-                                                 'type': 'date'}),
+                                              attrs={'class': 'form-control',
+                                                     'placeholder': 'Select a date',
+                                                     'type': 'date'}),
         }
 
 
@@ -808,7 +811,7 @@ class AddBowView(RentalViewBase, SuccessMessageMixin, CreateView):
     form_class = BowForm
     initial = {
         #'vdgsa_number': Bow.objects.get_next_vdgsa_num(),
-               'accession_date': datetime.date.today}
+        'accession_date': datetime.date.today}
     success_message = "%(size)s bow was created successfully"
     template_name = 'bows/add_bow.html'
 
@@ -852,9 +855,9 @@ class CaseForm(forms.ModelForm):
         ]
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
-                                          attrs={'class': 'form-control',
-                                                 'placeholder': 'Select a date',
-                                                 'type': 'date'}),
+                                              attrs={'class': 'form-control',
+                                                     'placeholder': 'Select a date',
+                                                     'type': 'date'}),
         }
 
 
@@ -863,7 +866,7 @@ class AddCaseView(RentalViewBase, SuccessMessageMixin, CreateView):
     form_class = CaseForm
     initial = {
         #'vdgsa_number': Case.objects.get_next_vdgsa_num(),
-               'accession_date': datetime.date.today}
+        'accession_date': datetime.date.today}
     success_message = "%(size)s case was created successfully"
     template_name = 'cases/add.html'
 
@@ -912,12 +915,12 @@ class ViolForm(forms.ModelForm):
             'notes',
             'storer',
             'program',
-        ]        
+        ]
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
-                                            attrs={'class': 'form-control',
-                                                   'placeholder': 'Select a date',
-                                                   'type': 'date'}),
+                                              attrs={'class': 'form-control',
+                                                     'placeholder': 'Select a date',
+                                                     'type': 'date'}),
         }
 
 
@@ -926,7 +929,7 @@ class AddViolView(RentalViewBase, SuccessMessageMixin, CreateView):
     form_class = ViolForm
     initial = {
         #'vdgsa_number': Viol.objects.get_next_vdgsa_num(),
-               'accession_date': datetime.date.today}
+        'accession_date': datetime.date.today}
     template_name = 'viols/add.html'
     success_message = "%(size)s viol was created successfully"
 
@@ -956,9 +959,9 @@ class ViolDetailView(RentalViewBase, DetailView):
         context['images'] = Image.objects.get_images('viol', context['viol'].pk)
 
         context['last_rental'] = (context['viol'].history.filter(event=RentalEvent.rented)
-                                .order_by('-created_at').first())
+                                  .order_by('-created_at').first())
 
-        print('context[images] ', context['images'])
+        print('context[last_rental] ', context['last_rental'])
         return context
 
 
@@ -1034,9 +1037,9 @@ class ViewUserInfo(RentalViewBase, DetailView):
 
     def get_context_data(self, **kwargs):
 
-        context = super(ViewUserInfo, self).get_context_data(**kwargs) 
+        context = super(ViewUserInfo, self).get_context_data(**kwargs)
         context['history'] = (RentalHistory.objects.all()
-            .filter(event=RentalEvent.rented).filter(renter_num=self.kwargs['pk']))
+                              .filter(event=RentalEvent.rented).filter(renter_num=self.kwargs['pk']))
         return context
 
 
@@ -1047,7 +1050,8 @@ class UserSearchView(RentalViewBase, View):
         url_parameter = request.GET.get("q")
         context = {}
         if url_parameter:
-            users = User.objects.filter(Q(first_name__icontains=url_parameter) | Q(last_name__icontains=url_parameter))
+            users = User.objects.filter(Q(first_name__icontains=url_parameter)
+                                        | Q(last_name__icontains=url_parameter))
         else:
             users = User.objects.all()
 
