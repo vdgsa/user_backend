@@ -26,7 +26,7 @@
       <td><a href="{% url 'bow-detail' pk=bow.pk %}">{{bow.vdgsa_number}}</a></td>
       <td>{{bow.size}}</td>
       <td>{{bow.maker}}</td>
-      <td>{{bow.value | currency}}</td>
+      <td style="text-align: right;">{{bow.value | dollars}}</td>
       <td>{{bow.viol_num | default_if_none:""}}</td>
       <td>{{bow.program | default_if_none:""}}</td>
       <td>{{bow.state}}</td>

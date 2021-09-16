@@ -1,46 +1,46 @@
-import datetime
-import json
 import csv
+import datetime
 import io
+import json
 import os
-
-from django.conf import settings
-from pathlib import Path
 from functools import cached_property
+from pathlib import Path
 from typing import Any, Dict, Iterable, Literal
+
 from django import forms
-from django.core.files.storage import FileSystemStorage
+from django.apps import apps
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.files.storage import FileSystemStorage
+from django.core.management.color import no_style
+from django.db import connection
 from django.db.models import Count, Q
-from django.apps import apps
 from django.db.models.fields import NullBooleanField
 from django.forms.widgets import DateTimeBaseInput, HiddenInput, NullBooleanSelect
-from django.http import response
+from django.http import Http404, JsonResponse, response
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
-from django.http import Http404
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls.base import reverse, reverse_lazy
-from django.utils.http import urlencode
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView, View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.views.generic.list import ListView
 
-from django.template.loader import render_to_string
-from django.http import JsonResponse
-
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
 from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
-    RentalItemBaseManager, RentalEvent, RentalState)
+    RentalEvent, RentalItemBaseManager, RentalState
+)
 from vdgsa_backend.rental_viols.models import (
-    Bow, Case, RentalHistory, Viol, WaitingList, ViolSize,
-    RentalContract, Image, ItemType, RentalProgram
+    Bow, Case, Image, ItemType, RentalContract, RentalHistory, RentalProgram, Viol, ViolSize,
+    WaitingList
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 
@@ -90,6 +90,19 @@ def findRenter(id):
             return None
     else:
         print('doh! Renter not found ', id)
+        legacy = persons[0]['email'] or persons[0]['firstname'] + '.' + \
+            persons[0]['lastname'] + '_' + \
+            str(persons[0]['renter_num']) + '@legacy.rentalviols.org',
+        found = User.objects.filter(Q(first_name__icontains=persons[0]['firstname']) & Q(
+            last_name=persons[0]['lastname']) | Q(username=legacy))
+        if(len(found) > 1):
+            print('Found multiple in Users', found)
+            return found
+        if(len(found) == 1):
+            return found[0]
+        else:
+            print('Could not find User for Renter storer_num ', id)
+            return None
 
 
 def findStorer(id):
@@ -110,6 +123,19 @@ def findStorer(id):
             return None
     else:
         print('doh! Storer not found ', id)
+        legacy = persons[0]['email'] or persons[0]['firstname'] + '.' + \
+            persons[0]['lastname'] + '_' + \
+            str(persons[0]['storer_num']) + '@legacy.rentalviols.org',
+        found = User.objects.filter(Q(first_name__icontains=persons[0]['firstname']) & Q(
+            last_name=persons[0]['lastname']) | Q(username=legacy))
+        if(len(found) > 1):
+            print('Found multiple in Users', found)
+            return found
+        if(len(found) == 1):
+            return found[0]
+        else:
+            print('Could not find User for Storer storer_num ', id)
+            return None
 
 
 def getRentalProgram(id):
@@ -190,11 +216,21 @@ class ImportRunView(RentalViewBase, TemplateView):
         context = {}
         context['file_list'] = os.listdir(legacy_upload_dir)
         context['renters'] = insertRenters()
+        context['storers'] = insertStorers()
         context['viols'] = insertViols()
         context['bows'] = insertBows()
         context['cases'] = insertCases()
         context['storers'] = updateViolsRentersStorers()
         context['history'] = insertRentalHistory()
+        # We now need to reset the Auto increment PK fields
+        sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Bow, Case, Image,
+                                                                      RentalContract,
+                                                                      RentalHistory, Viol,
+                                                                      ])
+        with connection.cursor() as cursor:
+            for sql in sequence_sql:
+                cursor.execute(sql)
+
         return render(
             self.request,
             'import.html', context
@@ -220,7 +256,8 @@ def insertRenters():
             legacy_users[i]['found'] = found
         else:
             user, created = User.objects.get_or_create(
-                username=s['email'] or s['firstname'] + '.' + s['lastname'] + '@NONE.COM',
+                username=s['email'] or s['firstname'] + '.' + s['lastname']
+                + '_' + str(s['renter_num']) + '@legacy.rentalviols.org',
                 defaults={
                     'first_name': s['firstname'],
                     'last_name': s['lastname'],
@@ -232,6 +269,31 @@ def insertRenters():
                     'address_country': s['country'],
                 })
             # print(user, created)
+    return sorted(legacy_users, key=lambda x: (x['lastname'], x['firstname']))
+
+
+def insertStorers():
+    legacy_users = openJson('storers')
+    for i, s in enumerate(legacy_users):
+        found = searchUser(s['email'] or 'NONE', s['firstname']
+                           or 'firstname', s['lastname'] or 'lastname')
+        if found:  # leading or trailing whitespace?
+            legacy_users[i]['found'] = found
+        else:
+            user, created = User.objects.get_or_create(
+                username=s['email'] or s['firstname'] + '.' + s['lastname']
+                + '_' + str(s['storer_num']) + '@legacy.rentalviols.org',
+                defaults={
+                    'first_name': s['firstname'],
+                    'last_name': s['lastname'],
+                    'address_line_1': s['address1'],
+                    'address_line_2': s['address2'],
+                    'address_city': s['city'],
+                    'address_state': s['stateprov'],
+                    'address_postal_code': s['postal_code'],
+                    'address_country': s['country'],
+                })
+            print(user, created)
     return sorted(legacy_users, key=lambda x: (x['lastname'], x['firstname']))
 
 

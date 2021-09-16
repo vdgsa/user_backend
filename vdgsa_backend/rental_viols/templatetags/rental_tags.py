@@ -29,4 +29,10 @@ def currency(dollars):
     return "$%s%s" % (intcomma(int(dollars)), ("%0.2f" % dollars)[-3:])
 
 
+def dollars(dollars):
+    dollars = round(float(dollars), 2)
+    return "$%s" % intcomma(int(dollars))
+
+
 register.filter('currency', currency)
+register.filter('dollars', dollars)
