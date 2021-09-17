@@ -44,8 +44,6 @@ from vdgsa_backend.rental_viols.models import (
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 
-legacy_upload_dir = os.path.join(settings.MEDIA_ROOT, 'legacy_upload')
-
 
 class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self) -> bool:
@@ -59,9 +57,17 @@ class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
         return url
 
 
+def getLegacyDir():
+    legacy_upload_dir = os.path.join(settings.MEDIA_ROOT, 'legacy_upload')
+    if (not os.path.exists(legacy_upload_dir)):
+        os.mkdir(legacy_upload_dir)
+
+    return legacy_upload_dir
+
+
 def openJson(tableName):
     # path = Path(__file__).parent / "import"
-    with open(str(legacy_upload_dir) + "/" + tableName + ".json", encoding='utf-8') as data_file:
+    with open(str(getLegacyDir()) + "/" + tableName + ".json", encoding='utf-8') as data_file:
         json_data = json.loads(data_file.read())
         return json_data
 
@@ -181,13 +187,13 @@ class ImportView(RentalViewBase, TemplateView):
                  'images.json',
                  'rental_history.json', ]
 
-        uploaded = os.listdir(legacy_upload_dir)
+        uploaded = os.listdir(getLegacyDir())
         valid = [x for x in files if x not in uploaded]
         return valid
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
-        context['file_list'] = os.listdir(legacy_upload_dir)
+        context['file_list'] = os.listdir(getLegacyDir())
         context['missing'] = self.validateFiles()
 
         return render(
@@ -199,11 +205,11 @@ class ImportView(RentalViewBase, TemplateView):
         context = {}
         request_file = self.request.FILES['document'] if 'document' in self.request.FILES else None
         if request_file:
-            fs = FileSystemStorage(location=legacy_upload_dir)
+            fs = FileSystemStorage(location=getLegacyDir())
             file = fs.save(request_file.name, request_file)
             context['fileurl'] = fs.url(file)
 
-        context['file_list'] = os.listdir(legacy_upload_dir)
+        context['file_list'] = os.listdir(getLegacyDir())
         context['missing'] = self.validateFiles()
 
         return redirect(reverse('import'))
@@ -214,7 +220,7 @@ class ImportRunView(RentalViewBase, TemplateView):
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
-        context['file_list'] = os.listdir(legacy_upload_dir)
+        context['file_list'] = os.listdir(getLegacyDir())
         context['renters'] = insertRenters()
         context['storers'] = insertStorers()
         context['viols'] = insertViols()
@@ -241,8 +247,8 @@ class ImportDeleteView(RentalViewBase, TemplateView):
     template_name = 'import.html'
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
-        for file in os.listdir(legacy_upload_dir):
-            os.remove(os.path.join(legacy_upload_dir, file))
+        for file in os.listdir(getLegacyDir()):
+            os.remove(os.path.join(getLegacyDir(), file))
 
         return redirect(reverse('import'))
 

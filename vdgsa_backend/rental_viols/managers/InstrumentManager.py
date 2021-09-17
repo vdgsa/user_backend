@@ -32,11 +32,6 @@ class AccessoryManager(models.Manager):
     def get_queryset(self):
         return AccessoryQuerySet(self.model, using=self._db)
 
-    # def get_next_vdgsa_num(self):
-    #     maxVal = self.get_queryset().aggregate(Max('vdgsa_number')).get('vdgsa_number__max')
-    #     maxVal = maxVal or 0
-    #     return maxVal + 1
-
     def get_available(self, size=None):
         return self.get_queryset().get_attached_status(attached=False, size=size)
 
@@ -50,7 +45,7 @@ class AccessoryManager(models.Manager):
         maxVal = self.get_queryset().aggregate(Max('vdgsa_number')).get('vdgsa_number__max')
         maxVal = maxVal or 0
         return maxVal + 1
-        
+
 
 class ViolManager(models.Manager):
     def get_queryset(self):
