@@ -11,19 +11,21 @@
 <table id="custodian-table" class="table table-striped">
   <thead>
     <tr>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th>Custodian</th>
+      <th>State</th>
+      <th># of Viols</th>
     </tr>
   </thead>
   <tbody>
     {% for item in object_list %}
+    {% if item.storer %}
     <tr>
 
       <td><a href="{% url 'cust-detail' item.storer %}">{{item.storer__first_name}} {{item.storer__last_name}}</a></td>
-      <td>{{item.storer__address_state}}</td>
-      <td>{{item.storer}}</td>
+      <td>{{item.storer__address_city}}, {{item.storer__address_state}}</td>
+      <td>{{item.total}}</td>
     </tr>
+    {% endif %}
     {% endfor %}
   </tbody>
 </table>

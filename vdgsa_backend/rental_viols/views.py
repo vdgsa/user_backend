@@ -6,7 +6,7 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Max
 from django.apps import apps
 from django.forms.widgets import DateTimeBaseInput, HiddenInput
 from django.http import response
@@ -687,44 +687,46 @@ class ViolUpdateForm(forms.Form):
 # LIST VIEWS
 class ViolsMultiListView(RentalViewBase, ListView):
     template_name = 'viols/list.html'
-    filterSessionName = 'rental_filter'
+    filterSessionName = 'viol_filter'
     filter = None
 
     def getFilter(self, **kwargs):
+        filter = {}
 
-        filter = {'state': self.request.GET.get('filter') or 'all',
-                  'program': self.request.GET.get('program') or 'all', }
-
-        if self.request.GET.get('filter') is None:
+        if self.request.GET.get('state') is None:
             filter = self.request.session.get(self.filterSessionName, None)
-
-        if filter is None:
-            filter = {'state': 'all', 'program': 'all', }
-
-        self.request.session[self.filterSessionName] = filter
+            if filter is None:
+                filter = {'state': 'all', 'program': 'all', 'size': 'all', }
+        else:
+            filter = {'state': self.request.GET.get('state') or 'all',
+                      'program': self.request.GET.get('program') or 'all',
+                      'size': self.request.GET.get('size') or 'all', }
         return filter
 
     def get_context_data(self, **kwargs):
         context = super(ViolsMultiListView, self).get_context_data(**kwargs)
         context['filter'] = self.getFilter()
+        context['ViolSize'] = ViolSize
         return context
 
     def get_queryset(self, *args: Any, **kwargs: Any):
-        print('getFilter()', self.getFilter())
-        if self.getFilter()['state'] == 'available':
-            queryset = Viol.objects.get_available()
-        elif self.getFilter()['state'] == 'retired':
-            queryset = Viol.objects.get_retired()
-        elif self.getFilter()['state'] == 'rented':
-            queryset = Viol.objects.get_rented()
+        filter = self.getFilter()
+        self.request.session[self.filterSessionName] = filter
+
+        size = None if filter['size'] == 'all' else filter['size']
+        if filter['state'] == 'available':
+            queryset = Viol.objects.get_available(size)
+        elif filter['state'] == 'retired':
+            queryset = Viol.objects.get_retired(size)
+        elif filter['state'] == 'rented':
+            queryset = Viol.objects.get_rented(size)
         else:
-            queryset = Viol.objects.all()
+            queryset = Viol.objects.get_all(size)
 
-        if self.getFilter()['program'] != 'all' and self.getFilter()['program'] is not None:
-            print('program', queryset, RentalProgram[self.getFilter()['program']])
-            return queryset.filter(program=RentalProgram[self.getFilter()['program']])
+        if filter['program'] != 'all':
+            queryset = queryset.filter(program=RentalProgram[filter['program']])
 
-        return queryset
+        return queryset.annotate(rental_end_date=Max('history__rental_end'))
 
 
 class ListBowsView(RentalViewBase, ListView):
@@ -738,23 +740,46 @@ class ListCasesView(RentalViewBase, ListView):
 
 
 class ListRentersView(RentalViewBase, ListView):
+    template_name = 'renters/list.html'
+    filterSessionName = 'renter_filter'
+
+    def getFilter(self, **kwargs):
+        filter = {}
+        if self.request.GET.get('status') is None:
+            filter = self.request.session.get(self.filterSessionName, None)
+            if filter is None:
+                filter = {'status': 'all'}
+        else:
+            filter = {'status': self.request.GET.get('status') or 'all'}
+
+        return filter
+
+    def get_context_data(self, **kwargs):
+        context = super(ListRentersView, self).get_context_data(**kwargs)
+        context['filter'] = self.getFilter()
+        return context
 
     def get_queryset(self, *args: Any, **kwargs: Any):
-        # queryset = RentalHistory.objects.all().filter(event=RentalEvent.rented)
-        queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented).annotate(
-            num_rentals=Count('rentalhistory'))
-        print(queryset)
-        return queryset
+        queryset = []
+        filter = self.getFilter()
+        self.request.session[self.filterSessionName] = filter
+        if filter['status'] == 'active':
+            queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented)
+        elif filter['status'] == 'inactive':
+            queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented)
+        else:
+            queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented)
 
-    template_name = 'renters/list.html'
+        return queryset.annotate(num_rentals=Count('rentalhistory')).annotate(rental_end_date=Max('rentalhistory__rental_end'))
 
 
 class ListCustodianView(RentalViewBase, ListView):
 
     def get_queryset(self, *args: Any, **kwargs: Any):
-        queryset = (Viol.objects.values('storer__username', 'storer__first_name', 'storer__last_name', 'storer__address_state', 'storer')
-                    .filter(storer__isnull=False).distinct().order_by('storer__last_name'))
-        print(queryset)
+        queryset = (Viol.objects.all().values('storer__username', 'storer__first_name', 'storer__last_name',
+                                              'storer__address_state', 'storer__address_city', 'storer').annotate(total=Count('storer')).order_by('storer__last_name'))
+
+        # print(queryset)
         return queryset
 
     template_name = 'custodians/list.html'
@@ -798,6 +823,7 @@ class BowForm(forms.ModelForm):
             'storer',
             'program',
         ]
+        labels = {'storer': 'Custodian', }
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
                                               attrs={'class': 'form-control',
@@ -810,7 +836,7 @@ class AddBowView(RentalViewBase, SuccessMessageMixin, CreateView):
     model = Bow
     form_class = BowForm
     initial = {
-        'vdgsa_number': Bow.objects.get_next_vdgsa_num(),
+        'vdgsa_number': Bow.objects.get_next_accessory_vdgsa_num,
         'accession_date': datetime.date.today}
     success_message = "%(size)s bow was created successfully"
     template_name = 'bows/add_bow.html'
@@ -853,6 +879,7 @@ class CaseForm(forms.ModelForm):
             'storer',
             'program',
         ]
+        labels = {'storer': 'Custodian', }
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
                                               attrs={'class': 'form-control',
@@ -865,7 +892,7 @@ class AddCaseView(RentalViewBase, SuccessMessageMixin, CreateView):
     model = Case
     form_class = CaseForm
     initial = {
-        'vdgsa_number': Case.objects.get_next_vdgsa_num(),
+        'vdgsa_number': Case.objects.get_next_accessory_vdgsa_num,
         'accession_date': datetime.date.today}
     success_message = "%(size)s case was created successfully"
     template_name = 'cases/add.html'
@@ -916,6 +943,7 @@ class ViolForm(forms.ModelForm):
             'storer',
             'program',
         ]
+        labels = {'storer': 'Custodian', }
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
                                               attrs={'class': 'form-control',
@@ -928,7 +956,7 @@ class AddViolView(RentalViewBase, SuccessMessageMixin, CreateView):
     model = Viol
     form_class = ViolForm
     initial = {
-        'vdgsa_number': Viol.objects.get_next_vdgsa_num(),
+        'vdgsa_number': Viol.objects.get_next_vdgsa_num,
         'accession_date': datetime.date.today}
     template_name = 'viols/add.html'
     success_message = "%(size)s viol was created successfully"
@@ -969,13 +997,21 @@ class RentersDetailView(RentalViewBase, DetailView):
     model = RentalHistory
     template_name = 'renters/detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(RentersDetailView, self).get_context_data(**kwargs)
+        print('')
+        rental = RentalHistory.objects.get(pk=self.kwargs['pk'])
+        context['history'] = (RentalHistory.objects.all()
+                              .filter(Q(event=RentalEvent.rented) | Q(event=RentalEvent.renewed) | Q(event=RentalEvent.returned))
+                              .filter(Q(renter_num=rental.renter_num) & Q(viol_num=rental.viol_num))
+                              )
+        return context
+
 
 class SoftDeleteView(RentalViewBase, View):
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
-        print()
-        print(self.kwargs['class'])
-        print(self.kwargs['pk'])
+        print('SoftDeleteView', self.kwargs['class'], self.kwargs['pk'])
 
         try:
             mymodel = apps.get_model('rental_viols', self.kwargs['class'])
@@ -1039,7 +1075,9 @@ class ViewUserInfo(RentalViewBase, DetailView):
 
         context = super(ViewUserInfo, self).get_context_data(**kwargs)
         context['history'] = (RentalHistory.objects.all()
-                              .filter(event=RentalEvent.rented).filter(renter_num=self.kwargs['pk']))
+                              .filter(Q(event=RentalEvent.rented) | Q(event=RentalEvent.renewed) | Q(event=RentalEvent.returned))
+                              .filter(renter_num=self.kwargs['pk'])).annotate(rental_end_date=Max('rental_end'))
+                            # .annotate(rental_end_date=Max('rental_end')
         return context
 
 

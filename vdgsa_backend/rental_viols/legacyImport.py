@@ -34,12 +34,14 @@ from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.views.generic.list import ListView
 
 from vdgsa_backend.accounts.models import User
-from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
+from vdgsa_backend.rental_viols.managers.InstrumentManager import (
+    AccessoryManager, ViolManager, ViolSize
+)
 from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
     RentalEvent, RentalItemBaseManager, RentalState
 )
 from vdgsa_backend.rental_viols.models import (
-    Bow, Case, Image, ItemType, RentalContract, RentalHistory, RentalProgram, Viol, ViolSize,
+    Bow, Case, Image, ItemType, RentalContract, RentalHistory, RentalProgram, Viol,
     WaitingList
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
@@ -66,10 +68,12 @@ def getLegacyDir():
 
 
 def openJson(tableName):
-    # path = Path(__file__).parent / "import"
-    with open(str(getLegacyDir()) + "/" + tableName + ".json", encoding='utf-8') as data_file:
-        json_data = json.loads(data_file.read())
-        return json_data
+    if (os.path.exists(str(getLegacyDir()) + "/" + tableName + ".json")):
+        with open(str(getLegacyDir()) + "/" + tableName + ".json", encoding='utf-8') as data_file:
+            json_data = json.loads(data_file.read())
+            return json_data
+    else:
+        return None
 
 
 def searchUser(email, first, last):
@@ -81,6 +85,7 @@ def searchUser(email, first, last):
 
 def findRenter(id):
     legacy_users = openJson('renters')
+
     persons = list(filter(lambda legacy: legacy['renter_num'] == id, legacy_users))
     if(len(persons) > 1):
         print('found more than one!', persons)
@@ -228,6 +233,8 @@ class ImportRunView(RentalViewBase, TemplateView):
         context['cases'] = insertCases()
         context['storers'] = updateViolsRentersStorers()
         context['history'] = insertRentalHistory()
+        context['images'] = insertImages()
+        context['contracts'] = insertScanFiles()
         # We now need to reset the Auto increment PK fields
         sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Bow, Case, Image,
                                                                       RentalContract,
@@ -255,79 +262,92 @@ class ImportDeleteView(RentalViewBase, TemplateView):
 
 def insertRenters():
     legacy_users = openJson('renters')
-    for i, s in enumerate(legacy_users):
-        found = searchUser(s['email'] or 'NONE', s['firstname']
-                           or 'firstname', s['lastname'] or 'lastname')
-        if found:  # leading or trailing whitespace?
-            legacy_users[i]['found'] = found
-        else:
-            user, created = User.objects.get_or_create(
-                username=s['email'] or s['firstname'] + '.' + s['lastname']
-                + '_' + str(s['renter_num']) + '@legacy.rentalviols.org',
-                defaults={
-                    'first_name': s['firstname'],
-                    'last_name': s['lastname'],
-                    'address_line_1': s['address1'],
-                    'address_line_2': s['address2'],
-                    'address_city': s['city'],
-                    'address_state': s['stateprov'],
-                    'address_postal_code': s['postal_code'],
-                    'address_country': s['country'],
-                })
-            # print(user, created)
-    return sorted(legacy_users, key=lambda x: (x['lastname'], x['firstname']))
+    if legacy_users:
+        for i, s in enumerate(legacy_users):
+            found = searchUser(s['email'] or 'NONE', s['firstname']
+                               or 'firstname', s['lastname'] or 'lastname')
+            if found:  # leading or trailing whitespace?
+                legacy_users[i]['found'] = found
+            else:
+                user, created = User.objects.get_or_create(
+                    username=s['email'] or s['firstname'] + '.' + s['lastname']
+                    + '_' + str(s['renter_num']) + '@legacy.rentalviols.org',
+                    defaults={
+                        'first_name': s['firstname'],
+                        'last_name': s['lastname'],
+                        'address_line_1': s['address1'],
+                        'address_line_2': s['address2'],
+                        'address_city': s['city'],
+                        'address_state': s['stateprov'],
+                        'address_postal_code': s['postal_code'],
+                        'address_country': s['country'],
+                    })
+                # print(user, created)
+        return sorted(legacy_users, key=lambda x: (x['lastname'], x['firstname']))
+    else:
+        print('no renters.json file')
+
+    return
 
 
 def insertStorers():
     legacy_users = openJson('storers')
-    for i, s in enumerate(legacy_users):
-        found = searchUser(s['email'] or 'NONE', s['firstname']
-                           or 'firstname', s['lastname'] or 'lastname')
-        if found:  # leading or trailing whitespace?
-            legacy_users[i]['found'] = found
-        else:
-            user, created = User.objects.get_or_create(
-                username=s['email'] or s['firstname'] + '.' + s['lastname']
-                + '_' + str(s['storer_num']) + '@legacy.rentalviols.org',
-                defaults={
-                    'first_name': s['firstname'],
-                    'last_name': s['lastname'],
-                    'address_line_1': s['address1'],
-                    'address_line_2': s['address2'],
-                    'address_city': s['city'],
-                    'address_state': s['stateprov'],
-                    'address_postal_code': s['postal_code'],
-                    'address_country': s['country'],
-                })
-            print(user, created)
-    return sorted(legacy_users, key=lambda x: (x['lastname'], x['firstname']))
+    if legacy_users:
+        for i, s in enumerate(legacy_users):
+            found = searchUser(s['email'] or 'NONE', s['firstname']
+                               or 'firstname', s['lastname'] or 'lastname')
+            if found:  # leading or trailing whitespace?
+                legacy_users[i]['found'] = found
+            else:
+                user, created = User.objects.get_or_create(
+                    username=s['email'] or s['firstname'] + '.' + s['lastname']
+                    + '_' + str(s['storer_num']) + '@legacy.rentalviols.org',
+                    defaults={
+                        'first_name': s['firstname'],
+                        'last_name': s['lastname'],
+                        'address_line_1': s['address1'],
+                        'address_line_2': s['address2'],
+                        'address_city': s['city'],
+                        'address_state': s['stateprov'],
+                        'address_postal_code': s['postal_code'],
+                        'address_country': s['country'],
+                    })
+                print(user, created)
+        return sorted(legacy_users, key=lambda x: (x['lastname'], x['firstname']))
+    else:
+        print('no storers.json file')
+
+    return
 
 
 def insertViols():
     viols = openJson('viols')
     result = []
-    for i, v in enumerate(viols):
-        viol, created = Viol.objects.update_or_create(
-            viol_num=v['viol_num'],
-            defaults={
-                'strings': v['strings'],
-                'vdgsa_number': v['vdgsa_number'],
-                'maker': v['maker'],
-                'size': v['size'].lower(),
-                'status': v['state'],
-                'value': v['inst_value'],
-                'provenance': v['provenance'],
-                'description': v['description'],
-                'accession_date': check_date(v['accession_date']),
-                'notes': v['notes'],
-                'program': getRentalProgram(v['program']),
-                # 'renter': v[''],
-                # 'storer': v[''],
+    if viols:
+        for i, v in enumerate(viols):
+            viol, created = Viol.objects.update_or_create(
+                viol_num=v['viol_num'],
+                defaults={
+                    'strings': v['strings'],
+                    'vdgsa_number': v['vdgsa_number'],
+                    'maker': v['maker'],
+                    'size': v['size'].lower(),
+                    'status': v['state'],
+                    'value': v['inst_value'],
+                    'provenance': v['provenance'],
+                    'description': v['description'],
+                    'accession_date': check_date(v['accession_date']),
+                    'notes': v['notes'],
+                    'program': getRentalProgram(v['program']),
+                    # 'renter': v[''],
+                    # 'storer': v[''],
 
-            })
+                })
 
-        print(viol, created)
-        result.append(created)
+            print(viol, created)
+            result.append(created)
+    else:
+        print('no viols.json file')
 
     return result
 
@@ -335,21 +355,25 @@ def insertViols():
 def updateViolsRentersStorers():
     viols = openJson('viols')
     result = []
-    for i, v in enumerate(viols):
-        viol = Viol.objects.get(pk=v['viol_num'])
-        if(not viol):
-            print('viol not found ', v['viol_num'])
-        else:
-            if(v['renter'] & v['renter'] > 0):
-                renter = findRenter(v['renter'])
-                # print('User as Renter', renter)
-                viol.renter = renter
+    if viols:
+        for i, v in enumerate(viols):
+            viol = Viol.objects.get(pk=v['viol_num'])
+            if(not viol):
+                print('viol not found ', v['viol_num'])
+            else:
+                if(v['renter'] & v['renter'] > 0):
+                    renter = findRenter(v['renter'])
+                    # print('User as Renter', renter)
+                    viol.renter = renter
 
-            if(v['storer'] & v['storer'] > 0):
-                storer = findStorer(v['storer'])
-                viol.storer = storer
+                if(v['storer'] & v['storer'] > 0):
+                    storer = findStorer(v['storer'])
+                    viol.storer = storer
 
-            viol.save()
+                viol.save()
+
+    else:
+        print('no viols.json file')
 
     return result
 
@@ -357,60 +381,67 @@ def updateViolsRentersStorers():
 def insertBows():
     bows = openJson('bows')
     result = []
-    for i, v in enumerate(bows):
-        print('insertBows', v['bow_num'], v['viol_num'], getViol(v['viol_num']))
-        bow, created = Bow.objects.update_or_create(
-            bow_num=v['bow_num'],
-            defaults={
-                'vdgsa_number': v['vdgsa_number'],
-                'maker': v['maker'],
-                'size': v['size'].lower(),
-                'state': v['state'],
-                'value': v['value'],
-                'provenance': v['provenance'],
-                'description': v['description'],
-                'accession_date': check_date(v['accession_date']),
-                'notes': v['notes'],
-                'program': getRentalProgram(v['program']),
-                # 'storer': v[''],
+    if bows:
+        for i, v in enumerate(bows):
+            print('insertBows', v['bow_num'], v['viol_num'], getViol(v['viol_num']))
+            bow, created = Bow.objects.update_or_create(
+                bow_num=v['bow_num'],
+                defaults={
+                    'vdgsa_number': v['vdgsa_number'],
+                    'maker': v['maker'],
+                    'size': v['size'].lower(),
+                    'state': v['state'],
+                    'value': v['value'],
+                    'provenance': v['provenance'],
+                    'description': v['description'],
+                    'accession_date': check_date(v['accession_date']),
+                    'notes': v['notes'],
+                    'program': getRentalProgram(v['program']),
+                    # 'storer': v[''],
 
-            })
-        if(v['viol_num']):
-            bow.viol_num = Viol.objects.get(pk=v['viol_num'])
-            bow.save()
+                })
+            if(v['viol_num']):
+                bow.viol_num = Viol.objects.get(pk=v['viol_num'])
+                bow.save()
 
-        # print(bow, created)
-        result.append(created)
+            # print(bow, created)
+            result.append(created)
+    else:
+        print('no bows.json file')
+
     return result
 
 
 def insertCases():
     cases = openJson('cases')
     result = []
-    for i, v in enumerate(cases):
-        case, created = Case.objects.update_or_create(
-            case_num=v['case_num'],
-            defaults={
-                'vdgsa_number': v['vdgsa_number'],
-                'maker': v['maker'],
-                'size': v['size'].lower(),
-                'state': v['state'],
-                'value': v['value'],
-                'provenance': v['provenance'],
-                'description': v['description'],
-                'accession_date': check_date(v['accession_date']),
-                'notes': v['notes'],
-                'program': getRentalProgram(v['program']),
-                # 'storer': v[''],
+    if cases:
+        for i, v in enumerate(cases):
+            case, created = Case.objects.update_or_create(
+                case_num=v['case_num'],
+                defaults={
+                    'vdgsa_number': v['vdgsa_number'],
+                    'maker': v['maker'],
+                    'size': v['size'].lower(),
+                    'state': v['state'],
+                    'value': v['value'],
+                    'provenance': v['provenance'],
+                    'description': v['description'],
+                    'accession_date': check_date(v['accession_date']),
+                    'notes': v['notes'],
+                    'program': getRentalProgram(v['program']),
+                    # 'storer': v[''],
 
-            })
+                })
 
-        if(v['viol_num']):
-            case.viol_num = Viol.objects.get(pk=v['viol_num'])
-            case.save()
+            if(v['viol_num']):
+                case.viol_num = Viol.objects.get(pk=v['viol_num'])
+                case.save()
 
-        # print(case, created)
-        result.append(created)
+            # print(case, created)
+            result.append(created)
+    else:
+        print('no cases.json file')
 
     return result
 
@@ -429,31 +460,100 @@ def insertRentalHistory():
     # rental_start
     # rental_end
     # contract_scan
+    if histories:
+        for i, h in enumerate(histories):
+            history, created = RentalHistory.objects.update_or_create(
+                entry_num=h['entry_num'],
+                defaults={
+                    'event': h['event'],
+                    'notes': h['notes'],
+                    'rental_start': check_date(h['rental_start']),
+                    'rental_end': check_date(h['rental_end']),
+                })
 
-    for i, h in enumerate(histories):
-        history, created = RentalHistory.objects.update_or_create(
-            entry_num=h['entry_num'],
-            defaults={
-                'event': h['event'],
-                'notes': h['notes'],
-                'rental_start': check_date(h['rental_start']),
-                'rental_end': check_date(h['rental_end']),
+            if(h['viol_num'] & h['viol_num'] > 0):
+                history.viol_num = Viol.objects.get(pk=h['viol_num'])
+            if(h['bow_num'] & h['bow_num'] > 0):
+                history.bow_num = Bow.objects.get(pk=h['bow_num'])
+            if(h['case_num'] & h['case_num'] > 0):
+                history.case_num = Case.objects.get(pk=h['case_num'])
+            if(h['renter_num'] & h['renter_num'] > 0):
+                renter = findRenter(h['renter_num'])
+                # print('User as Renter', renter)
+                history.renter_num = renter
+            if(h['contract_scan'] & h['contract_scan'] > 0):
+                contract = RentalContract.objects.get(pk=h['contract_scan'])
+                # print('User as Renter', renter)
+                history.contract_scan = contract
 
-            })
+            history.save()
+            # print(history, created)
+            result.append(created)
 
-        if(h['viol_num'] & h['viol_num'] > 0):
-            history.viol_num = Viol.objects.get(pk=h['viol_num'])
-        if(h['bow_num'] & h['bow_num'] > 0):
-            history.bow_num = Bow.objects.get(pk=h['bow_num'])
-        if(h['case_num'] & h['case_num'] > 0):
-            history.case_num = Case.objects.get(pk=h['case_num'])
-        if(h['renter_num'] & h['renter_num'] > 0):
-            renter = findRenter(h['renter_num'])
-            # print('User as Renter', renter)
-            history.renter_num = renter
+    else:
+        print('no rental_history.json file')
 
-        history.save()
-        # print(history, created)
-        result.append(created)
+    return result
+
+
+def rewritePath(path):
+    if(path):
+        return path.replace('/uploads/', '')
+    else:
+        return None
+
+
+def insertImages():
+    images = openJson('images')
+    result = []
+    if images:
+        for i, v in enumerate(images):
+            image, created = Image.objects.update_or_create(
+                picture_id=v['picture_id'],
+                defaults={
+                    'vbc_number': v['vbc_number'],
+                    'type': v['type'],
+                    'orig_image_file_name': v['orig_image_file_name'],
+                    'image_file_name': rewritePath(v['image_file_name']),
+                    'image_width': v['image_width'],
+                    'image_height': v['image_height'],
+                    'thumb_file_name': v['thumb_file_name'],
+                    'thumb_width': v['thumb_width'],
+                    'thumb_height': v['thumb_height'],
+                    'caption': v['caption'],
+                })
+
+            # if(v['vbc_number']):
+            #     if v['type'] == 'viol':
+            #         image.picture_id = Viol.objects.get(pk=v['vbc_number'])
+            #     if v['type'] == 'bow':
+            #         image.picture_id = Bow.objects.get(pk=v['vbc_number'])
+            #     if v['type'] == 'case':
+            #         image.picture_id = Case.objects.get(pk=v['vbc_number'])
+            #     image.save()
+
+            print(image, created)
+            result.append(created)
+    else:
+        print('no images.json file')
+
+    return result
+
+
+def insertScanFiles():
+    scan = openJson('scan_files')
+    result = []
+    if scan:
+        for i, v in enumerate(scan):
+            case, created = RentalContract.objects.update_or_create(
+                entry_num=v['entry_num'],
+                defaults={
+                    'document': rewritePath(v['file_name']),
+                    'file_name': rewritePath(v['file_name']),
+                    'original_name': v['original_name'],
+                })
+
+    else:
+        print('no scan_files.json file')
 
     return result

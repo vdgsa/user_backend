@@ -35,8 +35,8 @@
       {% if object.phone2 %}<p>Phone: {{object.phone2}}</p> {% endif%}
 
       <p class="h3">{{object.notes}}</p>
-      <p class="h3">{{object.rental_start}}</p>
-      <p class="h3">{{object.rental_end}}</p>
+      <p class="h3">{{object.rental_start|default_if_none:""}}</p>
+      <p class="h3">{{object.rental_end|default_if_none:""}}</p>
       <p class="h3">      
         {% if object.contract_scan %}
           <a href="/uploads/{{ object.contract_scan.document }}" target="_blank" title="Click for Rental Agreement"><i class="bi bi-file-earmark-text"></i></a>
@@ -79,6 +79,7 @@
 </div>
 
 
+    {% history_table history %}
 
 
 

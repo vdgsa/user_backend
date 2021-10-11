@@ -50,7 +50,7 @@ This is only for doing initial import of legacy data and will be removed.</p>
     {% endfor %}
     </ul>
     </div>
-
+{% endif  %}
     <form method = 'POST' class="col s12" enctype="multipart/form-data">
             {% csrf_token %}
             {{new_form.as_p}}
@@ -60,12 +60,11 @@ This is only for doing initial import of legacy data and will be removed.</p>
             <div><button class="btn btn-primary m-2" type = "submit" >Upload</button></div>
     </form>
 
-  {% else %}
           <p>
         <a href="{% url 'importRun' %}"
           class="btn btn-primary">Run Import</a>
           </p>
-  {% endif  %}
+  
 
         <p>
         <a href="{% url 'importDelete' %}"

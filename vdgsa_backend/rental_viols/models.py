@@ -6,7 +6,7 @@ from django.db.models.enums import TextChoices
 from django.utils import timezone
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.rental_viols.managers.InstrumentManager import (AccessoryManager, ViolManager,
-                                                                   ImageManager)
+                                                                   ImageManager, ViolSize)
 
 
 class RentalProgram(TextChoices):
@@ -21,14 +21,7 @@ class ItemType(TextChoices):
     case = 'case'
 
 
-class ViolSize(TextChoices):
-    pardessus = 'pardessus'
-    treble = 'treble'
-    alto = 'alto'
-    tenor = 'tenor'
-    bass = 'bass'
-    seven_string_bass = 'seven_string_bass', 'Seven-String Bass'
-    other = 'other'
+
 
 
 class RentalItemBase(models.Model):

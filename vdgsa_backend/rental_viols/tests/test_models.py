@@ -3,8 +3,11 @@ from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
 
-from vdgsa_backend.rental_viols.models import Bow, Case, Viol, RentalHistory, WaitingList, ViolSize, RentalProgram
-
+from vdgsa_backend.rental_viols.models import (
+    Bow, Case, Viol, RentalHistory, WaitingList, RentalProgram
+)
+from vdgsa_backend.rental_viols.managers.InstrumentManager import (AccessoryManager, ViolManager,
+                                                                   ImageManager, ViolSize)
 
 vdgsa_number = 22
 maker = 'maker'
