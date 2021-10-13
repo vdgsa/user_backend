@@ -357,6 +357,8 @@ class InstrumentBringing(models.Model):
     clefs = ArrayField(models.CharField(max_length=50, choices=Clef.choices))
     purpose = models.CharField(max_length=100, choices=InstrumentPurpose.choices)
 
+    comments = models.TextField(blank=True)
+
     def clean(self) -> None:
         super().clean()
         if self.size == InstrumentChoices.other and not self.name_if_other:
