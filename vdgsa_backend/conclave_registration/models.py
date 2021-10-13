@@ -222,7 +222,7 @@ class RegistrationEntry(models.Model):
         return self.num_tshirts * 25
 
 
-class BasicRegistrationInfo(models.Model):
+class AdditionalRegistrationInfo(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,

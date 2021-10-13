@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, TSHIRT_SIZES, BasicRegistrationInfo, BeginnerInstrumentInfo, Class, Clef,
+    ADVANCED_PROGRAMS, BeginnerInstrumentInfo, TSHIRT_SIZES, AdditionalRegistrationInfo, Class, Clef,
     ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo, Period,
     Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
     WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe
@@ -557,7 +557,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
     def setUp(self) -> None:
         super().setUp()
 
-        BasicRegistrationInfo.objects.create(
+        AdditionalRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
             attended_nonclave=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
@@ -672,7 +672,7 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         _make_classes(self.conclave_config, 4)
 
-        BasicRegistrationInfo.objects.create(
+        AdditionalRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
             attended_nonclave=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
@@ -963,7 +963,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             instructor='Steve',
             description='Wee',
         )
-        self.basic_info = BasicRegistrationInfo.objects.create(
+        self.basic_info = AdditionalRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
             attended_nonclave=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,

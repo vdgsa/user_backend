@@ -27,7 +27,7 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo,
+    ADVANCED_PROGRAMS, BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo,
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
     PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
     TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
@@ -273,7 +273,7 @@ class YesNoMaybeRadioField(forms.ChoiceField):
 
 class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
-        model = BasicRegistrationInfo
+        model = AdditionalRegistrationInfo
         fields = [
             'attended_nonclave',
             'buddy_willingness',
@@ -323,7 +323,7 @@ class BasicInfoView(_RegistrationStepViewBase):
 
         return 'conclave-work-study'
 
-    def get_step_instance(self) -> BasicRegistrationInfo | None:
+    def get_step_instance(self) -> AdditionalRegistrationInfo | None:
         if hasattr(self.registration_entry, 'basic_info'):
             return self.registration_entry.basic_info
 
@@ -504,7 +504,7 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
         context['instruments'] = self.registration_entry.instruments_bringing.all()
         return context
 
-    def get_step_instance(self) -> BeginnerInstrumentInfo | None:
+    def get_step_instance(self) -> AdditionalRegistrationInfo | None:
         if (self.registration_entry.program in BEGINNER_PROGRAMS
                 and hasattr(self.registration_entry, 'beginner_instruments')):
             return self.registration_entry.beginner_instruments

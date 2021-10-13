@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, BasicRegistrationInfo,
+    ADVANCED_PROGRAMS, BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo,
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
     PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
     TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
