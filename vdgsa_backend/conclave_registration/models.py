@@ -335,6 +335,12 @@ class InstrumentChoices(models.TextChoices):
     other = 'other'
 
 
+class InstrumentPurpose(models.TextChoices):
+    bringing_for_self = 'bringing_for_self'
+    willing_to_loan = 'willing_to_loan'
+    wants_to_borrow = 'wants_to_borrow'
+
+
 class InstrumentBringing(models.Model):
     class Meta:
         order_with_respect_to = 'registration_entry'
@@ -349,6 +355,7 @@ class InstrumentBringing(models.Model):
     name_if_other = models.CharField(max_length=100, blank=True)
     level = models.TextField(choices=Level.choices[1:])
     clefs = ArrayField(models.CharField(max_length=50, choices=Clef.choices))
+    purpose = models.CharField(max_length=100, choices=InstrumentPurpose.choices)
 
     def clean(self) -> None:
         super().clean()
