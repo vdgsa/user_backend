@@ -559,7 +559,7 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         AdditionalRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            attended_nonclave=YesNo.yes,
+            attended_conclave_before=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
@@ -674,7 +674,7 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
         AdditionalRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            attended_nonclave=YesNo.yes,
+            attended_conclave_before=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
@@ -965,7 +965,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         )
         self.additional_info = AdditionalRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
-            attended_nonclave=YesNo.yes,
+            attended_conclave_before=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,

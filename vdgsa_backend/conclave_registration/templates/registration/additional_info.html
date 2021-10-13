@@ -21,20 +21,20 @@
 
   <div class="row mt-2">
     <div class="col-md-6">
-      Did you attend NonClave online last summer?
+      Have you attended Conclave before?
     </div>
   </div>
   <div class="row">
     <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.attended_nonclave %}
+      {% include 'utils/form_field.tmpl' with field=form.attended_conclave_before %}
     </div>
   </div>
 
   <div id="buddy-willingness-wrapper">
     <div class="row mt-2">
       <div class="col-md-6">
-        Would you be willing to share your experience of online Conclave
-        with someone who is new to it this year?
+        Would you be willing to be a buddy for someone who is coming to Conclave
+        for the first time?
       </div>
     </div>
     <div class="row">
@@ -121,14 +121,14 @@
 </form>
 
 <script>
-  radio_button_hide('attended_nonclave', '#buddy-willingness-wrapper');
+  radio_button_hide('attended_conclave_before', '#buddy-willingness-wrapper');
   // $().ready(function() {
   //   // NOTE: change !== to === next year
-  //   if ($('input[name="attended_nonclave"]:checked').val() !== 'yes') {
+  //   if ($('input[name="attended_conclave_before"]:checked').val() !== 'yes') {
   //     $('#buddy-willingness-wrapper').hide();
   //   }
 
-  //   $('input[name="attended_nonclave"]').change(function() {
+  //   $('input[name="attended_conclave_before"]').change(function() {
   //     if ($(this).val() !== 'yes') {
   //       $('#buddy-willingness-wrapper').hide();
   //     }

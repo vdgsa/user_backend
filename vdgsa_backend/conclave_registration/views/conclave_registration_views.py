@@ -276,7 +276,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         model = AdditionalRegistrationInfo
         fields = [
             'phone',
-            'attended_nonclave',
+            'attended_conclave_before',
             'buddy_willingness',
             # 'willing_to_help_with_small_jobs',
             'wants_display_space',
@@ -292,14 +292,15 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
 
         labels = {
             'phone': '',
-            'attended_nonclave': '',
+            'attended_conclave_before': '',
             'buddy_willingness': '',
             'wants_display_space': '',
             'photo_release_auth': '',
             'other_info': '',
         }
 
-    attended_nonclave = YesNoRadioField(label='')
+    attended_conclave_before = YesNoRadioField(
+        label='', no_label='No, this is my first Conclave!')
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
     archival_video_release = BooleanField(required=True, label='I agree')
     photo_release_auth = YesNoRadioField(

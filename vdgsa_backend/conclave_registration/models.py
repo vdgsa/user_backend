@@ -231,7 +231,7 @@ class AdditionalRegistrationInfo(models.Model):
 
     phone = models.CharField(max_length=30)
 
-    attended_nonclave = models.TextField(choices=YesNo.choices)
+    attended_conclave_before = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
@@ -244,7 +244,7 @@ class AdditionalRegistrationInfo(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        if self.attended_nonclave == YesNo.yes and not self.buddy_willingness:
+        if self.attended_conclave_before == YesNo.yes and not self.buddy_willingness:
             raise ValidationError({'buddy_willingness': 'This field is required.'})
 
 
