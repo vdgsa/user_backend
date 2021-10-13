@@ -798,7 +798,11 @@ def send_confirmation_email(registration_entry: RegistrationEntry) -> None:
         subject=f'VdGSA Conclave {registration_entry.conclave_config.year} '
                 '- Thank you for registering!',
         from_email=None,
-        recipient_list=[registration_entry.user.username],
+        recipient_list=[
+            registration_entry.user.username,
+            'conclave.manager@vdgsa.org',
+            'conclave.manager@gmail.com',
+        ],
         message=render_to_string(
             'registration/confirmation_email.tmpl',
             {
