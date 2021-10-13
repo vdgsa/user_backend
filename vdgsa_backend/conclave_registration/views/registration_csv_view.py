@@ -268,7 +268,10 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
 def instruments_to_dict(entry: RegistrationEntry) -> Dict[str, Any]:
     instruments_str = ''
     for instr in entry.instruments_bringing.all():
-        instruments_str += str(instr) + f' | {instr.level} | {",".join(instr.clefs)}'
+        instruments_str += (
+            str(instr) + f' | {instr.level} | {",".join(instr.clefs)} '
+            f'| {instr.purpose} | {instr.comments}\n'
+        )
 
     return {
         'beginner_needs_instrument': (entry.beginner_instruments.needs_instrument
