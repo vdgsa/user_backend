@@ -222,12 +222,12 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
                 if hasattr(entry, 'regular_class_choices') else ''),
 
             'ADDITIONAL INFO': '',
-            'attended_nonclave': entry.basic_info.attended_nonclave,
-            'buddy_willingness': entry.basic_info.buddy_willingness,
-            'wants_display_space': entry.basic_info.wants_display_space,
-            'archival_video_release': entry.basic_info.archival_video_release,
-            'photo_release_auth': entry.basic_info.photo_release_auth,
-            'other_info': entry.basic_info.other_info,
+            'attended_nonclave': entry.additional_info.attended_nonclave,
+            'buddy_willingness': entry.additional_info.buddy_willingness,
+            'wants_display_space': entry.additional_info.wants_display_space,
+            'archival_video_release': entry.additional_info.archival_video_release,
+            'photo_release_auth': entry.additional_info.photo_release_auth,
+            'other_info': entry.additional_info.other_info,
 
             'WORK-STUDY': '',
             'nickname_and_pronouns': (

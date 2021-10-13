@@ -25,7 +25,7 @@ urlpatterns = [
          name='delete-class'),
     path('admin/', views.ListConclaveRegistrationConfigView.as_view(), name='list-conclaves'),
 
-    path('register/<int:conclave_reg_pk>/basic_info/', views.BasicInfoView.as_view(),
+    path('register/<int:conclave_reg_pk>/additional_info/', views.AdditionalInfoView.as_view(),
          name='conclave-basic-info'),
     path('register/<int:conclave_reg_pk>/work_study/', views.WorkStudyApplicationView.as_view(),
          name='conclave-work-study'),

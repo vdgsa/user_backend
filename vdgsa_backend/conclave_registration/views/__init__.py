@@ -13,7 +13,7 @@ from .conclave_config_views import (
     ListConclaveRegistrationConfigView as ListConclaveRegistrationConfigView
 )
 from .conclave_config_views import ListRegistrationEntriesView as ListRegistrationEntriesView
-from .conclave_registration_views import BasicInfoView as BasicInfoView
+from .conclave_registration_views import AdditionalInfoView as AdditionalInfoView
 from .conclave_registration_views import (
     ConclaveRegistrationLandingPage as ConclaveRegistrationLandingPage
 )

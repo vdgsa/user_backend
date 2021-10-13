@@ -6,9 +6,9 @@ from django.urls import reverse
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, BeginnerInstrumentInfo, TSHIRT_SIZES, AdditionalRegistrationInfo, Class, Clef,
-    ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo, Period,
-    Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
+    ADVANCED_PROGRAMS, TSHIRT_SIZES, AdditionalRegistrationInfo, BeginnerInstrumentInfo, Class,
+    Clef, ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo,
+    Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
     WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe
 )
 from vdgsa_backend.selenium_test_base import SeleniumTestCaseBase
@@ -173,7 +173,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
             program=Program.regular
         )
 
-        self.login_as(self.user, dest_url=f'/conclave/register/{reg_entry.pk}/basic_info')
+        self.login_as(self.user, dest_url=f'/conclave/register/{reg_entry.pk}/additional_info')
         self.assertIn('closed', self.find('[data-testid=registration_closed_message]').text)
         self.assertFalse(self.exists('[data-testid=registration_section_header]'))
 
@@ -212,7 +212,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         )
 
         user = self.make_conclave_team()
-        self.login_as(user, dest_url=f'/conclave/register/{reg_entry.pk}/basic_info')
+        self.login_as(user, dest_url=f'/conclave/register/{reg_entry.pk}/additional_info')
         self.assertEqual(
             'Additional Info', self.find('[data-testid=registration_section_header]').text)
 
@@ -242,7 +242,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         )
 
         user = self.make_conclave_team()
-        self.login_as(user, dest_url=f'/conclave/register/{reg_entry.pk}/basic_info')
+        self.login_as(user, dest_url=f'/conclave/register/{reg_entry.pk}/additional_info')
         self.assertEqual(
             'Additional Info', self.find('[data-testid=registration_section_header]').text)
 
@@ -332,7 +332,7 @@ class _SetUpRegistrationEntry(_SetUp):
 #         self.fail()
 
 
-# class BasicInfoViewTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
+# class AdditionalInfoViewTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 #     def test_required_fields_only(self) -> None:
 #         self.fail()
 
@@ -963,7 +963,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             instructor='Steve',
             description='Wee',
         )
-        self.basic_info = AdditionalRegistrationInfo.objects.create(
+        self.additional_info = AdditionalRegistrationInfo.objects.create(
             registration_entry=self.registration_entry,
             attended_nonclave=YesNo.yes,
             buddy_willingness=YesNoMaybe.yes,
@@ -1011,8 +1011,8 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         self.registration_entry.refresh_from_db()
         self.assertFalse(hasattr(self.registration_entry, 'payment_info'))
 
-    def test_regular_flow_basic_info_not_finished(self) -> None:
-        self.basic_info.delete()
+    def test_regular_flow_additional_info_not_finished(self) -> None:
+        self.additional_info.delete()
         self.login_as(
             self.user,
             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
@@ -1036,7 +1036,7 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         self.assertFalse(self.exists('#conclave-go-to-payment-form'))
 
     def test_regular_flow_no_required_sections_finished(self) -> None:
-        self.basic_info.delete()
+        self.additional_info.delete()
         self.regular_class_choices.delete()
         self.login_as(
             self.user,

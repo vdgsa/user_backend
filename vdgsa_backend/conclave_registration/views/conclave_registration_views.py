@@ -271,7 +271,7 @@ class YesNoMaybeRadioField(forms.ChoiceField):
         super().__init__(widget=widget, **kwargs)
 
 
-class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
+class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = AdditionalRegistrationInfo
         fields = [
@@ -312,9 +312,9 @@ class BasicInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         # self.fields['liability_release'].required = True
 
 
-class BasicInfoView(_RegistrationStepViewBase):
-    template_name = 'registration/basic_info.html'
-    form_class = BasicInfoForm
+class AdditionalInfoView(_RegistrationStepViewBase):
+    template_name = 'registration/additional_info.html'
+    form_class = AdditionalInfoForm
 
     @property
     def next_step_url_name(self) -> str:  # type: ignore
@@ -324,8 +324,8 @@ class BasicInfoView(_RegistrationStepViewBase):
         return 'conclave-work-study'
 
     def get_step_instance(self) -> AdditionalRegistrationInfo | None:
-        if hasattr(self.registration_entry, 'basic_info'):
-            return self.registration_entry.basic_info
+        if hasattr(self.registration_entry, 'additional_info'):
+            return self.registration_entry.additional_info
 
         return None
 
@@ -761,7 +761,7 @@ class PaymentView(_RegistrationStepViewBase):
                 and not hasattr(self.registration_entry, 'regular_class_choices')):
             missing_sections.append('Classes')
 
-        if not hasattr(self.registration_entry, 'basic_info'):
+        if not hasattr(self.registration_entry, 'additional_info'):
             missing_sections.append('Additional Info')
 
         return missing_sections

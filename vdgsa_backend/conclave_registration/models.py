@@ -226,8 +226,10 @@ class AdditionalRegistrationInfo(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
-        related_name='basic_info'
+        related_name='additional_info'
     )
+
+    phone = models.CharField(max_length=30, blank=True)
 
     attended_nonclave = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
