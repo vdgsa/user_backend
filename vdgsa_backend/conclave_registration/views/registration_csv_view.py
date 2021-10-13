@@ -30,6 +30,7 @@ class DownloadRegistrationEntriesCSVView(LoginRequiredMixin, UserPassesTestMixin
 
 def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
     headers = [
+        'sequence_id',
         'email',
         'first_name',
         'last_name',
@@ -120,6 +121,7 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             continue
 
         writer.writerow({
+            'sequence_id': entry.payment_info.id,
             'email': entry.user.username,
             'first_name': entry.user.first_name,
             'last_name': entry.user.last_name,
