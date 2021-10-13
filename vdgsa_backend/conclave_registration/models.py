@@ -230,6 +230,7 @@ class AdditionalRegistrationInfo(models.Model):
     )
 
     phone = models.CharField(max_length=30)
+    include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
 
     attended_conclave_before = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)

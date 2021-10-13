@@ -21,6 +21,17 @@
 
   <div class="row mt-2">
     <div class="col-md-6">
+      Would you like your name to be put on the "who's coming to Conclave" list?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.include_in_whos_coming_to_conclave_list %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
       Have you attended Conclave before?
     </div>
   </div>

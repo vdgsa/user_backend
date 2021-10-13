@@ -82,6 +82,7 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
         'period4_choice3',
         'period4_choice3_instrument',
         'ADDITIONAL INFO',
+        'include_in_whos_coming_to_conclave_list',
         'attended_conclave_before',
         'buddy_willingness',
         'wants_display_space',
@@ -226,6 +227,7 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
                 if hasattr(entry, 'regular_class_choices') else ''),
 
             'ADDITIONAL INFO': '',
+            'include_in_whos_coming_to_conclave_list': entry.additional_info.include_in_whos_coming_to_conclave_list,
             'attended_conclave_before': entry.additional_info.attended_conclave_before,
             'buddy_willingness': entry.additional_info.buddy_willingness,
             'wants_display_space': entry.additional_info.wants_display_space,
