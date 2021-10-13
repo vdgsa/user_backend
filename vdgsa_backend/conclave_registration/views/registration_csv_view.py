@@ -39,6 +39,7 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
         'address_state',
         'address_postal_code',
         'address_country',
+        'conclave_phone',
         'phone1',
         'phone2',
         'program',
@@ -128,6 +129,7 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             'address_state': entry.user.address_state,
             'address_postal_code': entry.user.address_postal_code,
             'address_country': entry.user.address_country,
+            'conclave_phone': entry.additional_info.phone,
             'phone1': entry.user.phone1,
             'phone2': entry.user.phone2,
 

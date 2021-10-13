@@ -8,7 +8,18 @@
 <form method="post">
   {% csrf_token %}
 
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Please provide a phone number we can reach you at during Conclave
+    </div>
+  </div>
   <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.phone %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
     <div class="col-md-6">
       Did you attend NonClave online last summer?
     </div>

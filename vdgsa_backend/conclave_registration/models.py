@@ -229,7 +229,7 @@ class AdditionalRegistrationInfo(models.Model):
         related_name='additional_info'
     )
 
-    phone = models.CharField(max_length=30, blank=True)
+    phone = models.CharField(max_length=30)
 
     attended_nonclave = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
