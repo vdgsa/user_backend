@@ -6,6 +6,9 @@
 <h3 data-testid="registration_section_header">Instruments</h3>
 
 <div>
+  <b>If you need to borrow an instrument at Conclave</b>, you can make that
+  request on this page. <br><br>
+
   Please add the instruments you'll be playing at Conclave. <br>
   The official Conclave tuning pitch is A=415. <br>
   Don't know what level you are? Use our
@@ -19,10 +22,12 @@
   Repeat this process for each instrument you'll be playing.
 </div>
 
+<hr>
+
 <div class="add-instrument-header mt-3">Add an instrument</div>
 <form method="post" id="add-instrument-form">
   <div class="row">
-    <div class="col-md-8">
+    <div class="col-md">
       {% include 'registration/instruments/add_instrument_form_body.tmpl' %}
     </div>
   </div>
@@ -94,9 +99,11 @@ $().ready(function() {
         );
         $('#instruments').append(new_elt);
         $('#id_clefs_wrapper input[type=checkbox]').prop('checked', false);
+        $('#id_purpose option:first').prop('selected', true);
         $('#id_level option:first').prop('selected', true);
         $('#id_size option:first').prop('selected', true);
         $('#id_name_if_other').val('');
+        $('#id_comments').val('');
         $('#id_name_if_other_wrapper').hide();
 
         add_delete_instrument_handler(new_elt.find('.delete-instrument'));

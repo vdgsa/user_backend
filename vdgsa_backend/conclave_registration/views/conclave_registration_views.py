@@ -403,14 +403,23 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = InstrumentBringing
         fields = [
+            'purpose',
             'size',
             'name_if_other',
             'level',
             'clefs',
+            'comments',
         ]
 
         labels = {
+            'purpose': 'Are you bringing this instrument for yourself, '
+                       'willing to lend it, or needing to borrow it?',
             'level': 'My level on this instrument',
+            'comments': 'Comments (e.g., "I can lend this instrument during 1st period only")'
+        }
+
+        widgets = {
+            'comments': widgets.Textarea(attrs={'rows': 3, 'cols': None}),
         }
 
     # We don't want the field to process the "clefs" data in any way,

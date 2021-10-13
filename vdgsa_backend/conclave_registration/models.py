@@ -336,9 +336,9 @@ class InstrumentChoices(models.TextChoices):
 
 
 class InstrumentPurpose(models.TextChoices):
-    bringing_for_self = 'bringing_for_self'
-    willing_to_loan = 'willing_to_loan'
-    wants_to_borrow = 'wants_to_borrow'
+    wants_to_borrow = 'wants_to_borrow', "I need to borrow this instrument"
+    willing_to_loan = 'willing_to_loan', "I'm willing to loan this instrument to someone else"
+    bringing_for_self = 'bringing_for_self', "I'm bringing this instrument for myself"
 
 
 class InstrumentBringing(models.Model):

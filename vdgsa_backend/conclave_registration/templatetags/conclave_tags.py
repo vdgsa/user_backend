@@ -4,7 +4,7 @@ from django import template
 from django.utils import timezone
 
 from ..models import (
-    BEGINNER_PROGRAMS, Clef, ConclaveRegistrationConfig, InstrumentChoices, Program,
+    BEGINNER_PROGRAMS, Clef, ConclaveRegistrationConfig, InstrumentChoices, InstrumentPurpose, Program,
     RegistrationPhase, TuitionOption
 )
 
@@ -59,6 +59,10 @@ def format_instrument_size(instrument_size: str) -> str:
     return InstrumentChoices(instrument_size).label
 
 
+def format_instrument_purpose(purpose: str) -> str:
+    return InstrumentPurpose(purpose).label
+
+
 def format_clef_list(clef: list[str]) -> str:
     return ', '.join((Clef(clef).label for clef in clef))
 
@@ -78,6 +82,7 @@ def is_beginner_program(program: str) -> bool:
 register.filter('format_registration_phase', format_registration_phase)
 register.filter('format_period_long', format_period_long)
 register.filter('format_instrument_size', format_instrument_size)
+register.filter('format_instrument_purpose', format_instrument_purpose)
 register.filter('format_clef_list', format_clef_list)
 register.filter('format_tuition_option', format_tuition_option)
 register.filter('format_program', format_program)
