@@ -133,6 +133,8 @@ BEGINNER_PROGRAMS = [Program.beginners, Program.teen_beginners]
 ADVANCED_PROGRAMS = [Program.consort_coop, Program.seasoned_players, Program.advanced_projects]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
+    Program.beginners,
+    Program.teen_beginners,  # For legacy purposes
     # Program.exhibitor,
     # Program.non_playing_attendee,
 ]
@@ -160,7 +162,8 @@ class RegistrationEntry(models.Model):
         registrants must complete the class selection form even if
         they choose "No class" for all periods.
         Returns False for programs such as faculty/guest/other or
-        non-playing attendee that will never select classes.
+        non-playing attendee that will never select classes using
+        the regular class selection page.
         """
         return self.program not in NO_CLASS_PROGRAMS
 

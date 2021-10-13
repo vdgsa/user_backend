@@ -763,9 +763,12 @@ class PaymentView(_RegistrationStepViewBase):
                 and not hasattr(self.registration_entry, 'beginner_instruments')):
             missing_sections.append('Instruments')
 
-        if (self.registration_entry.class_selection_is_required
-                and not hasattr(self.registration_entry, 'regular_class_choices')):
-            missing_sections.append('Classes')
+        if self.registration_entry.class_selection_is_required:
+            if not hasattr(self.registration_entry, 'regular_class_choices'):
+                missing_sections.append('Classes')
+
+            if self.registration_entry.instruments_bringing.count() == 0:
+                missing_sections.append('Instruments')
 
         if not hasattr(self.registration_entry, 'additional_info'):
             missing_sections.append('Additional Info')
