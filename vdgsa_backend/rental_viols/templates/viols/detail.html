@@ -20,12 +20,6 @@
             >Retire</a>
         {% endif %}
 
-        <a href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}"
-          class="btn btn-primary"
-          >Reserve</a>
-
-
-
       {% elif object.status == RentalState.rented and last_rental.entry_num%}
      <a
         href="{% url 'rental-renew' last_rental.entry_num %}"
@@ -38,6 +32,10 @@
         >Return from rental</a
       > 
       {% endif %}
+        <a href="{% url 'viol-reserve' %}?viol_num={{ object.viol_num }}"
+          class="btn btn-primary"
+          >Reserve</a>
+
       <a href="{% url 'viol-update' object.viol_num %}" class="btn btn-primary"
         >Edit</a
       >

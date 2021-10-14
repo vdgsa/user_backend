@@ -46,6 +46,10 @@ urlpatterns = [
 
 
     path('waiting/', views.ListWaitingView.as_view(), name='list-waiting'),
+    path('waiting/<int:pk>', views.WaitingDetailView.as_view(), name='wait-detail'),
+    path('waiting/add', views.ReserveViolView.as_view(), name='add-waiting'),
+    path('waiting/<int:pk>/', views.UpdateWaitingView.as_view(), name='wait-update'),
+
     path('custodian/', views.ListCustodianView.as_view(), name='list-cust'),
     path('custodian/<int:pk>/', views.CustodianDetailView.as_view(), name='cust-detail'),
 

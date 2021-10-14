@@ -1,0 +1,33 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+{% block content %}
+<p>Waiting</p>
+
+<div class="card text-end">
+  <div class="card-header">
+    <a href="{% url 'wait-update' object.pk %}" class="btn btn-primary" >Edit</a> 
+  </div>
+</div>
+
+
+<div class="container border mt-3 mb-3 p-3">
+
+      <p class="h3">{{object.first_name}} {{object.last_name}}</p>
+  <div class="row">
+    <div class="col">
+    
+      <p>email: {{object.email}}</p>
+      <p>Viol: <a href="{% url 'viol-detail' object.pk %}">{{object.viol_num}}</a></p>
+      <p>Size: {{object.size}}</p>
+      <p>Date Requested: {{object.date_req}}</p>
+      <p>
+          {{object.address_line_1 | safe}} <br>
+          {{object.address_city}}, {{object.address_state}} 
+          {{object.address_postal_code}}<br>
+      </p>
+      <p>Phone: {{object.phone1}}</p>
+      <p>Record last modified: {{object.last_modified}}</p>
+    </div>
+  </div>
+
+{% endblock %}

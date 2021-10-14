@@ -1,3 +1,12 @@
+<script>
+  $().ready(function() {
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+      return new bootstrap.Popover(popoverTriggerEl)
+    })
+    console.log('tooltipTriggerList',popoverTriggerList)
+  })
+</script>
 <div class="card mt-3">
 <div class="card-body"> 
   History
@@ -7,6 +16,7 @@
   <table class="table">
   <tr>
     <th>Event</th>
+    <th>Note</th>
     <th>Viol</th>
     <th>Bow</th>
     <th>Case</th>
@@ -16,12 +26,20 @@
   </tr>
   {% for event in history.all %}
   <tr>
-    <td>{% if event.event == 'Rented' %}
+    <td>{% if event.event == 'Rented' or event.event == 'Renewed' %}
           <a href="{% url 'rental-detail' pk=event.pk  %}" >{{ event.event }}</a>
         {% else %}
           {{ event.event }}
         {% endif  %}
       </td>
+    <td>
+      {% if event.notes %}
+
+        <button type="button" class="btn" data-bs-toggle="popover" data-bs-trigger="focus"
+          title="{{ event.event }}" data-bs-content='{{ event.notes | safe }}'><i class="bi bi-music-note"></i></button>
+
+      {% endif  %}
+    </td>
     <td>{% if event.viol_num %}<a href="{% url 'viol-detail' pk=event.viol_num.pk  %}" >{{ event.viol_num }}</a>{% endif  %}</td>
     <td>{{ event.bow_num }}</td>
     <td>{{ event.case_num }}</td>

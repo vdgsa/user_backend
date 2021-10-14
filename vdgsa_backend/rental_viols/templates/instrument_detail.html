@@ -51,7 +51,12 @@
             <th scope="row">Condition</th>
             <td>{{item.state}}</td>
             <th scope="row">Custodian</th>
-            <td>{{item.storer}}</td>
+            <td>
+              
+              {% if  item.storer %}
+              <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
+              {% endif %}
+            </td>
             </tr>
             
             <tr>
@@ -68,7 +73,25 @@
 
             <tr>
             <th scope="row">Provenance </th>
-            <td colspan="3">{{item.provenance}}</td>
+            <td>{{item.provenance}}</td>
+
+            <th scope="row">Reserved</th>
+            <td>
+              {% if item.waitingList %}
+              {% for wl in item.waitingList.all %}
+                <a href="{% url 'wait-detail' wl.pk %}">
+                 {% if wl.renter_num %}
+                  {{wl.renter_num}}
+                 
+                 {% else %}
+                 
+                  {{wl.first_name}} 
+                  {{wl.last_name}} 
+                 {% endif %}
+                 </a>
+              {% endfor %}
+              {% endif %}
+            </td>
             </tr>
 
             <tr>

@@ -177,8 +177,20 @@ class WaitingList(RentalItemBase):
         ordering = ('-entry_num',)
 
     entry_num = models.AutoField(primary_key=True)
-    renter_num = models.ForeignKey(User, on_delete=models.CASCADE)
-    size = models.TextField(choices=ViolSize.choices)
+    renter_num = models.ForeignKey(User, blank=True, null=True,
+                                   default=None, on_delete=models.SET_NULL)
+    size = models.TextField(choices=ViolSize.choices, blank=True, null=True)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
+    email = models.EmailField(blank=True)
+    address_line_1 = models.CharField(max_length=255, blank=True)
+    # address_line_2 = models.CharField(max_length=255, blank=True)
+    address_city = models.CharField(max_length=255, blank=True)
+    address_state = models.CharField(max_length=255, blank=True)
+    address_postal_code = models.CharField(max_length=255, blank=True)
+    # address_country = models.CharField(max_length=255, blank=True)
+    phone1 = models.CharField(max_length=30, blank=True)
+
     viol_num = models.ForeignKey(
         Viol, db_column='viol_num',
         on_delete=models.SET_NULL, blank=True, null=True, default=None,

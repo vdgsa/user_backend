@@ -93,7 +93,7 @@ class ViolManager(models.Manager):
         return self.get_queryset().get_rented_status(rented=True, size=size)
 
     def get_retired(self, size=None):
-        return self.get_queryset().get_status(status='retired', size=size)
+        return self.get_queryset().get_status(status=RentalState.retired, size=size)
         
 
 

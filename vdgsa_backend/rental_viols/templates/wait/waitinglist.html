@@ -1,0 +1,66 @@
+{% extends 'rentals.html' %}
+{% load rental_tags %}
+
+{% block content %}
+
+<div class="card text-end">
+  <div class="card-header">
+    <a class="btn btn-primary" href="{% url 'add-waiting' %}">Add Wait</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <table id="viol-table" class="table table-striped">
+      <thead>
+        <tr>
+          <td>Waiting list Id</td>
+          <td>Requester</td>
+          <td>Instrument</td>
+          <td>Size</td>
+          <td>Date</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in object_list %}
+        <tr>
+          <td><a href="{% url 'wait-update' item.entry_num%}"><i class="bi bi-pencil"></i></a>
+          </td>
+          <td>
+            {% if item.renter_num %}
+              {{item.renter_num}}<br>
+            {% endif %}
+                {{item.first_name}} 
+                {{item.last_name}} <br>
+                Email {{item.email}}  <br>
+                {{item.address_line_1}} 
+                {{item.address_city}}, 
+                {{item.address_state}} 
+                {{item.address_postal_code}}  <br>
+                Phone: {{item.phone1}} 
+
+          </td>
+          <td>
+          {% if item.viol_num %}
+            <a href="{% url 'viol-detail' pk=item.viol_num.pk %}">{{item.viol_num}}</a>
+          {% endif %} 
+          </td>
+          <td>{{item.size}}</td>
+          <td>{{item.date_req}}</td>
+          <td class="text-nowrap">
+            <a href="{% url 'soft-delete' 'WaitingList' item.entry_num %}" title="Remove"><i class="bi bi-trash"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+</div>
+{% endblock %}

@@ -617,17 +617,29 @@ class ReserveViolModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ReserveViolModelForm, self).__init__(*args, **kwargs)
-        self.fields['viol_num'].queryset = Viol.objects.get_available()
+        self.fields['viol_num'].queryset = Viol.objects.get_all()
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+        self.fields['email'].required = True
+        self.fields['address_line_1'].required = True
 
     class Meta:
         model = WaitingList
         fields = [
             'entry_num',
             'viol_num',
-            'renter_num',
             'date_req',
-            'size'
+            'size',
+            'first_name',
+            'last_name',
+            'email',
+            'address_line_1',
+            'address_city',
+            'address_state',
+            'address_postal_code',
+            'phone1',
         ]
+        labels = {'phone1': 'Contact Phone', 'address_line_1': 'Mailing Address', 'first_name': 'First Name', 'last_name': 'Last Name'}
 
 
 class ReserveViolView(RentalViewBase, FormView):
@@ -642,9 +654,10 @@ class ReserveViolView(RentalViewBase, FormView):
         if self.request.GET.get('viol_num'):
             viol = Viol.objects.get(pk=self.request.GET.get('viol_num'))
             initial['viol_num'] = viol
-        if self.request.GET.get('user_id'):
-            renter = User.objects.get(pk=self.request.GET.get('user_id'))
-            initial['renter_num'] = renter
+        # if self.request.GET.get('user_id'):
+        #     renter = User.objects.get(pk=self.request.GET.get('user_id'))
+        #     initial['renter_num'] = renter
+        print('initial', initial)
         return initial
 
     # def get_context_data(self, **kwargs):
@@ -664,18 +677,26 @@ class ReserveViolView(RentalViewBase, FormView):
         return self.render_to_response(context)
 
     def form_valid(self, form):
-        waitinglist = WaitingList.objects.create(
-            renter_num=form.cleaned_data['renter_num'],
+        waitinglist, created = WaitingList.objects.update_or_create(
+            # renter_num=form.cleaned_data['renter_num'],
             viol_num=form.cleaned_data['viol_num'],
             date_req=form.cleaned_data['date_req'],
-            size=form.cleaned_data['size'])
-        waitinglist.save()
-        history = RentalHistoryForm(
-            {"event": RentalEvent.reserved,
-                "viol_num": form.cleaned_data['viol_num'].viol_num,
-                "renter_num": form.cleaned_data['renter_num'].id})
-        history.save()
-        messages.add_message(self.request, messages.SUCCESS, 'Waiting List created!')
+            size=form.cleaned_data['size'],
+            first_name=form.cleaned_data['first_name'],
+            last_name=form.cleaned_data['last_name'],
+            email=form.cleaned_data['email'],
+            address_line_1=form.cleaned_data['address_line_1'],
+            address_city=form.cleaned_data['address_city'],
+            address_state=form.cleaned_data['address_state'],
+            address_postal_code=form.cleaned_data['address_postal_code'],
+            phone1=form.cleaned_data['phone1'])
+
+        if form.cleaned_data['viol_num']:
+            viol = Viol.objects.get(pk=form.cleaned_data['viol_num'].pk)
+            history = RentalHistory.objects.create(viol_num=viol, event=RentalEvent.reserved)
+            history.save()
+
+        messages.add_message(self.request, messages.SUCCESS, 'Waiting List record created!')
         return super().form_valid(form)
 
 
@@ -791,7 +812,6 @@ class CustodianDetailView(RentalViewBase, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(CustodianDetailView, self).get_context_data(**kwargs)
-
         context['viols'] = Viol.objects.filter(storer=self.kwargs['pk'])
         return context
 
@@ -799,14 +819,33 @@ class CustodianDetailView(RentalViewBase, DetailView):
 class ListWaitingView(RentalViewBase, ListView):
     def get_queryset(self, *args: Any, **kwargs: Any):
         queryset = WaitingList.objects.all()
-        print(queryset)
         return queryset
 
-    template_name = 'waitinglist.html'
+    template_name = 'wait/waitinglist.html'
+
+
+class WaitingDetailView(RentalViewBase, DetailView):
+    model = WaitingList
+    template_name = 'wait/detail.html'
+
+
+class UpdateWaitingView(RentalViewBase, SuccessMessageMixin, UpdateView):
+    model = WaitingList
+    template_name = 'wait/update.html'
+    form_class = ReserveViolModelForm
+    success_message = "Waiter was updated successfully"
+
+    def get_context_data(self, **kwargs):
+        context = super(UpdateWaitingView, self).get_context_data(**kwargs)
+        context['entry_num'] = self.kwargs['pk']
+        return context
+
+    def get_success_url(self, **kwargs) -> str:
+        print(self.object.viol_num)
+        return reverse('wait-detail', args=[self.object.pk])
+
 
 # CRUD
-
-
 class BowForm(forms.ModelForm):
     class Meta:
         model = Bow
@@ -1010,6 +1049,14 @@ class RentersDetailView(RentalViewBase, DetailView):
 
 class SoftDeleteView(RentalViewBase, View):
 
+    def returnUrl(self, className):
+        return {
+            'Viol': 'list-viols',
+            'Bow': 'list-bowss',
+            'Case': 'list-cases',
+            'WaitingList': 'list-waiting'
+        }.get(className, 'list-viols') 
+    
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         print('SoftDeleteView', self.kwargs['class'], self.kwargs['pk'])
 
@@ -1025,7 +1072,8 @@ class SoftDeleteView(RentalViewBase, View):
 
         print(obj)
         # return HttpResponseRedirect(self.request.path_info)
-        return redirect(reverse('list-renters'))
+
+        return redirect(reverse(self.returnUrl(self.kwargs['class'])))
 
 
 class AvailableViolView(RentalViewBase, FormView):
