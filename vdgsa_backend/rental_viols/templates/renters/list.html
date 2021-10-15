@@ -29,6 +29,7 @@
           <th>Renter</th>
           <th>email</th>
           <th>City, State</th>
+          <th>Membership Exp</th>
           <th># rentals</th>
           <th>Rental End</th>
 
@@ -42,6 +43,9 @@
           </td>
           <td>{{item.email}}</td>
           <td>{{item.address_city}}, {{item.address_state}}</td>
+          
+          
+          <td>{{item.subscription.valid_until|date:'Y-m-d H:i'}}</td>
           <td>{{item.num_rentals}}</td>
           <td>{{item.rental_end_date|default_if_none:""}}</td>
           

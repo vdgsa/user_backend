@@ -1,17 +1,18 @@
 {% extends '../rentals.html' %}
 {% load rental_tags %}
 {% block content %}
-
+{% comment %}
 <div class="card">
 <div class="card-body">
   <div className="buttonbar-ctr d-flex justify-content-around ">
-? anything here ?
-    {% comment %} <a href="{% url 'rental-renew' object.entry_num  %}" class="btn disabled" >Renew rental</a> 
+     <a href="{% url 'rental-renew' object.entry_num  %}" class="btn disabled" >Renew rental</a> 
     <a href="{% url 'rental-return' object.entry_num %}" class="btn disabled" >Return from rental</a> 
-    <a href="{% url 'rental-update' object.entry_num  %}" class="btn btn-primary" >Edit</a>  {% endcomment %}
- </div> </div> </div>
+    <a href="{% url 'rental-update' object.entry_num  %}" class="btn btn-primary" >Edit</a>  
+ </div>
+ </div>
+ </div>
 
-
+{% endcomment %}
 
 
 
