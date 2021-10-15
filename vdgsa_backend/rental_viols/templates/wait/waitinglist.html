@@ -51,7 +51,7 @@
             <a href="{% url 'viol-detail' pk=item.viol_num.pk %}">{{item.viol_num}}</a>
           {% endif %} 
           </td>
-          <td>{{item.size}}</td>
+          <td>{{item.size|default_if_none:""}}</td>
           <td>{{item.date_req}}</td>
           <td class="text-nowrap">
             <a href="{% url 'soft-delete' 'WaitingList' item.entry_num %}" title="Remove"><i class="bi bi-trash"></i></a>

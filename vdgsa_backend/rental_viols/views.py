@@ -786,13 +786,13 @@ class ListRentersView(RentalViewBase, ListView):
         self.request.session[self.filterSessionName] = filter
         print('renter filter', filter)
         if filter['status'] == 'active':
-            queryset = User.objects.filter(Q(rentalhistory__event=RentalEvent.rented) & Q(pk=F('rentalhistory__viol_num__renter')))
+            queryset = User.objects.filter((Q(rentalhistory__event=RentalEvent.rented) | Q(rentalhistory__event=RentalEvent.renewed)) & Q(pk=F('rentalhistory__viol_num__renter')))
         elif filter['status'] == 'inactive':
-            queryset = User.objects.filter(Q(rentalhistory__event=RentalEvent.rented) & ~Q(pk=F('rentalhistory__viol_num__renter')))
+            queryset = User.objects.filter((Q(rentalhistory__event=RentalEvent.rented) | Q(rentalhistory__event=RentalEvent.renewed)) & ~Q(pk=F('rentalhistory__viol_num__renter')))
         else:
-            queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented)
+            queryset = User.objects.filter((Q(rentalhistory__event=RentalEvent.rented) | Q(rentalhistory__event=RentalEvent.renewed)))
 
-        return queryset.annotate(num_rentals=Count('rentalhistory')).annotate(rental_end_date=Max('rentalhistory__rental_end'))
+        return queryset.annotate(num_rentals=Count('rentalhistory')).annotate(rental_end_date=Max('rentalhistory__rental_end',filter=Q(pk=F('rentalhistory__viol_num__renter'))))
 
 
 class ListCustodianView(RentalViewBase, ListView):

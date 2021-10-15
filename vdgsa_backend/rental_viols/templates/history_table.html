@@ -41,8 +41,8 @@
       {% endif  %}
     </td>
     <td>{% if event.viol_num %}<a href="{% url 'viol-detail' pk=event.viol_num.pk  %}" >{{ event.viol_num }}</a>{% endif  %}</td>
-    <td>{{ event.bow_num }}</td>
-    <td>{{ event.case_num }}</td>
+    <td>{{ event.bow_num|default_if_none:"" }}</td>
+    <td>{{ event.case_num|default_if_none:""}}</td>
     <td>{% if event.renter_num %}<a href="{% url 'renter-info' pk=event.renter_num.id  %}" >{{ event.renter_num.first_name }}{{ event.renter_num.last_name }}</a> {% endif  %}</td>
     <td>{{ event.rental_start|default_if_none:"" }}</td>
     <td>{{ event.rental_end|default_if_none:"" }}</td>

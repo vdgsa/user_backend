@@ -30,7 +30,7 @@
           <th>email</th>
           <th>City, State</th>
           <th># rentals</th>
-          <th>Max Rental End</th>
+          <th>Rental End</th>
 
         </tr>
       </thead>  
@@ -43,7 +43,7 @@
           <td>{{item.email}}</td>
           <td>{{item.address_city}}, {{item.address_state}}</td>
           <td>{{item.num_rentals}}</td>
-          <td>{{item.rental_end_date}}</td>
+          <td>{{item.rental_end_date|default_if_none:""}}</td>
           
         </tr>
         {% endfor %}

@@ -32,7 +32,7 @@
       <td style="text-align: right;">{{item.value | dollars}}</td>
       <td>{{item.program}}</td>
       <td>{{item.state}}</td>
-      <td>{{item.storer}}</td>
+      <td>{{item.storer|default_if_none:""}}</td>
       <td>{{item.status}}</td>
     </tr>
     {% endfor %}
