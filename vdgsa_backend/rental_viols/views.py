@@ -6,7 +6,7 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, Q, Max
+from django.db.models import Count, F, Q, Max
 from django.apps import apps
 from django.forms.widgets import DateTimeBaseInput, HiddenInput
 from django.http import response
@@ -784,10 +784,11 @@ class ListRentersView(RentalViewBase, ListView):
         queryset = []
         filter = self.getFilter()
         self.request.session[self.filterSessionName] = filter
+        print('renter filter', filter)
         if filter['status'] == 'active':
-            queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented)
+            queryset = User.objects.filter(Q(rentalhistory__event=RentalEvent.rented) & Q(pk=F('rentalhistory__viol_num__renter')))
         elif filter['status'] == 'inactive':
-            queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented)
+            queryset = User.objects.filter(Q(rentalhistory__event=RentalEvent.rented) & ~Q(pk=F('rentalhistory__viol_num__renter')))
         else:
             queryset = User.objects.filter(rentalhistory__event=RentalEvent.rented)
 
