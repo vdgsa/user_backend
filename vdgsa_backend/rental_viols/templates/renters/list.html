@@ -10,6 +10,7 @@
 
 <div class="card">
   <div class="card-body">
+
     <form method="get" action="{% url 'list-renters' %}">
       <div class="row">
         <div class="col">
@@ -21,16 +22,16 @@
           </select>
         </div>
         </div>
-      </div>
     </form>
+
     <table id="renters-table" class="table table-striped">
       <thead>
         <tr>
           <th>Renter</th>
-          <th>email</th>
+          <th>Email</th>
           <th>City, State</th>
           <th>Membership Exp</th>
-          <th># rentals</th>
+          <th># Rentals</th>
           <th>Rental End</th>
 
         </tr>
@@ -39,15 +40,15 @@
         {% for item in object_list %}
         <tr>
           <td>
-            <a href="{% url 'renter-info' pk=item.pk %}" title="View renter details">{{item.first_name}} {{item.last_name}}</a>
+            <a href="{% url 'renter-info' pk=item.pk %}" title="View renter details">{{item.last_name}}, {{item.first_name}}</a>
           </td>
           <td>{{item.email}}</td>
           <td>{{item.address_city}}, {{item.address_state}}</td>
           
           
-          <td>{{item.subscription.valid_until|date:'Y-m-d H:i'}}</td>
+          <td>{{item.subscription.valid_until|date:'y-m-d'}}</td>
           <td>{{item.num_rentals}}</td>
-          <td>{{item.rental_end_date|default_if_none:""}}</td>
+          <td class="text-nowrap">{{item.rental_end_date|date:'Y-m-d'}}</td>
           
         </tr>
         {% endfor %}
@@ -55,11 +56,12 @@
     </table>
   </div>
 </div>
+
 <script>
   $(document).ready(function () {
     $('#renters-table').DataTable({
       "paging": false,
-      "info": false
+      "info": false,
     });
   });
 

@@ -8,34 +8,48 @@
  <a class="btn btn-primary" href="{% url 'add-case' %}">Add Case</a>
   </div>
 </div>
-<table id="viol-table" class="table table-striped">
-  <thead>
-    <tr>
-      <th>VdGSA #</th>
-      <th>Size</th>
-      <th>Maker</th>
-      <th>Value</th>
-      <th>Program</th>
-      <th>State</th>
-      <th>Custodian</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in object_list %}
-    <tr>
-      <td>
-        <a href="{% url 'case-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
-      </td>
-      <td>{{item.size}}</td>
-      <td>{{item.maker}}</td>
-      <td style="text-align: right;">{{item.value | dollars}}</td>
-      <td>{{item.program}}</td>
-      <td>{{item.state}}</td>
-      <td>{{item.storer|default_if_none:""}}</td>
-      <td>{{item.status}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="card">
+  <div class="card-body">
+    <table id="cases-table" class="table table-striped">
+      <thead>
+        <tr>
+          <th>VdGSA #</th>
+          <th>Size</th>
+          <th>Maker</th>
+          <th>Value</th>
+          <th>Program</th>
+          <th>State</th>
+          <th>Custodian</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in object_list %}
+        <tr>
+          <td>
+            <a href="{% url 'case-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
+          </td>
+          <td>{{item.size}}</td>
+          <td>{{item.maker}}</td>
+          <td style="text-align: right;">{{item.value | dollars}}</td>
+          <td>{{item.program}}</td>
+          <td>{{item.state}}</td>
+          <td>{{item.storer|default_if_none:""}}</td>
+          <td>{{item.status}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+</div> 
+<script>
+  $(document).ready(function () {
+    $('#cases-table').DataTable({
+      "paging": false,
+      "info": false
+    });
+  });
+
+</script>
 {% endblock %}

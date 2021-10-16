@@ -2,31 +2,37 @@
 {% load rental_tags %}
 
 {% block content %}
-
+{% comment %} 
 <div class="card text-end">
   <div class="card-header">
- {% comment %} <a class="btn btn-primary" href="{% url 'add-case' %}">Add Case</a> {% endcomment %}
+<!--<a class="btn btn-primary" href="{% url 'add-case' %}">Add Case</a> -->
   </div>
-</div>
-<table id="custodian-table" class="table table-striped">
-  <thead>
-    <tr>
-      <th>Custodian</th>
-      <th>State</th>
-      <th># of Viols</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in object_list %}
-    {% if item.storer %}
-    <tr>
+</div> 
+{% endcomment %}
 
-      <td><a href="{% url 'cust-detail' item.storer %}">{{item.storer__first_name}} {{item.storer__last_name}}</a></td>
-      <td>{{item.storer__address_city}}, {{item.storer__address_state}}</td>
-      <td>{{item.total}}</td>
-    </tr>
-    {% endif %}
-    {% endfor %}
-  </tbody>
-</table>
+<div class="card">
+  <div class="card-body">
+    <table id="custodian-table" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Custodian</th>
+          <th>State</th>
+          <th># of Viols</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in object_list %}
+        {% if item.storer %}
+        <tr>
+
+          <td><a href="{% url 'cust-detail' item.storer %}">{{item.storer__first_name}} {{item.storer__last_name}}</a></td>
+          <td>{{item.storer__address_city}}, {{item.storer__address_state}}</td>
+          <td>{{item.total}}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div> 
 {% endblock %}
