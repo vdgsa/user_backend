@@ -8,6 +8,11 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 register = template.Library()
 
 
+@register.filter
+def to_class_name(value):
+    return value.__class__.__name__
+
+
 @register.inclusion_tag("history_table.html")
 def history_table(history):
     return {
@@ -17,9 +22,10 @@ def history_table(history):
 
 
 @register.inclusion_tag("instrument_detail.html")
-def instrument_detail(rentalItemInstrument):
+def instrument_detail(rentalItemInstrument, request):
     return {
         "item": rentalItemInstrument,
+        "request": request,
 
     }
 

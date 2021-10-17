@@ -992,6 +992,30 @@ class ViolForm(forms.ModelForm):
         }
 
 
+class ChangeCustView(RentalViewBase, SuccessMessageMixin, View):
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        if self.request.POST.get('user_id'):
+            custodian = User.objects.get(pk=self.request.POST.get('user_id'))
+        else:
+            custodian = None
+
+        if self.request.POST.get('viol_num'):
+            viol = Viol.objects.get(pk=self.request.POST.get('viol_num'))
+            viol.storer = custodian
+            viol.save()
+        if self.request.POST.get('bow_num'):
+            bow = Bow.objects.get(pk=self.request.POST.get('bow_num'))
+            bow.storer = custodian
+            bow.save()
+        if self.request.POST.get('case_num'):
+            case = Case.objects.get(pk=self.request.POST.get('case_num'))
+            case.storer = custodian
+            case.save()
+
+        return HttpResponseRedirect(self.request.POST.get('page'))
+
+
 class AddViolView(RentalViewBase, SuccessMessageMixin, CreateView):
     model = Viol
     form_class = ViolForm

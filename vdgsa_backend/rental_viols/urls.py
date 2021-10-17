@@ -40,6 +40,8 @@ urlpatterns = [
     path('viol/reserve/', views.ReserveViolView.as_view(), name='viol-reserve'),
     path('viol/retire/<int:viol_num>/', views.RetireViolView.as_view(), name='viol-retire'),
     path('viol/available/<int:viol_num>/', views.AvailableViolView.as_view(), name='viol-avail'),
+    path('viol/custodian/', views.ChangeCustView.as_view(), name='cust-change'),
+
 
     path('viols/<int:pk>/', views.ViolDetailView.as_view(), name='viol-detail'),
     path('viol/update/<int:pk>/', views.UpdateViolView.as_view(), name='viol-update'),

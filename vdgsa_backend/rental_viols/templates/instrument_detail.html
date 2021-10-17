@@ -1,5 +1,5 @@
+{% load rental_tags %}
 <div>
-
   <div class="row">
     <div class="col">
         <table class="table table-sm table-light">
@@ -56,6 +56,8 @@
               {% if  item.storer %}
               <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
               {% endif %}
+              <a class="btn btn-sm btn-secondary float-end" onClick="changeCustModal()"
+                >Change Custodian</a>
             </td>
             </tr>
             
@@ -103,7 +105,100 @@
         </table>
     </div>
   </div> 
+</div>
 
+<script>
+  function changeCustModal() {
+    $("#custodianModal").modal("show");
+  }
+</script>
+<div class="modal fade" id="custodianModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Change Custodian</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>This action will assign a new Custodian for all of the items in this Viol, Bow, Case group.</p>
+        <div>
+        {{item}}
+        <ul>
+        {% if  item.get_cname == 'Viol' %}
+          {% for bow in item.bows.all %}
+          <li>{{bow}} </li>
+          {% endfor %}
+          {% for case in item.cases.all %}
+          <li>{{case}} </li>
+          {% endfor %}
 
+        {% elif  item.get_cname == 'Bow' %}
+          {% if item.viol_num %}
+            <li>{{item.viol_num}} </li>
+            {% for case in item.viol_num.cases.all %}
+            <li>{{case}} </li>
+            {% endfor %}
+          {% endif %}
 
+        {% else %}
+          {% if item.viol_num %}
+            <li>{{item.viol_num}} </li>
+            {% for bow in item.viol_num.bows.all %}
+            <li>{{bow}} </li>
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+        </ul>
+        </div>
+      <form id="rental-create-form" method="post" action="{% url 'cust-change' %}">
+        {% csrf_token %}
+        <input type='hidden' name="page" value="{{ request.path }}" />
+        {% if  item.get_cname == 'Viol' %}
+          <input type='hidden' name="viol_num" value="{{ item.pk }}" />
+          {% for bow in item.bows.all %}
+            <input type='hidden' name="bow_num" value="{{ bow.bow_num }}" />
+          {% endfor %}
+          {% for case in item.cases.all %}
+            <input type='hidden' name="case_num" value="{{ case.case_num }}" />
+          {% endfor %}
+
+        {% elif  item.get_cname == 'Bow' %}
+            <input type='hidden' name="bow_num" value="{{ item.pk }}" />
+          {% if item.viol_num %}
+            <input type='hidden' name="viol_num" value="{{ item.viol_num.pk }}" />
+            {% for case in item.viol_num.cases.all %}
+              <input type='hidden' name="case_num" value="{{ case.case_num }}" />
+            {% endfor %}
+          {% endif %}
+
+        {% else %}
+          {% if item.viol_num %}
+            <input type='hidden' name="case_num" value="{{ item.pk }}" />
+            <input type='hidden' name="viol_num" value="{{ item.viol_num.pk }}" />
+            {% for bow in item.viol_num.bows.all %}
+              <input type='hidden' name="bow_num" value="{{ bow.bow_num }}" />
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="user_id">Select User </label>
+            <input class="form-control" id="user-input" placeholder="Start typing to Search">
+          </div>
+        </div>
+
+        {% include './users/user-results-partial.html' %}
+        <div class="mt-2">
+          <button type="submit" class="btn btn-primary">Change Custodian</button>
+        </div>
+      </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

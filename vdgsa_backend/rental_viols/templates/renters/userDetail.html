@@ -30,7 +30,37 @@
       </p>
       <p>Phone: {{object.phone1}}</p>
       {% if object.phone2 %}<p>Phone: {{object.phone2}}</p> {% endif%}
-      <p>Record last modified: {{object.last_modified}}</p>
+
+
+
+
+
+      
+        {% if object.subscription is not None %}
+          {% if object.subscription.membership_type == 'lifetime' %}
+            <div  class="fw-bold">Lifetime Membership</div>
+          {% elif object.subscription_is_current %}
+          <div class="fw-bold">
+            Membership is valid until
+            <span id="valid-until-timestamp">
+              {{  object.subscription.valid_until|date:'Y-m-d' }}
+            </span>
+          </div>
+          {% else %}
+          <div class="fw-bold">
+            Membership <b>expired</b> on
+            <span id="valid-until-timestamp">
+              {{ object.subscription.valid_until|date:'Y-m-d' }}
+            </span>
+          </div>
+          {% endif %}
+          {% else %}
+          <div class="fw-bold">
+            No Membership found
+        {% endif %}
+      
+
+      <p class="mt-5 text-end">Record last modified: {{object.last_modified|date:'Y-m-d'}}</p>
 
       <p class="h3">      
         {% comment %} {% if object.contract_scan %}

@@ -23,7 +23,7 @@
 
   
 
-  {% instrument_detail object %}
+  {% instrument_detail object request %}
 </div>
 
     <div class="row p-3">
@@ -33,7 +33,7 @@
         <a
           onClick="showModalImage('/uploads/{{image}}')"
           ><img height="100" src="/uploads/{{image}}"
-        /></button>
+        /></a>
         {% endfor %}
       </div>
       <div class="col">
