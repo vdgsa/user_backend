@@ -72,12 +72,16 @@
           <td>{{item.program}}</td>
           <td>
             {% if item.waitingList.all %}
-
-            {% for wl in item.waitingList.all %}
-            <div>
-              {{ wl }}
-            </div>
-            {% endfor %}
+              {% for wl in item.waitingList.all %}
+                <a href="{% url 'wait-detail' wl.pk %}">
+                 {% if wl.renter_num %}
+                  {{wl.renter_num}}
+                 {% else %}
+                  {{wl.first_name}} 
+                  {{wl.last_name}} 
+                 {% endif %}
+                 </a>
+              {% endfor %}
             {% endif %}
           </td>
           <td>

@@ -77,7 +77,11 @@
             <th scope="row">Provenance </th>
             <td>{{item.provenance}}</td>
 
-            <th scope="row">Reserved</th>
+            <th scope="row">
+              {% if item.waitingList %}
+                Reserved
+              {% endif %}
+            </th>
             <td>
               {% if item.waitingList %}
               {% for wl in item.waitingList.all %}

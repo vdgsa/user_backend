@@ -193,7 +193,7 @@ class WaitingList(RentalItemBase):
 
     viol_num = models.ForeignKey(
         Viol, db_column='viol_num',
-        on_delete=models.SET_NULL, blank=True, null=True, default=None,
+        on_delete=models.SET_NULL, blank=True, null=True,
         related_name='waitingList'
     )
     date_req = models.DateField(blank=True, null=True)

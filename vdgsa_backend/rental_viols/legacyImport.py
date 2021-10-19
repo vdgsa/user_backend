@@ -232,9 +232,9 @@ class ImportRunView(RentalViewBase, TemplateView):
         context['bows'] = insertBows()
         context['cases'] = insertCases()
         context['storers'] = updateViolsRentersStorers()
-        context['history'] = insertRentalHistory()
         context['images'] = insertImages()
         context['contracts'] = insertScanFiles()
+        context['history'] = insertRentalHistory()
         # We now need to reset the Auto increment PK fields
         sequence_sql = connection.ops.sequence_reset_sql(no_style(), [Bow, Case, Image,
                                                                       RentalContract,
