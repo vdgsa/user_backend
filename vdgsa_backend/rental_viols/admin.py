@@ -2,7 +2,7 @@
 from django.contrib import admin
 
 from vdgsa_backend.rental_viols.models import (
-    Bow, Case, Image, RentalHistory, Viol, WaitingList
+    Bow, Case, Image, RentalContract, RentalHistory, Viol, WaitingList
 )
 
 
@@ -26,7 +26,7 @@ class CaseAdmin(admin.ModelAdmin):  # type: ignore
 
 
 class ViolAdmin(admin.ModelAdmin):  # type: ignore
-    list_filter = ['size','state','program']
+    list_filter = ['size', 'state', 'program']
     search_fields = ['maker']
 
 
@@ -38,6 +38,14 @@ class ImageAdmin(admin.ModelAdmin):  # type: ignore
     pass
 
 
+class RentalContractAdmin(admin.ModelAdmin):  # type: ignore
+    pass
+
+
+class RentalHistoryAdmin(admin.ModelAdmin):  # type: ignore
+    pass
+
+
 admin.site.register(RentalHistory, RentalHistoryAdmin)
 
 admin.site.register(Bow, BowAdmin)
@@ -46,3 +54,4 @@ admin.site.register(Viol, ViolAdmin)
 
 admin.site.register(WaitingList, WaitingListAdmin)
 admin.site.register(Image, ImageAdmin)
+admin.site.register(RentalContract, RentalContractAdmin)

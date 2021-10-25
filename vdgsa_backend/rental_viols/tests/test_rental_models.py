@@ -9,16 +9,6 @@ from vdgsa_backend.rental_viols.models import (
 from vdgsa_backend.rental_viols.managers.InstrumentManager import (AccessoryManager, ViolManager,
                                                                    ImageManager, ViolSize)
 
-vdgsa_number = 22
-maker = 'maker'
-size = ViolSize.bass
-state = 'state'
-value = 1234.56
-provenance = 'provenance'
-description = 'Description'
-accession_date = timezone.now()
-program = default = RentalProgram.regular
-
 
 class ViolTestCase(TestCase):
     def test_create_viol(self) -> None:
@@ -26,6 +16,7 @@ class ViolTestCase(TestCase):
             vdgsa_number=1234,
             maker='maker',
             size=ViolSize.bass,
+            strings=6,
             state='state',
             value=1234.56,
             provenance='provenance',
@@ -40,7 +31,7 @@ class ViolTestCase(TestCase):
 
 
 class BowTestCase(TestCase):
-    def test_create_viol(self) -> None:
+    def test_create_bow(self) -> None:
         newbow = Bow.objects.create(
             vdgsa_number=1234,
             maker='maker',
@@ -59,7 +50,7 @@ class BowTestCase(TestCase):
 
 
 class CaseTestCase(TestCase):
-    def test_create_viol(self) -> None:
+    def test_create_case(self) -> None:
         newcase = Case.objects.create(
             vdgsa_number=1234,
             maker='Acme',
@@ -75,3 +66,37 @@ class CaseTestCase(TestCase):
         self.assertEqual(1234, newcase.vdgsa_number)
         self.assertTrue(newcase.value)
         self.assertIsNotNone(newcase.case_num)
+
+
+class AttachTestCase(TestCase):
+    def test_attachBow(self) -> None:
+        newviol = Viol.objects.create(
+            vdgsa_number=12345,
+            maker='maker',
+            size=ViolSize.bass,
+            strings=6,
+            state='state',
+            value=1234.56,
+            provenance='provenance',
+            description='Description',
+            accession_date=timezone.now(),
+            program=RentalProgram.regular)
+        newviol.refresh_from_db()
+
+        newbow = Bow.objects.create(
+            vdgsa_number=33,
+            maker='maker',
+            size=ViolSize.bass,
+            state='state',
+            value=1234.56,
+            provenance='provenance',
+            description='Description',
+            accession_date=timezone.now(),
+            program=RentalProgram.regular)
+        newbow.refresh_from_db()
+
+        newviol.bows.add(newbow)
+        newviol.save()
+        print(newbow.viol_num.bows.exists())
+        self.assertTrue(newbow.viol_num.bows.exists())
+        self.assertEquals(newbow.viol_num.vdgsa_number, 12345)

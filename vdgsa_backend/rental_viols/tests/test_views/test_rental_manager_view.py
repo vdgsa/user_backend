@@ -21,22 +21,33 @@ from vdgsa_backend.templatetags.filters import format_datetime_impl
 from .selenium_test_rental_base import SeleniumTestCaseBase
 
 
-class AddUserTestCase(SeleniumTestCaseBase):
+class RentalHomeTestCase(SeleniumTestCaseBase):
     def test_rental_manager_sees_link(self) -> None:
         rental_manager = self.make_rental_manager()
-        self.login_as(rental_manager, dest_url='/')
-        self.assertTrue(self.exists('#add-user-link'))
+        self.login_as(rental_manager, dest_url='/rentals')
+        self.assertTrue(self.exists('#viols-home-link'))
+
+
+class RentalViolLIstTestCase(SeleniumTestCaseBase):
+    viols: List[Viol]
+    rental_manager: User
+
+    def setUp(self) -> None:
+        super().setUp()
+        _test_data_init(self)
+
+    def test_list(self) -> None:
+        self.login_as(self.rental_manager, dest_url='/rentals/viols')
+        self.selenium.find_element_by_id('viol-table')
 
 
 class _TestData(Protocol):
-    viols: List[User]
+    viols: List[Viol]
+    bows: List[Bow]
+    cases: List[Case]
     num_viols: int
-    num_active_users: int
     rental_manager: User
 
-    exampleViol: Viol
-    exampleBow: Bow
-    exampleCase: Case
 
 
 def _test_data_init(test_obj: _TestData) -> None:
@@ -54,10 +65,52 @@ def _test_data_init(test_obj: _TestData) -> None:
             program=RentalProgram.regular,
             strings=6
         )
+        for i in range(test_obj.num_viols)
+    ]
+
+    test_obj.bows = [
+        Bow.objects.create(
+            vdgsa_number=1234,
+            maker='maker',
+            size=ViolSize.bass,
+            state='state',
+            value=1234.56,
+            provenance='provenance',
+            description='Description',
+            accession_date=timezone.now(),
+            program=RentalProgram.regular
+        )
+        for i in range(3)
+    ]
+
+    test_obj.cases = [
+        Case.objects.create(
+            vdgsa_number=1234,
+            maker='maker',
+            size=ViolSize.bass,
+            state='state',
+            value=1234.56,
+            provenance='provenance',
+            description='Description',
+            accession_date=timezone.now(),
+            program=RentalProgram.regular
+        )
+        for i in range(5)
+    ]
+
+    test_obj.num_users = 10
+    test_obj.num_active_users = 2
+    test_obj.users = [
+        User.objects.create_user(
+            username=f'user{i}@waa.com',
+            first_name=f'Firsty {i}',
+            last_name=f'Lasty {i}',
+            password='password',
+        )
         for i in range(test_obj.num_users)
     ]
+
     test_obj.rental_manager = test_obj.users[-1]
     test_obj.rental_manager.user_permissions.add(
         Permission.objects.get(codename='rental_manager')
     )
-
