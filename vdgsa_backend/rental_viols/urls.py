@@ -22,16 +22,22 @@ urlpatterns = [
     path('rental/<int:pk>/', views.UpdateRentalView.as_view(), name='rental-update'),
 
     path('attachImage/<str:to>/<int:pk>', views.AttachImageView.as_view(), name='add-image'),
+    path('deleteImage/<int:picture_id>', views.DeleteImageView.as_view(), name='delete-image'),
 
     path('bows/', views.ListBowsView.as_view(), name='list-bows'),
+
     path('bows/add/', views.AddBowView.as_view(), name='add-bow'),
     path('bows/<int:pk>/', views.BowDetailView.as_view(), name='bow-detail'),
     path('bow/<int:pk>/', views.UpdateBowView.as_view(), name='bow-update'),
+    path('bow/retire/<int:pk>/', views.RetireBowView.as_view(), name='bow-retire'),
+    path('bow/available/<int:pk>/', views.AvailableBowView.as_view(), name='bow-avail'),
 
     path('cases/', views.ListCasesView.as_view(), name='list-cases'),
     path('cases/add/', views.AddCaseView.as_view(), name='add-case'),
     path('cases/<int:pk>/', views.CaseDetailView.as_view(), name='case-detail'),
     path('case/<int:pk>/', views.UpdateCaseView.as_view(), name='case-update'),
+    path('case/retire/<int:pk>/', views.RetireCaseView.as_view(), name='case-retire'),
+    path('case/available/<int:pk>/', views.AvailableCaseView.as_view(), name='case-avail'),
 
     path('viols/', views.ViolsMultiListView.as_view(), name='list-viols'),
     path('viols/add/', views.AddViolView.as_view(), name='add-viol'),
@@ -48,7 +54,7 @@ urlpatterns = [
 
 
     path('waiting/', views.ListWaitingView.as_view(), name='list-waiting'),
-    path('waiting/<int:pk>', views.WaitingDetailView.as_view(), name='wait-detail'),
+    path('waiting/detail/<int:pk>/', views.WaitingDetailView.as_view(), name='wait-detail'),
     path('waiting/add', views.ReserveViolView.as_view(), name='add-waiting'),
     path('waiting/<int:pk>/', views.UpdateWaitingView.as_view(), name='wait-update'),
 

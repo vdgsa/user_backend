@@ -5,7 +5,9 @@
 
 <div class="card text-end">
   <div class="card-header">
-    <a href="{% url 'wait-update' object.pk %}" class="btn btn-primary" >Edit</a> 
+    <a href="{% url 'wait-update' object.pk %}" class="btn btn-primary" >Edit</a>    
+    <a href="{% url 'soft-delete' 'WaitingList' object.entry_num %}" class="btn btn-primary" title="Remove"><i class="bi bi-trash"></i> Remove</a>
+
   </div>
 </div>
 
@@ -17,8 +19,11 @@
     <div class="col">
     
       <p>email: {{object.email}}</p>
+
+      <p>Note: {{object.notes}}</p>
+      
       <p>Viol: <a href="{% url 'viol-detail' object.pk %}">{{object.viol_num}}</a></p>
-      <p>Size: {{object.size}}</p>
+      <p>Size: {{object.get_size_display}}</p>
       <p>Date Requested: {{object.date_req}}</p>
       <p>
           {{object.address_line_1 | safe}} <br>
@@ -28,6 +33,7 @@
       <p>Phone: {{object.phone1}}</p>
       <p>Record last modified: {{object.last_modified}}</p>
     </div>
+    <p><a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a></p>
   </div>
 
 {% endblock %}

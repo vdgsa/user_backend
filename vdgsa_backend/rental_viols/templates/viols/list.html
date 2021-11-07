@@ -13,7 +13,7 @@
     <form method="get" action="{% url 'list-viols' %}">
       <div class="row">
         <div class="col">
-          <label for="filter">Instrument State:</label>
+          <label for="filter">Status:</label>
           <select class="form-control" name="state" id="filter" onchange="javascript:this.form.submit()">
             <option value="available" {% ifequal 'available' filter.state  %}selected{% endifequal %}>Available</option>
             <option value='rented' {% ifequal 'rented' filter.state  %}selected{% endifequal %}>Rented</option>
@@ -49,9 +49,8 @@
         <tr>
           <th>VdGSA #</th>
           <th>Size</th>
-          <th># Strings</th>
           <th>Maker</th>
-          <th>Value</th>
+          <th>Custodian</th>
           <th>Program</th>
           <th>Reserved for</th>
           <th>Rental End</th>
@@ -66,9 +65,12 @@
             <a href="{% url 'viol-detail' pk=item.pk %}">{{item.vdgsa_number}}</a>
           </td>
           <td>{{item.get_size_display}}</td>
-          <td>{{item.strings}}</td>
           <td>{{item.maker}}</td>
-          <td style="text-align: right;">{{item.value | dollars}}</td>
+          <td >
+              {% if  item.storer %}
+              <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
+              {% endif %}
+          </td>
           <td>{{item.program}}</td>
           <td>
             {% if item.waitingList.all %}

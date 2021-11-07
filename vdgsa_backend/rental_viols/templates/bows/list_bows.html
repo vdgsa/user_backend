@@ -2,6 +2,11 @@
 {% load rental_tags %}
 
 {% block content %}
+<style>
+.dataTables_filter {
+   display: none;
+}
+</style>
 <div class="card text-end">
   <div class="card-header">
     <a class="btn btn-primary" href="{% url 'add-bow' %}">Add Bow</a>
@@ -10,6 +15,24 @@
 
 <div class="card">
   <div class="card-body">
+      <form method="get" action="{% url 'list-cases' %}">
+      <div class="row">
+        <div class="col">
+          <label for="filter">Status:</label>
+          <select class="form-control" name="state" id="filter" onchange="javascript:this.form.submit()">
+            <option value="available" {% ifequal 'available' filter.state  %}selected{% endifequal %}>Available</option>
+            <option value='rented' {% ifequal 'rented' filter.state  %}selected{% endifequal %}>Rented</option>
+            <option value='retired' {% ifequal 'retired' filter.state  %}selected{% endifequal %}>Retired</option>
+            <option value='all' {% ifequal 'all' filter.state  %}selected{% endifequal %}>All</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="filter">Search:</label>
+          <input type="text" class="form-control" id="searchbox">
+        </div>
+      </div>
+    </form>
+
     <table id="bow-table" class="table sortable table-striped">
       <thead>
         <tr>
@@ -19,7 +42,6 @@
           <th>Value</th>
           <th>Attached to (viol)</th>
           <th>Program</th>
-          <th>State</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -27,13 +49,12 @@
         {% for bow in object_list %}
         <tr>
           <td><a href="{% url 'bow-detail' pk=bow.pk %}">{{bow.vdgsa_number}}</a></td>
-          <td>{{bow.size}}</td>
+          <td>{{bow.get_size_display}}</td>
           <td>{{bow.maker}}</td>
           <td style="text-align: right;">{{bow.value | dollars}}</td>
           <td>{{bow.viol_num | default_if_none:""}}</td>
           <td>{{bow.program | default_if_none:""}}</td>
           <td>{{bow.state}}</td>
-          <td>{{bow.status}}</td>
         </tr>
         {% endfor %}
       </tbody>

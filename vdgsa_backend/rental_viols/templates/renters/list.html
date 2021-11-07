@@ -2,6 +2,13 @@
 {% load rental_tags %}
 
 {% block content %}
+<style>
+.dataTables_filter {
+   display: none;
+}
+</style>
+
+
 <div class="card text-end">
   <div class="card-header">
     <button class="btn btn-primary " onclick="location.href='{% url 'viol-rentOut' %}'">New Rental</button>
@@ -20,6 +27,10 @@
             <option value='inactive' {% ifequal 'inactive' filter.status  %}selected{% endifequal %}>Inactive</option>
             <option value='all' {% ifequal 'all' filter.status  %}selected{% endifequal %}>All</option>
           </select>
+        </div>
+        <div class="col">
+          <label for="filter">Search:</label>
+          <input type="text" class="form-control" id="searchbox">
         </div>
         </div>
     </form>
@@ -63,8 +74,12 @@
       "paging": false,
       "info": false,
     });
-  });
 
+
+  });
+    $("#searchbox").keyup(function() {
+      $('#renters-table').dataTable().fnFilter(this.value);
+    });    
 </script>
 
 {% endblock %}

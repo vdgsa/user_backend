@@ -1,10 +1,10 @@
 {% extends './rentals.html' %}
 {% load rental_tags %}
 {% block content %}
-<p>Retire multi
+<p>Retire {{item}}
 
 
-<form id="rental-create-form" method="post" action="{% url 'viol-retire' %}">
+<form id="rental-create-form" method="post" action="">
     {% csrf_token %} 
     {% include 'utils/form_body.tmpl' with form=form %}
 

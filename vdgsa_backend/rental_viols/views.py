@@ -37,6 +37,17 @@ from vdgsa_backend.rental_viols.models import (
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 
 
+def _createUserStamp(user):
+    return ('\n\n\nRental Contact info:\n' + user.first_name + ' ' + user.last_name + '\n' +
+            user.username + '\n' +
+            user.address_line_1 + '\n' +
+            user.address_city + ' ' +
+            user.address_state + ' ' +
+            user.address_postal_code + ' ' +
+            user.address_country + '\n' +
+            user.phone1 + '\n')
+
+
 class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self) -> bool:
         return is_rental_manager(self.request.user)
@@ -114,7 +125,6 @@ class AttachToRentalView(RentalViewBase, View):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
         if self.request.POST.get('entry_num'):
             rental = RentalHistory.objects.get(pk=self.request.POST['entry_num'])
-            print(rental)
             if self.request.POST.get('bow_num'):
                 bow = Bow.objects.get(pk=self.request.POST['bow_num'])
                 bow.status = RentalState.attached
@@ -143,7 +153,6 @@ class AttachToViolView(RentalViewBase, View):
             context['viol'] = Viol.objects.get(pk=self.request.GET['viol_num'])
             context['avail_cases'] = Case.objects.get_unattached(context['viol'].size)
             context['avail_bows'] = Bow.objects.get_unattached(context['viol'].size)
-            print('avail_bows', context['avail_bows'])
             # Get List of available bows and cases
         else:
             size = ''
@@ -243,7 +252,6 @@ class RentOutView(RentalViewBase, FormView):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
         context['avail_viols'] = Viol.objects.get_available()
-        print(context['avail_viols'])
 
         if self.request.GET.get('viol_num'):
             context['viol'] = Viol.objects.get(pk=self.request.GET['viol_num'])
@@ -266,8 +274,7 @@ class RentOutView(RentalViewBase, FormView):
                 {"event": RentalEvent.rented, "viol_num": context['viol'].viol_num,
                  "case_num": context['viol'].cases.first().case_num if context['viol'].cases.exists() else None,
                  "bow_num": context['viol'].bows.first().bow_num if context['viol'].bows.exists() else None,
-                 "renter_num": context['user'].id})
-
+                 "renter_num": context['user'].id, "notes": _createUserStamp(context['user'])})
             return render(request, 'renters/createAgreement.html', context)
 
 
@@ -275,6 +282,18 @@ class ImageForm(forms.ModelForm):
     class Meta:
         model = Image
         fields = ('image_file_name', 'caption')
+
+
+class DeleteImageView(RentalViewBase, View):
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        context = {"picture_id": self.kwargs['picture_id']}
+        image = Image.objects.get(picture_id=self.kwargs['picture_id'])
+        type = image.type
+        vbc_number = image.vbc_number
+        image.delete()
+        messages.add_message(self.request, messages.SUCCESS, 'Image Deleted')
+        return redirect(reverse(type + '-detail', args=[vbc_number]))
 
 
 class AttachImageView(RentalViewBase, FormView):
@@ -322,16 +341,19 @@ class AttachImageView(RentalViewBase, FormView):
 
 
 class RentalAgreementForm(forms.ModelForm):
+    contract = forms.FileField()
+
     def __init__(self, *args, **kwargs):
         super(RentalAgreementForm, self).__init__(*args, **kwargs)
         self.fields['rental_start'].required = True
         self.fields['rental_end'].required = True
         self.fields['event'].widget = HiddenInput()
+        self.fields['contract'].required = False
 
     class Meta:
         model = RentalHistory
-        fields = ('notes', 'rental_start', 'rental_end', 'event')
-        labels = {'event': '', }
+        fields = ('contract', 'notes', 'rental_start', 'rental_end', 'event')
+        labels = {'event': '', 'contract': 'Rental Contract', }
         widgets = {
             'rental_start': forms.DateInput(format=('%Y-%m-%d'),
                                             attrs={'class': 'form-control',
@@ -355,11 +377,12 @@ class RentalCreateView(RentalViewBase, View):
 
 
 class NotesOnlyHistoryForm(forms.ModelForm):
-    viol_num = forms.IntegerField(widget=forms.HiddenInput())
+    item = forms.HiddenInput()
 
     class Meta:
         model = RentalHistory
         fields = ('notes',)
+        labels = {'item': 'xxx', 'notes': 'Notes'}
 
 
 class RetireViolView(RentalViewBase, FormView):
@@ -369,7 +392,7 @@ class RetireViolView(RentalViewBase, FormView):
     model = RentalHistory
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
-        form = NotesOnlyHistoryForm(initial={'viol_num': self.kwargs['viol_num']})
+        form = NotesOnlyHistoryForm(initial={'item': self.kwargs['viol_num']})
         context = self.get_context_data(**kwargs)
         context['viol'] = Viol.objects.get(pk=self.kwargs['viol_num'])
         context['form'] = form
@@ -379,8 +402,16 @@ class RetireViolView(RentalViewBase, FormView):
         viol = Viol.objects.get(pk=self.kwargs['viol_num'])
         viol.status = RentalState.retired
         viol.save()
+        if viol.cases.exists():
+            viol.cases.first().status = RentalState.retired
+            viol.cases.first().save()
+        if viol.bows.exists():
+            viol.bows.first().status = RentalState.retired
+            viol.bows.first().save()
         history = RentalHistory.objects.create(
             viol_num=viol,
+            case_num=viol.cases.first() if viol.cases.exists() else None,
+            bow_num=viol.bows.first() if viol.bows.exists() else None,
             event=RentalEvent.retired,
             notes=form.cleaned_data['notes'])
         history.save()
@@ -389,7 +420,67 @@ class RetireViolView(RentalViewBase, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('viol-detail', args=[self.request.POST.get('viol_num')])
+        return reverse('viol-detail', args=[self.kwargs['viol_num']])
+
+
+class RetireBowView(RentalViewBase, FormView):
+    """Retire Bow"""
+    template_name = './retireMulti.html'
+    form_class = NotesOnlyHistoryForm
+    model = RentalHistory
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        form = NotesOnlyHistoryForm(initial={'item': self.kwargs['pk']})
+        context = self.get_context_data(**kwargs)
+        context['item'] = Bow.objects.get(pk=self.kwargs['pk'])
+        context['form'] = form
+        return render(request, self.template_name, context)
+
+    def form_valid(self, form):
+        item = Bow.objects.get(pk=self.kwargs['pk'])
+        item.status = RentalState.retired
+        item.save()
+        history = RentalHistory.objects.create(
+            bow_num=item,
+            event=RentalEvent.retired,
+            notes=form.cleaned_data['notes'])
+        history.save()
+
+        messages.add_message(self.request, messages.SUCCESS, 'Bow Retired!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('bow-detail', args=[self.kwargs['pk']])
+
+
+class RetireCaseView(RentalViewBase, FormView):
+    """Retire Case"""
+    template_name = './retireMulti.html'
+    form_class = NotesOnlyHistoryForm
+    model = RentalHistory
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        form = NotesOnlyHistoryForm(initial={'item': self.kwargs['pk']})
+        context = self.get_context_data(**kwargs)
+        context['item'] = Case.objects.get(pk=self.kwargs['pk'])
+        context['form'] = form
+        return render(request, self.template_name, context)
+
+    def form_valid(self, form):
+        item = Case.objects.get(pk=self.kwargs['pk'])
+        item.status = RentalState.retired
+        item.save()
+        history = RentalHistory.objects.create(
+            case_num=item,
+            event=RentalEvent.retired,
+            notes=form.cleaned_data['notes'])
+        history.save()
+
+        messages.add_message(self.request, messages.SUCCESS, 'Case Retired!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('case-detail', args=[self.kwargs['pk']])
 
     # def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
         # context = {}
@@ -480,23 +571,14 @@ class RentalReturnView(RentalViewBase, FormView):
         if self.kwargs['entry_num']:
             oldrental = RentalHistory.objects.get(pk=self.kwargs['entry_num'])
             context['oldrental'] = oldrental
-            # print('oldrental:', oldrental)
             form = RentalReturnForm(initial={"rental_end": datetime.date.today})
             context['form'] = form
-            # context['form'] = RentalReturnView(
-            #     {"event": RentalEvent.returned, "viol_num": oldrental.viol_num,
-            #      "rental_start": oldrental.rental_start,
-            #      "case_num": oldrental.case_num,
-            #      "bow_num": oldrental.bow_num,
-            #      "renter_num": oldrental.renter_num})
-
         return render(request, 'renters/return.html', context)
 
     def form_valid(self, form):
         oldrental = RentalHistory.objects.get(pk=self.kwargs['entry_num'])
 
         viol = Viol.objects.get(pk=oldrental.viol_num.pk)
-        print(viol)
         viol.renter = None
         viol.status = RentalState.available
         viol.save()
@@ -537,19 +619,25 @@ class RentalSubmitView(RentalViewBase, View):
                 viol.renter = user
                 viol.status = RentalState.rented
                 viol.save()
-                print('RentalSubmitView form', form.cleaned_data['event'])
-                history = RentalHistoryForm(
-                    {"event": form.cleaned_data['event'],
-                     "notes": form.cleaned_data['notes'],
-                     "viol_num": viol,
-                     "renter_num": user,
-                     "rental_start": form.cleaned_data['rental_start'],
-                     "rental_end": form.cleaned_data['rental_end'],
-                     "case_num": viol.cases.first() if viol.cases.exists() else None,
-                     "bow_num": viol.bows.first() if viol.bows.exists() else None})
+                history = RentalHistory.objects.create(
+                    event=form.cleaned_data['event'],
+                    notes=form.cleaned_data['notes'],
+                    viol_num=viol,
+                    renter_num=user,
+                    rental_start=form.cleaned_data['rental_start'],
+                    rental_end=form.cleaned_data['rental_end'],
+                    case_num=viol.cases.first() if viol.cases.exists() else None,
+                    bow_num=viol.bows.first() if viol.bows.exists() else None)
+
+                if request.FILES and request.FILES["contract"]:
+                    contract = RentalContract.objects.create(document=request.FILES["contract"])
+                    history.contract_scan = contract
+                    contract.save()
+
                 history.save()
                 messages.add_message(self.request, messages.SUCCESS, 'Rented!')
-            return redirect(reverse('list-renters'))
+
+            return redirect(reverse('viol-detail', args=[self.request.POST.get('viol_num')]))
 
 
 class RentalContractForm(forms.ModelForm):
@@ -576,11 +664,12 @@ class UploadRentalView(RentalViewBase, CreateView):
     #     return kwargs
 
     def form_valid(self, form):
-        print('form_valid ', self.kwargs['entry_num'])
         rh = RentalHistory.objects.get(pk=self.kwargs['entry_num'])
         response = super().form_valid(form)
         form.instance.rental.set([rh])
-        return response
+        if rh.viol_num.pk:
+            return redirect(reverse('viol-detail', args=[rh.viol_num.pk]))
+        return redirect(reverse('list-viols'))
 
     def get_context_data(self, **kwargs):
         if 'form' not in kwargs:
@@ -638,8 +727,9 @@ class ReserveViolModelForm(forms.ModelForm):
             'address_state',
             'address_postal_code',
             'phone1',
+            'notes',
         ]
-        labels = {'phone1': 'Contact Phone', 'address_line_1': 'Mailing Address', 'first_name': 'First Name', 'last_name': 'Last Name'}
+        labels = {'phone1': 'Contact Phone', 'address_line_1': 'Mailing Address', 'date_req': 'Date added', 'first_name': 'First Name', 'last_name': 'Last Name'}
 
 
 class ReserveViolView(RentalViewBase, FormView):
@@ -657,7 +747,6 @@ class ReserveViolView(RentalViewBase, FormView):
         # if self.request.GET.get('user_id'):
         #     renter = User.objects.get(pk=self.request.GET.get('user_id'))
         #     initial['renter_num'] = renter
-        print('initial', initial)
         return initial
 
     # def get_context_data(self, **kwargs):
@@ -784,7 +873,6 @@ class ListRentersView(RentalViewBase, ListView):
         queryset = []
         filter = self.getFilter()
         self.request.session[self.filterSessionName] = filter
-        print('renter filter', filter)
         if filter['status'] == 'active':
             queryset = User.objects.filter((Q(rentalhistory__event=RentalEvent.rented) | Q(rentalhistory__event=RentalEvent.renewed)) & Q(pk=F('rentalhistory__viol_num__renter')))
         elif filter['status'] == 'inactive':
@@ -801,7 +889,6 @@ class ListCustodianView(RentalViewBase, ListView):
         queryset = (Viol.objects.all().values('storer__username', 'storer__first_name', 'storer__last_name',
                                               'storer__address_state', 'storer__address_city', 'storer').annotate(total=Count('storer')).order_by('storer__last_name'))
 
-        # print(queryset)
         return queryset
 
     template_name = 'custodians/list.html'
@@ -842,7 +929,6 @@ class UpdateWaitingView(RentalViewBase, SuccessMessageMixin, UpdateView):
         return context
 
     def get_success_url(self, **kwargs) -> str:
-        print(self.object.viol_num)
         return reverse('wait-detail', args=[self.object.pk])
 
 
@@ -854,7 +940,6 @@ class BowForm(forms.ModelForm):
             'vdgsa_number',
             'maker',
             'size',
-            'state',
             'value',
             'provenance',
             'description',
@@ -863,7 +948,7 @@ class BowForm(forms.ModelForm):
             'storer',
             'program',
         ]
-        labels = {'storer': 'Custodian', }
+        labels = {'storer': 'Custodian'}
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
                                               attrs={'class': 'form-control',
@@ -889,7 +974,6 @@ class UpdateBowView(RentalViewBase, SuccessMessageMixin, UpdateView):
     success_message = "%(size)s bow was created successfully"
 
     def get_success_url(self, **kwargs) -> str:
-        print(self.object.bow_num)
         return reverse('list-bows')
 
 
@@ -910,7 +994,6 @@ class CaseForm(forms.ModelForm):
             'vdgsa_number',
             'maker',
             'size',
-            'state',
             'value',
             'provenance',
             'description',
@@ -919,7 +1002,7 @@ class CaseForm(forms.ModelForm):
             'storer',
             'program',
         ]
-        labels = {'storer': 'Custodian', }
+        labels = {'storer': 'Custodian'}
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
                                               attrs={'class': 'form-control',
@@ -947,7 +1030,6 @@ class UpdateCaseView(RentalViewBase, SuccessMessageMixin, UpdateView):
     success_message = "%(size)s case was updated successfully"
 
     def get_success_url(self, **kwargs) -> str:
-        print(self.object.case_num)
         return reverse('list-cases')
 
 
@@ -974,7 +1056,6 @@ class ViolForm(forms.ModelForm):
             'maker',
             'size',
             'strings',
-            'state',
             'value',
             'provenance',
             'description',
@@ -1033,7 +1114,6 @@ class UpdateViolView(RentalViewBase, SuccessMessageMixin, UpdateView):
     success_message = "%(size)s viol was updated successfully"
 
     def get_success_url(self, **kwargs) -> str:
-        print(self.object.viol_num)
         return reverse('list-viols')
 
 
@@ -1045,15 +1125,12 @@ class ViolDetailView(RentalViewBase, DetailView):
         context = super(ViolDetailView, self).get_context_data(**kwargs)
         context['RentalEvent'] = RentalEvent
         context['RentalState'] = RentalState
-        print('context[viol] ', context['viol'].pk)
         context['now'] = timezone.now()
 
         context['images'] = Image.objects.get_images('viol', context['viol'].pk)
 
         context['last_rental'] = (context['viol'].history.filter(event=RentalEvent.rented)
                                   .order_by('-created_at').first())
-
-        print('context[last_rental] ', context['last_rental'])
         return context
 
 
@@ -1063,7 +1140,6 @@ class RentersDetailView(RentalViewBase, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(RentersDetailView, self).get_context_data(**kwargs)
-        print('')
         rental = RentalHistory.objects.get(pk=self.kwargs['pk'])
         context['history'] = (RentalHistory.objects.all()
                               .filter(Q(event=RentalEvent.rented) | Q(event=RentalEvent.renewed) | Q(event=RentalEvent.returned))
@@ -1083,8 +1159,6 @@ class SoftDeleteView(RentalViewBase, View):
         }.get(className, 'list-viols') 
     
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
-        print('SoftDeleteView', self.kwargs['class'], self.kwargs['pk'])
-
         try:
             mymodel = apps.get_model('rental_viols', self.kwargs['class'])
             obj = mymodel.objects.get(pk=self.kwargs['pk'])
@@ -1094,9 +1168,6 @@ class SoftDeleteView(RentalViewBase, View):
 
         except RentalHistory.DoesNotExist:
             raise Http404("No MyModel matches the given query.")
-
-        print(obj)
-        # return HttpResponseRedirect(self.request.path_info)
 
         return redirect(reverse(self.returnUrl(self.kwargs['class'])))
 
@@ -1109,7 +1180,7 @@ class AvailableViolView(RentalViewBase, FormView):
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
-        form = NotesOnlyHistoryForm(initial={'viol_num': self.kwargs['viol_num']})
+        form = NotesOnlyHistoryForm(initial={'item': self.kwargs['viol_num']})
         context = self.get_context_data(**kwargs)
         context['form'] = form
 
@@ -1125,6 +1196,12 @@ class AvailableViolView(RentalViewBase, FormView):
         viol = Viol.objects.get(pk=self.request.POST['viol_num'])
         viol.status = RentalState.available
         viol.save()
+        if viol.cases.exists():
+            viol.cases.first().status = RentalState.available
+            viol.cases.first().save()
+        if viol.bows.exists():
+            viol.bows.first().status = RentalState.available
+            viol.bows.first().save()
         history = RentalHistory.objects.create(
             viol_num=viol,
             case_num=viol.cases.first() if viol.cases.exists() else None,
@@ -1138,6 +1215,75 @@ class AvailableViolView(RentalViewBase, FormView):
 
     def get_success_url(self):
         return reverse('viol-detail', args=[self.request.POST.get('viol_num')])
+
+
+class AvailableBowView(RentalViewBase, FormView):
+    """Make Available"""
+    template_name = 'viols/available.html'
+    form_class = NotesOnlyHistoryForm
+    model = RentalHistory
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        context = {}
+        form = NotesOnlyHistoryForm(initial={'item': self.kwargs['pk']})
+        context = self.get_context_data(**kwargs)
+        context['form'] = form
+
+        context['viol'] = Bow.objects.get(pk=self.kwargs['pk'])
+        # context['form'] = RentalHistoryForm(
+        #     {"event": RentalEvent.retired, "pk": viol.pk,
+        #         "case_num": viol.cases.first().case_num if viol.cases.exists() else None,
+        #         "bow_num": viol.bows.first().bow_num if viol.bows.exists() else None})
+
+        return render(request, 'viols/available.html', context)
+
+    def form_valid(self, form):
+        bow = Bow.objects.get(pk=self.request.POST['pk'])
+        bow.status = RentalState.available
+        bow.save()
+        history = RentalHistory.objects.create(
+            bow_num=bow,
+            event=RentalState.available,
+            notes=form.cleaned_data['notes'])
+        history.save()
+
+        messages.add_message(self.request, messages.SUCCESS, 'Bow Made Available!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('bow-detail', args=[self.request.POST.get('pk')])
+
+
+class AvailableCaseView(RentalViewBase, FormView):
+    """Make Available"""
+    template_name = 'viols/available.html'
+    form_class = NotesOnlyHistoryForm
+    model = RentalHistory
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        context = {}
+        form = NotesOnlyHistoryForm(initial={'item': self.kwargs['pk']})
+        context = self.get_context_data(**kwargs)
+        context['form'] = form
+
+        context['viol'] = Case.objects.get(pk=self.kwargs['pk'])
+        return render(request, 'viols/available.html', context)
+
+    def form_valid(self, form):
+        case = Case.objects.get(pk=self.request.POST['pk'])
+        case.status = RentalState.available
+        case.save()
+        history = RentalHistory.objects.create(
+            case_num=case,
+            event=RentalState.available,
+            notes=form.cleaned_data['notes'])
+        history.save()
+
+        messages.add_message(self.request, messages.SUCCESS, 'Case Made Available!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('case-detail', args=[self.request.POST.get('pk')])
 
 
 class ViewUserInfo(RentalViewBase, DetailView):

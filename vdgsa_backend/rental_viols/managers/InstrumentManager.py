@@ -7,13 +7,13 @@ from django.utils.translation import gettext_lazy as _
 
 
 class ViolSize(TextChoices):
-    pardessus = 'pardessus'
-    treble = 'treble'
-    alto = 'alto'
-    tenor = 'tenor'
-    bass = 'bass'
-    seven_string_bass = 'seven_string_bass', _('Seven-String Bass')
-    other = 'other'
+    pardessus = 'pardessus', _('Pardessus')
+    treble = 'treble', _('Treble')
+    alto = 'alto', _('Alto')
+    tenor = 'tenor', _('Tenor')
+    bass = 'bass', _('Bass')
+    seven_string_bass = 'seven-string bass', _('Seven-String Bass')
+    other = 'other', _('Other')
 
 
 class AccessoryQuerySet(models.QuerySet):
@@ -64,7 +64,6 @@ class AccessoryManager(models.Manager):
         return self.get_queryset().get_attached_status(attached=False, size=self.sizeMatch(size))
 
     def get_next_accessory_vdgsa_num(self):
-        print('get_next_accessory_vdgsa_num', self)
         maxVal = self.get_queryset().aggregate(Max('vdgsa_number')).get('vdgsa_number__max')
         maxVal = maxVal or 0
         return maxVal + 1
@@ -75,7 +74,6 @@ class ViolManager(models.Manager):
         return ViolQuerySet(self.model, using=self._db)
 
     def get_next_vdgsa_num(self):
-        print('get_next_vdgsa_num', self)
         maxVal = self.get_queryset().aggregate(Max('vdgsa_number')).get('vdgsa_number__max')
         maxVal = maxVal or 0
         return maxVal + 1

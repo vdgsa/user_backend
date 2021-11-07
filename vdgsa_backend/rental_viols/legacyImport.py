@@ -163,11 +163,13 @@ def getRentalProgram(id):
 def check_date(dateString):
     try:
         year, month, day = dateString.split("-")
+        if year == "0000":
+            return datetime.date.today()
         yearInt = int(year)
         monthInt = int(month)
         dayInt = int(day)
-        newDate = datetime.datetime(yearInt, monthInt, dayInt)
-        return dateString
+        newDate = datetime.date(yearInt, monthInt, dayInt)
+        return newDate
     except ValueError:
         return None
 
@@ -485,6 +487,9 @@ def insertRentalHistory():
                 contract = RentalContract.objects.get(pk=h['contract_scan'])
                 # print('User as Renter', renter)
                 history.contract_scan = contract
+            if(h['date']):
+                history.created_at = check_date(h['date'])
+                history.last_modified = check_date(h['date'])
 
             history.save()
             # print(history, created)

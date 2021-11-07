@@ -6,7 +6,7 @@
 
 <div class="card">
   <div class="card-body">
-  <p>Adding a Wating List record</p>
+  <p>Add a Waiting List Record</p>
 <form id="rental-create-form" method="post" action="{% url 'wait-update' object.pk %}">
   {% csrf_token %}  
   {% include 'utils/form_body.tmpl' with form=form %}

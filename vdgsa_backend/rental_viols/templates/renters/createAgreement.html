@@ -6,7 +6,7 @@
  {% else %}
   Create Renew Agreement
  {% endif %}
-<form id="rental-submit-form" method="post" action="{% url 'rental-submit' %}">
+<form id="rental-submit-form" method="post" action="{% url 'rental-submit' %}" enctype="multipart/form-data" >
   {% csrf_token %}
 
   <input type='hidden' name="viol_num" value="{{ viol.viol_num }}" />
@@ -16,7 +16,8 @@
     <div class="row">
       <div class="col">
         <p class="h3">Rental Agreement</p>
-        <p>Rent Out {{viol}} to {{user}}</p>
+        <p>Rent Out: {{viol}} </p>
+        <p>To: {{user}} </p>
       </div>
     </div>
     <div class="row">
@@ -43,9 +44,9 @@
       </div>
     </div>
   </div>
-
-  </div>
+<p>Note: Because the User has the ability to change their address at any time, We are placing their contact info in the notes.</p>
   {% include 'utils/form_body.tmpl' with form=form %}
+  
   <div class="mt-2">
     <button type="submit" class="btn btn-primary">Save</button>
     <a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a>

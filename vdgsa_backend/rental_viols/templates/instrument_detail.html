@@ -24,7 +24,11 @@
             <th scope="row"># Strings</th>
             <td>{{item.strings}} </td>
             <th scope="row">Renter</th>
-            <td>{{item.renter}}</td>
+            <td>
+            {% if  item.renter %}
+              <a href="{% url 'renter-info' item.renter.pk %}" title="Go to Renter">{{item.renter.first_name}} {{item.renter.last_name}}</a>
+            {% endif %}
+            </td>
             </tr>
 
           {% else %}

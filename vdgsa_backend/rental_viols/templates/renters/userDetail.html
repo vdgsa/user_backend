@@ -19,23 +19,23 @@
 <div class="container border mt-3 mb-3 p-3">
   <div class="row">
     <div class="col">
-      <p class="h3">{{object.first_name}} {{object.last_name}}</p>
-      <p>email: {{object.username}}</p>
-      <p>
-          {{object.address_line_1}}<br>
-          {% if object.address_line_2 %}Phone: {{object.address_line_2}}<br>{% endif%}
-          {{object.address_city}},{{object.address_state}} 
-          {{object.address_postal_code}}<br>
-          {{object.address_country}}<br>
-      </p>
-      <p>Phone: {{object.phone1}}</p>
-      {% if object.phone2 %}<p>Phone: {{object.phone2}}</p> {% endif%}
+      <p class="h3">{{object.first_name}} {{object.last_name}}</p>      
 
+      <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Renter's current info:</h5>
+        <p class="card-text">
+        <p>email: <a href="mailto:{{object.username}}">{{object.username}}</a></p>
+          <span class="h3">{{object.renter_num.first_name}} {{object.renter_num.last_name}}</span><br>
+          email: <a href="mailto:{{object.renter_num.username}}">{{object.renter_num.username}}</a><br>
+          {{object.renter_num.address_line_1}}<br>
+          {% if object.renter_num.address_line_2 %}Phone: {{object.renter_num.address_line_2}}<br>{% endif%}
+          {{object.renter_num.address_city}},{{object.renter_num.address_state}} 
+          {{object.renter_num.address_postal_code}}<br>
+          {{object.renter_num.address_country}}<br></p>
+        <p>Phone: {{object.phone1}}</p>
+        {% if object.phone2 %}<p>Phone: {{object.phone2}}</p> {% endif%}
 
-
-
-
-      
         {% if object.subscription is not None %}
           {% if object.subscription.membership_type == 'lifetime' %}
             <div  class="fw-bold">Lifetime Membership</div>
@@ -60,7 +60,10 @@
         {% endif %}
       
 
-      <p class="mt-5 text-end">Record last modified: {{object.last_modified|date:'Y-m-d'}}</p>
+      </div>
+      </div>
+
+      <p class="m-5 text-end">Record last modified: {{object.last_modified|date:'Y-m-d'}}</p>
 
       <p class="h3">      
         {% comment %} {% if object.contract_scan %}
@@ -100,4 +103,6 @@
 </div>
 
     {% history_table history %}
+
+    <p><a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a></p>
 {% endblock %}

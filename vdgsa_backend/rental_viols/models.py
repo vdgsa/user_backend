@@ -19,10 +19,7 @@ class ItemType(TextChoices):
     viol = 'viol'
     bow = 'bow'
     case = 'case'
-
-
-
-
+    
 
 class RentalItemBase(models.Model):
     """
@@ -99,7 +96,7 @@ class Bow(RentalItemInstrument):
 
     def __str__(self) -> str:
         return (
-            f'Bow: {self.vdgsa_number}: {self.size}, by:  {self.maker} '
+            f'Bow {self.vdgsa_number}: {self.size}, by:  {self.maker} '
         )
 
     def get_cname(self):
@@ -126,7 +123,7 @@ class Case(RentalItemInstrument):
 
     def __str__(self) -> str:
         return (
-            f'Case: {self.vdgsa_number} : {self.size}, by:  {self.maker} '
+            f'Case {self.vdgsa_number} : {self.size}, by:  {self.maker} '
         )
 
     def get_cname(self):
@@ -190,7 +187,7 @@ class WaitingList(RentalItemBase):
     address_postal_code = models.CharField(max_length=255, blank=True)
     # address_country = models.CharField(max_length=255, blank=True)
     phone1 = models.CharField(max_length=30, blank=True)
-
+    notes = models.TextField(blank=True)
     viol_num = models.ForeignKey(
         Viol, db_column='viol_num',
         on_delete=models.SET_NULL, blank=True, null=True,

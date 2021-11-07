@@ -32,7 +32,8 @@ class RentalState(TextChoices):
     rented = 'Rented'
     reserved = 'Reserved'
     retired = 'Retired'
-    Unattached = 'Unattached'
+    unattached = 'Unattached'
+    unknown = 'Unknown'
 
     # shipped = 'shipped; ?
     # invoiced = 'invoiced' ? if we integrate stripe payment

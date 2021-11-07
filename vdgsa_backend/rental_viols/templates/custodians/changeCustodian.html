@@ -6,7 +6,7 @@
           onClick="changeCustModal('{{image}}')"
           >Change Custodian</a>
 
-  <form method="post" enctype="multipart/form-data">
+  <form method="post">
     {% csrf_token %}
     {% include 'utils/form_body.tmpl' with form=form %}
     <input type="hidden" name="vbc_number" value="{{ vbc_number }}"/> {{ vbc_number }}

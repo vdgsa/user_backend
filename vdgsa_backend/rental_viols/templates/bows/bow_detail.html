@@ -9,8 +9,10 @@
     {% else %}
     <a href="{% url 'viol-attach' %}?bow_num={{ object.bow_num }}" class="btn btn-primary" >Attach to viol</a> 
     {% endif %}
-    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" disabled>Retire</a> 
-    <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn disabled" disabled>Unretire</a> 
+    <a href="{% url 'bow-retire' object.pk %}" class="btn btn-primary">Retire</a> 
+    {% if object.status == RentalState.retired %}
+    <a href="{% url 'bow-avail' object.pk %}" class="btn btn-primary">Unretire</a> 
+     {% endif %}
     <a href="{% url 'bow-update' object.bow_num %}" class="btn btn-primary" >Edit</a> 
 </div>
 </div>
@@ -18,6 +20,7 @@
   <div class="row">
     <div class="col">
       <p class="h3">{{object}}</p>
+      <div class="text-end">({{object.status}})</div>
     </div>
   </div>
 
@@ -31,7 +34,7 @@
       <div class="col">
         {% for image in images.all %}
         <a
-          onClick="showModalImage('/uploads/{{image}}')"
+          onClick="showModalImage('/uploads/{{image}}',{{image.picture_id}})"
           ><img height="100" src="/uploads/{{image}}"
         /></a>
         {% endfor %}
@@ -48,12 +51,19 @@
 
 {% history_table object.history %}
 
+    <p><a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a></p>
 {% endblock %}
 
 {% block modals %}
     <script>
-      function showModalImage(imageUrl) {
+      function showModalImage(imageUrl, picture_id) {
         $("#modalImage").attr("src", imageUrl);
+        $("#imageDeleteButton").bind({
+          click: function() {
+            console.log(picture_id)
+            window.location = '/rentals/deleteImage/' + picture_id
+          },
+        });
         $("#imageModal").modal("show");
       }
     </script>
@@ -73,6 +83,9 @@
       </div>
       <div class="modal-body">
         <img id="modalImage" width="500" src="" />
+          <p><button id="imageDeleteButton" type="button" class="btn btn-sm btn-danger align-baseline m-2">
+          Delete Image
+        </button></p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

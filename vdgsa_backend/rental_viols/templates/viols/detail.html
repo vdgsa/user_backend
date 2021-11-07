@@ -5,7 +5,7 @@
 <div class="card text-end">
   <div class="card-header">
     <div className="buttonbar-ctr d-flex justify-content-around ">
-      {% if object.status == RentalState.new %}
+      {% if object.status == RentalState.new  or object.status == RentalState.unknown%}
         <a href="{% url 'viol-avail' object.viol_num %}"
           class="btn btn-primary">Make available</a>
       {% endif %} 
@@ -18,6 +18,9 @@
         {% if object.status == RentalState.available %}
           <a href="{% url 'viol-retire' object.viol_num %}" class="btn btn-primary"
             >Retire</a>
+        {% elif object.status == RentalState.retired %}
+          <a href="{% url 'viol-avail' object.viol_num %}" class="btn btn-primary"
+            >Unretire</a>
         {% endif %}
 
       {% elif object.status == RentalState.rented and last_rental.entry_num%}
@@ -111,7 +114,7 @@
       <div class="col">
         {% for image in images.all %}
         <a
-          onClick="showModalImage('/uploads/{{image}}')"
+          onClick="showModalImage('/uploads/{{image}}',{{image.picture_id}})"
           ><img height="100" src="/uploads/{{image}}"
         /></button>
         {% endfor %}
@@ -146,9 +149,17 @@
 
 {% block modals %}
     <script>
-      function showModalImage(imageUrl) {
+      function showModalImage(imageUrl, picture_id) {
         $("#modalImage").attr("src", imageUrl);
+        $("#imageDeleteButton").bind({
+          click: function() {
+            console.log(picture_id)
+            window.location = '/rentals/deleteImage/' + picture_id
+          },
+        });
         $("#imageModal").modal("show");
+      }
+      function deleteImage(picture_id) {
       }
     </script>
 
@@ -168,6 +179,10 @@
       </div>
       <div class="modal-body">
         <img id="modalImage" width="500" src="" />
+
+        <p><button id="imageDeleteButton" type="button" class="btn btn-sm btn-danger align-baseline m-2">
+          Delete Image
+        </button></p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
