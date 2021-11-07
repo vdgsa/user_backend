@@ -22,7 +22,7 @@
 
       <p>Note: {{object.notes}}</p>
       
-      <p>Viol: <a href="{% url 'viol-detail' object.pk %}">{{object.viol_num}}</a></p>
+      <p>Viol: <a href="{% url 'viol-detail' object.viol_num.pk %}">{{object.viol_num}}</a></p>
       <p>Size: {{object.get_size_display}}</p>
       <p>Date Requested: {{object.date_req}}</p>
       <p>
