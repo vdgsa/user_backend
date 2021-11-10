@@ -20,7 +20,13 @@
   <div class="row">
     <div class="col">
       <p class="h3">{{object}}</p>
-      <div class="text-end">({{object.status}})</div>
+      <div class="text-end">
+        {% if object.viol_num %}
+        ({{object.viol_num.status}})
+        {% else %}
+        ({{object.status}})
+        {% endif %}
+        </div>
     </div>
   </div>
 
@@ -34,7 +40,7 @@
       <div class="col">
         {% for image in images.all %}
         <a
-          onClick="showModalImage('/uploads/{{image}}',{{image.picture_id}})"
+          onClick="showModalImage('/uploads/{{image}}',{{image.picture_id}}))"
           ><img height="100" src="/uploads/{{image}}"
         /></a>
         {% endfor %}
@@ -47,13 +53,8 @@
         >
       </div>
     </div>
-
-
 {% history_table object.history %}
-
-    <p><a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a></p>
 {% endblock %}
-
 {% block modals %}
     <script>
       function showModalImage(imageUrl, picture_id) {

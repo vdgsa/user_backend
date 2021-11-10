@@ -17,14 +17,26 @@ class ViolSize(TextChoices):
 
 
 class AccessoryQuerySet(models.QuerySet):
+
+    def get_all(self, size):
+        if size:
+            return self.filter(size=size)
+        return self
+
     def get_attached_status(self, attached, size):
         if size:
             return self.filter(size=size).filter(viol_num__isnull=not attached)
+        return self.filter(viol_num__isnull=not attached)
 
     def get_status(self, status, size):
         if size:
-            return self.filter(size=size).filter(status=status)
-        return self.filter(status=status)
+            return self.filter(size=size).filter(viol_num__status=status)
+        return self.filter(viol_num__status=status)
+
+    def get_rented_status(self, rented, size):
+        if size:
+            return self.filter(size=size).filter(viol_num__renter__isnull=not rented)
+        return self.filter(viol_num__renter__isnull=not rented)
 
 
 class ViolQuerySet(models.QuerySet):
@@ -57,8 +69,14 @@ class AccessoryManager(models.Manager):
     def get_available(self, size=None):
         return self.get_queryset().get_attached_status(attached=False, size=self.sizeMatch(size))
 
+    def get_rented(self, size=None):
+        return self.get_queryset().get_rented_status(rented=True, size=size)
+
+    def get_retired(self, size=None):
+        return self.get_queryset().get_status(status=RentalState.retired, size=size)
+
     def get_attached(self):
-        return self.get_queryset().get_attached_status(attached=True)
+        return self.get_queryset().get_attached_status(viol_num__attached=True)
 
     def get_unattached(self, size):
         return self.get_queryset().get_attached_status(attached=False, size=self.sizeMatch(size))
@@ -67,6 +85,9 @@ class AccessoryManager(models.Manager):
         maxVal = self.get_queryset().aggregate(Max('vdgsa_number')).get('vdgsa_number__max')
         maxVal = maxVal or 0
         return maxVal + 1
+
+    def get_all(self, size=None):
+        return self.get_queryset().get_all(size=size)
 
 
 class ViolManager(models.Manager):
@@ -92,7 +113,6 @@ class ViolManager(models.Manager):
 
     def get_retired(self, size=None):
         return self.get_queryset().get_status(status=RentalState.retired, size=size)
-        
 
 
 class ImageManager(models.Manager):

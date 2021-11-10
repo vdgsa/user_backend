@@ -5,10 +5,10 @@
         <table class="table table-sm table-light">
         <thead>
             <tr>
-            <th scope="col"></th>
-            <th scope="col"></th>
-            <th scope="col"></th>
-            <th scope="col"></th>
+            <th scope="col" class="col-2"></th>
+            <th scope="col" class="col-5"></th>
+            <th scope="col" class="col-2"></th>
+            <th scope="col" class="col-3"></th>
             </tr>
         </thead>
         <tbody>
@@ -34,9 +34,15 @@
           {% else %}
             <tr>
             <th scope="row">Attached to Viol</th>
-            <td colspan="3">
+            <td>
             {% if  item.viol_num %}
               <a href="{% url 'viol-detail' item.viol_num.viol_num %}" title="Go to Viol">{{item.viol_num}} </a>
+            {% endif %}
+            </td>
+            <th scope="row">Renter</th>
+            <td>
+            {% if  item.viol_num.renter %}
+              <a href="{% url 'renter-info' item.viol_num.renter.pk %}" title="Go to Renter">{{item.viol_num.renter.first_name}} {{item.viol_num.renter.last_name}}</a>
             {% endif %}
             </td>
             </tr>
@@ -48,34 +54,29 @@
             <td>{{item.get_size_display}}</td>
             <th scope="row">Value</th>
             <td>{{item.value}}</td>
-
             </tr>
 
             <tr>
-            <th scope="row">Condition</th>
-            <td>{{item.state}}</td>
+            <th scope="row">Maker</th>
+            <td>{{item.maker}}</td>
             <th scope="row">Custodian</th>
             <td>
               
               {% if  item.storer %}
               <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
               {% endif %}
-              <a class="btn btn-sm btn-secondary float-end" onClick="changeCustModal()"
-                >Change Custodian</a>
+              <a class="btn btn-sm btn-secondary float-end me-2" onClick="changeCustModal()"
+                >Change</a>
             </td>
             </tr>
             
             <tr>
-            <th scope="row">Maker</th>
-            <td>{{item.maker}}</td>
+            <th scope="row">Description</th>
+            <td>{{item.description}}</td>
             <th scope="row">Date Added</th>
             <td>{{item.accession_date}}</td>
             </tr>
 
-            <tr>
-            <th scope="row">Description</th>
-            <td colspan="3">{{item.description}}</td>
-            </tr>
 
             <tr>
             <th scope="row">Provenance </th>

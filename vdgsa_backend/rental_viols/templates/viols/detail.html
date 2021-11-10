@@ -1,5 +1,5 @@
-{% extends '../rentals.html' %} {% load rental_tags %}
-
+{% extends '../rentals.html' %} 
+{% load rental_tags %}
 {% block content %}
 
 <div class="card text-end">
@@ -116,7 +116,7 @@
         <a
           onClick="showModalImage('/uploads/{{image}}',{{image.picture_id}})"
           ><img height="100" src="/uploads/{{image}}"
-        /></button>
+        /></a>
         {% endfor %}
       </div>
       <div class="col">
@@ -129,23 +129,12 @@
     </div>
 
 </div>
-    {% comment %}
-    <div class="row">
-      <div class="col">
-        <p class="h3"></p>
-      </div>
-    </div>
-    {% endcomment %}
-
-
 
     {% history_table object.history %}
   </div>
 
   {% endblock %}
 
-  
-</div>
 
 {% block modals %}
     <script>

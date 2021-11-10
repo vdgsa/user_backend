@@ -67,6 +67,9 @@
       "paging": false,
       "info": false
     });
+    $("#searchbox").keyup(function() {
+      $('#bow-table').dataTable().fnFilter(this.value);
+    });    
   });
 
 </script>

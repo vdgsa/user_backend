@@ -75,11 +75,11 @@
       "info": false,
     });
 
-
-  });
     $("#searchbox").keyup(function() {
       $('#renters-table').dataTable().fnFilter(this.value);
     });    
+
+  });
 </script>
 
 {% endblock %}

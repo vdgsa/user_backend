@@ -21,7 +21,13 @@
   <div class="row">
     <div class="col">
       <p class="h3">{{object}}</p>
-      <div class="text-end">({{object.status}})</div>
+      <div class="text-end">
+        {% if object.viol_num %}
+        ({{object.viol_num.status}})
+        {% else %}
+        ({{object.status}})
+        {% endif %}
+        </div>
     </div>
   </div>
 

@@ -841,12 +841,77 @@ class ViolsMultiListView(RentalViewBase, ListView):
 
 class ListBowsView(RentalViewBase, ListView):
     model = Bow
+    filterSessionName = 'bow_filter'
     template_name = 'bows/list_bows.html'
+    filter = None
+
+    def getFilter(self, **kwargs):
+        filter = {}
+        if self.request.GET.get('state') is None:
+            filter = self.request.session.get(self.filterSessionName, None)
+            if filter is None:
+                filter = {'state': 'all'}
+        else:
+            filter = {'state': self.request.GET.get('state') or 'all'}
+        return filter
+
+    def get_context_data(self, **kwargs):
+        context = super(ListBowsView, self).get_context_data(**kwargs)
+        context['filter'] = self.getFilter()
+        return context
+
+    def get_queryset(self, *args: Any, **kwargs: Any):
+        filter = self.getFilter()
+        self.request.session[self.filterSessionName] = filter
+
+        if filter['state'] == 'available':
+            queryset = Bow.objects.get_available()
+        elif filter['state'] == 'retired':
+            queryset = Bow.objects.get_retired()
+        elif filter['state'] == 'rented':
+            queryset = Bow.objects.get_rented()
+        else:
+            queryset = Bow.objects.get_all()
+
+        return queryset
 
 
 class ListCasesView(RentalViewBase, ListView):
     model = Case
+    filterSessionName = 'case_filter'
     template_name = 'cases/list.html'
+    filter = None
+
+    def getFilter(self, **kwargs):
+        filter = {}
+
+        if self.request.GET.get('state') is None:
+            filter = self.request.session.get(self.filterSessionName, None)
+            if filter is None:
+                filter = {'state': 'all'}
+        else:
+            filter = {'state': self.request.GET.get('state') or 'all'}
+        return filter
+
+    def get_context_data(self, **kwargs):
+        context = super(ListCasesView, self).get_context_data(**kwargs)
+        context['filter'] = self.getFilter()
+        return context
+
+    def get_queryset(self, *args: Any, **kwargs: Any):
+        filter = self.getFilter()
+        self.request.session[self.filterSessionName] = filter
+
+        if filter['state'] == 'available':
+            queryset = Case.objects.get_available()
+        elif filter['state'] == 'retired':
+            queryset = Case.objects.get_retired()
+        elif filter['state'] == 'rented':
+            queryset = Case.objects.get_rented()
+        else:
+            queryset = Case.objects.get_all()
+
+        return queryset
 
 
 class ListRentersView(RentalViewBase, ListView):
@@ -1126,9 +1191,7 @@ class ViolDetailView(RentalViewBase, DetailView):
         context['RentalEvent'] = RentalEvent
         context['RentalState'] = RentalState
         context['now'] = timezone.now()
-
         context['images'] = Image.objects.get_images('viol', context['viol'].pk)
-
         context['last_rental'] = (context['viol'].history.filter(event=RentalEvent.rented)
                                   .order_by('-created_at').first())
         return context

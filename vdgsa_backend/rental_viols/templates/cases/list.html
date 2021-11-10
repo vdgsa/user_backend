@@ -76,6 +76,9 @@
       "paging": false,
       "info": false
     });
+    $("#searchbox").keyup(function() {
+      $('#cases-table').dataTable().fnFilter(this.value);
+    });    
   });
 
 </script>
