@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<p>Viol update</p>
+<p>Viol update - VdGSA# {{ object.vdgsa_number }}</p>
 <form id="viol-update-form" method="post" action="{% url 'viol-update' object.viol_num %}">
   {% csrf_token %} {% include 'utils/form_body.tmpl' with form=form %}
 

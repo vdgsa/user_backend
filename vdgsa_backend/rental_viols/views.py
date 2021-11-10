@@ -999,6 +999,10 @@ class UpdateWaitingView(RentalViewBase, SuccessMessageMixin, UpdateView):
 
 # CRUD
 class BowForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(BowForm, self).__init__(*args, **kwargs)
+        self.fields['vdgsa_number'].widget = HiddenInput()
+
     class Meta:
         model = Bow
         fields = [
@@ -1013,7 +1017,7 @@ class BowForm(forms.ModelForm):
             'storer',
             'program',
         ]
-        labels = {'storer': 'Custodian'}
+        labels = {'storer': 'Custodian', 'vdgsa_number': '', }
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
                                               attrs={'class': 'form-control',
@@ -1053,6 +1057,10 @@ class BowDetailView(RentalViewBase, DetailView):
 
 
 class CaseForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CaseForm, self).__init__(*args, **kwargs)
+        self.fields['vdgsa_number'].widget = HiddenInput()
+
     class Meta:
         model = Case
         fields = [
@@ -1067,7 +1075,7 @@ class CaseForm(forms.ModelForm):
             'storer',
             'program',
         ]
-        labels = {'storer': 'Custodian'}
+        labels = {'storer': 'Custodian', 'vdgsa_number': '', }
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
                                               attrs={'class': 'form-control',
@@ -1111,7 +1119,7 @@ class CaseDetailView(RentalViewBase, DetailView):
 class ViolForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ViolForm, self).__init__(*args, **kwargs)
-        self.fields['vdgsa_number'].required = True
+        self.fields['vdgsa_number'].widget = HiddenInput()
         self.fields['strings'].required = True
 
     class Meta:
@@ -1129,7 +1137,7 @@ class ViolForm(forms.ModelForm):
             'storer',
             'program',
         ]
-        labels = {'storer': 'Custodian', }
+        labels = {'storer': 'Custodian', 'vdgsa_number': '', }
         widgets = {
             'accession_date': forms.DateInput(format=('%Y-%m-%d'),
                                               attrs={'class': 'form-control',

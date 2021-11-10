@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<p>Add Case</p>
+<p>Add Case - VdGSA# {{ form.vdgsa_number.value }}</p>
 <form id="add-case-form" method="post" action="{% url 'add-case' %}">
   {% csrf_token %} {% include 'utils/form_body.tmpl' with form=form %}
 
