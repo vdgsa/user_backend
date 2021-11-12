@@ -44,7 +44,7 @@
       <label for="viol_num">Select Viol </label>
       <select class="form-control" name="viol_num" id="viol_num">
         {% for v in avail_viols.all %}
-        <option value="{{v.pk}}">{{v}}</option>
+        <option value="{{v.pk}}">{{v.get_size_display}} - VdGSA #{{v.vdgsa_number}} by: {{v.maker}}</option>
         {% empty %}
         <option>None available</option>
         {% endfor %}

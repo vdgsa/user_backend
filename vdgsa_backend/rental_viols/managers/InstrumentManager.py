@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q, Max, Count
+from django.db.models import Q, Max, Count, Subquery, OuterRef
 from django.db.models.enums import TextChoices
 from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
     RentalItemBaseManager, RentalEvent, RentalState)
@@ -30,8 +30,8 @@ class AccessoryQuerySet(models.QuerySet):
 
     def get_status(self, status, size):
         if size:
-            return self.filter(size=size).filter(viol_num__status=status)
-        return self.filter(viol_num__status=status)
+            return self.filter(size=size).filter(state=status)
+        return self.filter(state=status)
 
     def get_rented_status(self, rented, size):
         if size:
@@ -53,8 +53,8 @@ class ViolQuerySet(models.QuerySet):
 
     def get_status(self, status, size):
         if size:
-            return self.filter(size=size).filter(status=status)
-        return self.filter(status=status)
+            return self.filter(size=size).filter(state=status)
+        return self.filter(state=status)
 
 
 class AccessoryManager(models.Manager):
@@ -67,8 +67,9 @@ class AccessoryManager(models.Manager):
         return AccessoryQuerySet(self.model, using=self._db)
 
     def get_available(self, size=None):
-        return self.get_queryset().get_attached_status(attached=False, size=self.sizeMatch(size))
-
+        return self.get_queryset().get_attached_status(
+            attached=False, size=self.sizeMatch(size)).filter(~Q(state=RentalState.retired))
+            
     def get_rented(self, size=None):
         return self.get_queryset().get_rented_status(rented=True, size=size)
 
@@ -103,7 +104,8 @@ class ViolManager(models.Manager):
         return self.get_queryset().get_all(size=size)
 
     def get_available(self, size=None):
-        return self.get_queryset().get_rented_status(rented=False, size=size).filter(status=RentalState.available)
+        return self.get_queryset().get_rented_status(rented=False, size=size).filter(
+            status=RentalState.available)
 
     def get_attachable(self, size=None):
         return self.get_queryset().get_rented_status(rented=False, size=size)

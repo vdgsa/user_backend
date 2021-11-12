@@ -10,7 +10,7 @@
     <a href="{% url 'viol-attach' %}?case_num={{ object.case_num }}" class="btn btn-primary" >Attach to viol</a> 
     {% endif %}
     <a href="{% url 'case-retire' object.pk %}" class="btn btn-primary">Retire</a> 
-     {% if object.status == RentalState.retired %}
+     {% if object.state == RentalState.retired %}
         <a href="{% url 'case-avail' object.pk %}" class="btn btn-primary">Unretire</a> 
      {% endif %}
     <a href="{% url 'case-update' object.case_num %}" class="btn btn-primary" >Edit</a> 
@@ -25,7 +25,7 @@
         {% if object.viol_num %}
         ({{object.viol_num.status}})
         {% else %}
-        ({{object.status}})
+        ({{object.state}})
         {% endif %}
         </div>
     </div>
@@ -40,8 +40,8 @@
       <div class="col">
         {% for image in images.all %}
         <a
-          onClick="showModalImage('/uploads/{{image}}',{{image.picture_id}})"
-          ><img height="100" src="/uploads/{{image}}"
+          onClick="showModalImage('{% url 'show-image' image.picture_id %}',{{image.picture_id}})"
+          ><img height="100" src="{% url 'show-image' image.picture_id %}"
         /></button>
         {% endfor %}
       </div>

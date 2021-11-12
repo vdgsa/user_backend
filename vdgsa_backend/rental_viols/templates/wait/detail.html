@@ -11,18 +11,13 @@
   </div>
 </div>
 
-
 <div class="container border mt-3 mb-3 p-3">
-
-      <p class="h3">{{object.first_name}} {{object.last_name}}</p>
+  <p class="h3">{{object.first_name}} {{object.last_name}}</p>
   <div class="row">
     <div class="col">
-    
       <p>email: {{object.email}}</p>
-
       <p>Note: {{object.notes}}</p>
-      
-      <p>Viol: <a href="{% url 'viol-detail' object.viol_num.pk %}">{{object.viol_num}}</a></p>
+      <p>Viol: {% if object.viol_num %}<a href="{% url 'viol-detail' object.viol_num.pk %}">{{object.viol_num}}</a>{% endif %}</p>
       <p>Size: {{object.get_size_display}}</p>
       <p>Date Requested: {{object.date_req}}</p>
       <p>

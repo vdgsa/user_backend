@@ -21,6 +21,8 @@ urlpatterns = [
     path('rentals/<int:pk>/', views.RentersDetailView.as_view(), name='rental-detail'),
     path('rental/<int:pk>/', views.UpdateRentalView.as_view(), name='rental-update'),
 
+    path('contract/<int:entry_num>', views.RentalContractView.as_view(), name='show-contract'),
+    path('image/<int:picture_id>', views.ImageView.as_view(), name='show-image'),
     path('attachImage/<str:to>/<int:pk>', views.AttachImageView.as_view(), name='add-image'),
     path('deleteImage/<int:picture_id>', views.DeleteImageView.as_view(), name='delete-image'),
 

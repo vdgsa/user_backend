@@ -114,8 +114,8 @@
       <div class="col">
         {% for image in images.all %}
         <a
-          onClick="showModalImage('/uploads/{{image}}',{{image.picture_id}})"
-          ><img height="100" src="/uploads/{{image}}"
+          onClick="showModalImage('{% url 'show-image' image.picture_id %}',{{image.picture_id}})"
+          ><img height="100" src="{% url 'show-image' image.picture_id %}"
         /></a>
         {% endfor %}
       </div>

@@ -62,7 +62,12 @@
               <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
               {% endif %}
           </td>
-          <td>{{item.state}}</td>
+          <td>
+              {% if item.viol_num %}
+              {{item.viol_num.status}}
+              {% else %}
+              {{item.state}}
+              {% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>

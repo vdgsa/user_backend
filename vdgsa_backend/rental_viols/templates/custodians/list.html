@@ -2,21 +2,29 @@
 {% load rental_tags %}
 
 {% block content %}
-{% comment %} 
-<div class="card text-end">
-  <div class="card-header">
-<!--<a class="btn btn-primary" href="{% url 'add-case' %}">Add Case</a> -->
-  </div>
-</div> 
-{% endcomment %}
+<style>
+.dataTables_filter {
+   display: none;
+}
+</style>
 
 <div class="card">
   <div class="card-body">
+
+      <div class="row">
+        <div class="col">
+        </div>
+        <div class="col">
+          <label for="filter">Search:</label>
+          <input type="text" class="form-control" id="searchbox">
+        </div>
+      </div>
+
     <table id="custodian-table" class="table table-striped">
       <thead>
         <tr>
           <th>Custodian</th>
-          <th>State</th>
+          <th>Location</th>
           <th># of Viols</th>
         </tr>
       </thead>
@@ -35,4 +43,16 @@
     </table>
   </div>
 </div> 
+<script>
+  $(document).ready(function () {
+    $('#custodian-table').DataTable({
+      "paging": false,
+      "info": false
+    });
+    $("#searchbox").keyup(function() {
+      $('#custodian-table').dataTable().fnFilter(this.value);
+    });    
+  });
+
+</script>
 {% endblock %}

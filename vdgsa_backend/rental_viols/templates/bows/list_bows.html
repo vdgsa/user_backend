@@ -15,7 +15,7 @@
 
 <div class="card">
   <div class="card-body">
-      <form method="get" action="{% url 'list-cases' %}">
+      <form method="get" action="{% url 'list-bows' %}">
       <div class="row">
         <div class="col">
           <label for="filter">Status:</label>
@@ -54,7 +54,12 @@
           <td style="text-align: right;">{{bow.value | dollars}}</td>
           <td>{{bow.viol_num | default_if_none:""}}</td>
           <td>{{bow.program | default_if_none:""}}</td>
-          <td>{{bow.state}}</td>
+          <td>
+              {% if bow.viol_num %}
+              {{bow.viol_num.status}}
+              {% else %}
+              {{bow.state}}
+              {% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
