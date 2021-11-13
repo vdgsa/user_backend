@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Count, F, Max, Q, IntegerField
+from django.db.models import Count, F, IntegerField, Max, Q
 from django.db.models.functions import Cast
 from django.forms.forms import BaseForm
 from django.forms.widgets import DateTimeBaseInput, HiddenInput
@@ -102,7 +102,6 @@ class ReserveViolModelForm(forms.ModelForm):
         ]
         labels = {'phone1': 'Contact Phone', 'address_line_1': 'Mailing Address',
                   'date_req': 'Date added', 'first_name': 'First Name', 'last_name': 'Last Name'}
-
 
 
 class AjaxFormResponse(JsonResponse):

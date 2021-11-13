@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.files.storage import FileSystemStorage
-from django.db.models import Count, F, Max, Q, IntegerField
+from django.db.models import Count, F, IntegerField, Max, Q
 from django.db.models.functions import Cast
 from django.forms.widgets import DateTimeBaseInput, HiddenInput
 from django.http import Http404, JsonResponse, response
@@ -473,7 +473,7 @@ class ListRentersView(RentalViewBase, ListView):
             queryset = User.objects.filter(
                 (Q(rentalhistory__event=RentalEvent.rented) | Q(
                     rentalhistory__event=RentalEvent.renewed)))
-        
+
         print('sql', queryset.query)
         return queryset.annotate(num_rentals=Count('rentalhistory')).annotate(
             rental_end_date=Max('rentalhistory__rental_end', filter=Q(

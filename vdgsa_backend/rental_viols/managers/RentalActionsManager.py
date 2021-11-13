@@ -1,17 +1,6 @@
 from django.db import models
+
 from vdgsa_backend.rental_viols.models import RentalEvent
-
-# entry_num
-# viol_num
-# bow_num
-# case_num
-# renter_num
-# event
-# notes
-# rental_start
-# rental_end
-# contract_scan
-
 
 
 class RentalHistoryQuerySet(models.QuerySet):

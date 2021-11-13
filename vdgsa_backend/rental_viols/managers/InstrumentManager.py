@@ -1,9 +1,11 @@
 from django.db import models
-from django.db.models import Q, Max, Count, Subquery, OuterRef
+from django.db.models import Count, Max, OuterRef, Q, Subquery
 from django.db.models.enums import TextChoices
-from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
-    RentalItemBaseManager, RentalEvent, RentalState)
 from django.utils.translation import gettext_lazy as _
+
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
+    RentalEvent, RentalItemBaseManager, RentalState
+)
 
 
 class ViolSize(TextChoices):
@@ -69,7 +71,7 @@ class AccessoryManager(models.Manager):
     def get_available(self, size=None):
         return self.get_queryset().get_attached_status(
             attached=False, size=self.sizeMatch(size)).filter(~Q(state=RentalState.retired))
-            
+
     def get_rented(self, size=None):
         return self.get_queryset().get_rented_status(rented=True, size=size)
 

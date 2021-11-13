@@ -12,10 +12,11 @@ from selenium.webdriver.remote.webelement import WebElement  # type: ignore
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import User
-from vdgsa_backend.rental_viols.models import Viol, Bow, Case, RentalProgram
-from vdgsa_backend.rental_viols.managers.InstrumentManager import (AccessoryManager, ImageManager, 
-                                                                   ViolManager, ViolSize)
-from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (RentalState)
+from vdgsa_backend.rental_viols.managers.InstrumentManager import (
+    AccessoryManager, ImageManager, ViolManager, ViolSize
+)
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import RentalState
+from vdgsa_backend.rental_viols.models import Bow, Case, RentalProgram, Viol
 from vdgsa_backend.templatetags.filters import format_datetime_impl
 
 from .selenium_test_rental_base import SeleniumTestCaseBase
@@ -47,7 +48,6 @@ class _TestData(Protocol):
     cases: List[Case]
     num_viols: int
     rental_manager: User
-
 
 
 def _test_data_init(test_obj: _TestData) -> None:

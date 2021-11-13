@@ -1,7 +1,8 @@
 import datetime
+import mimetypes
 from functools import cached_property
 from typing import Any, Dict, Iterable, Literal
-import mimetypes
+
 from django import forms
 from django.apps import apps
 from django.contrib import messages

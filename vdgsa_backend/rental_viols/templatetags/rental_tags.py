@@ -1,9 +1,9 @@
-from vdgsa_backend.rental_viols.models import (
-    Bow, Case, RentalEvent, RentalState, RentalHistory, Viol, WaitingList
-)
 from django import template
-
 from django.contrib.humanize.templatetags.humanize import intcomma
+
+from vdgsa_backend.rental_viols.models import (
+    Bow, Case, RentalEvent, RentalHistory, RentalState, Viol, WaitingList
+)
 
 register = template.Library()
 

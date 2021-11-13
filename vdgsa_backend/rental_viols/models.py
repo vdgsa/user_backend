@@ -19,7 +19,7 @@ class ItemType(TextChoices):
     viol = 'viol'
     bow = 'bow'
     case = 'case'
-    
+
 
 class RentalItemBase(models.Model):
     """
@@ -201,7 +201,8 @@ class WaitingList(RentalItemBase):
 
     def __str__(self) -> str:
         return (
-            f'{self.entry_num}: {self.renter_num}, { self.viol_num.maker if self.viol_num else self.size} '
+            f' {self.entry_num}: {self.renter_num}, \
+               {self.viol_num.maker if self.viol_num else self.size} '
         )
 
 
@@ -224,8 +225,6 @@ class RentalHistory(RentalItemBase):
     )
     renter_num = models.ForeignKey(User, blank=True, null=True,
                                    default=None, on_delete=models.SET_NULL)
-                                   #, related_name='+'
-
     event = models.TextField(choices=RentalEvent.choices)
     # date = models.DateField(blank=True, null=True) in RentalItemBase
     notes = models.TextField(blank=True, null=True)

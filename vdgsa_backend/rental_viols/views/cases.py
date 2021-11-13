@@ -25,9 +25,6 @@ from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.views.generic.list import ListView
 
 from vdgsa_backend.accounts.models import User
-from vdgsa_backend.rental_viols.views.utils import ( 
-    RentalViewBase, NotesOnlyHistoryForm, ReserveViolModelForm, _createUserStamp
-)
 from vdgsa_backend.rental_viols.managers.InstrumentManager import AccessoryManager, ViolManager
 from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
     RentalEvent, RentalItemBaseManager, RentalState
@@ -37,6 +34,9 @@ from vdgsa_backend.rental_viols.models import (
     WaitingList
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
+from vdgsa_backend.rental_viols.views.utils import (
+    NotesOnlyHistoryForm, RentalViewBase, ReserveViolModelForm, _createUserStamp
+)
 
 
 class ListCasesView(RentalViewBase, ListView):

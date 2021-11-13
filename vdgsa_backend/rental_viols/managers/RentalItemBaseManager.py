@@ -1,13 +1,5 @@
-from django.db.models import QuerySet, Manager
+from django.db.models import Manager, QuerySet
 from django.db.models.enums import TextChoices
-
-
-# created_at = DateTimeField(auto_now_add=True)
-# last_modified = DateTimeField(auto_now=True)
-# status = TextField(choices=RentalState.choices, default=RentalState.available)
-
-# def get_fields(obj):
-#     return obj._meta.get_fields()
 
 
 class RentalEvent(TextChoices):
