@@ -78,7 +78,7 @@ def openJson(tableName):
 
 def searchUser(email, first, last):
     found = User.objects.filter(Q(first_name__icontains=first) & Q(
-        last_name__icontains=last) | Q(username=email))
+        last_name__icontains=last) | Q(username__iexact=email))
     print(found)
     return found
 
@@ -91,7 +91,7 @@ def findRenter(id):
         print('found more than one!', persons)
     if(len(persons) == 1):
         found = User.objects.filter(Q(first_name__icontains=persons[0]['firstname']) & Q(
-            last_name=persons[0]['lastname']) | Q(username=persons[0]['email']))
+            last_name__icontains=persons[0]['lastname']) | Q(username__iexact=persons[0]['email']))
         if(len(found) > 1):
             print('Found multiple in Users', found)
         if(len(found) == 1):
@@ -123,7 +123,7 @@ def findStorer(id):
         print('found more than one!', persons)
     if(len(persons) == 1):
         found = User.objects.filter(Q(first_name__icontains=persons[0]['firstname']) & Q(
-            last_name=persons[0]['lastname']) | Q(username=persons[0]['email']))
+            last_name=persons[0]['lastname']) | Q(username__iexact=persons[0]['email']))
         if(len(found) > 1):
             print('Found multiple in Users', found)
             return found
