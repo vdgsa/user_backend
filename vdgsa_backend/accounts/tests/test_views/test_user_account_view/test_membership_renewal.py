@@ -17,7 +17,6 @@ from vdgsa_backend.accounts.views.user_account_view.membership_renewal import (
 )
 from vdgsa_backend.templatetags.filters import format_datetime_impl
 
-
 from ..selenium_test_base import SeleniumTestCaseBase
 
 

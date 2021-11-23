@@ -7,6 +7,7 @@ from typing import Any
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
+from django.db.models.query import QuerySet
 from django.forms import widgets
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -16,7 +17,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from django.views.generic.base import View
 
 from vdgsa_backend.conclave_registration.models import (
-    Class, ConclaveRegistrationConfig, Period, get_classes_by_period
+    Class, ConclaveRegistrationConfig, Period, RegistrationEntry, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.views.permissions import is_conclave_team
 
@@ -103,7 +104,7 @@ class ListRegistrationEntriesView(LoginRequiredMixin, UserPassesTestMixin, ListV
     def conclave_config(self) -> ConclaveRegistrationConfig:
         return get_object_or_404(ConclaveRegistrationConfig, pk=self.kwargs['conclave_config_pk'])
 
-    def get_queryset(self) -> QuerySet:
+    def get_queryset(self) -> QuerySet[RegistrationEntry]:
         return self.conclave_config.registration_entries.order_by('user__last_name')
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:

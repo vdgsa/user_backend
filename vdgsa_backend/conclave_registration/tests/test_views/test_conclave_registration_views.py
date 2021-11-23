@@ -3,18 +3,14 @@ import unittest
 
 from django.test.testcases import TestCase
 from django.urls import reverse
-from selenium.common.exceptions import NoSuchElementException  # type: ignore
-from selenium.webdriver.remote.webelement import WebElement  # type: ignore
-from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, BeginnerInstrumentInfo, TSHIRT_SIZES, BasicRegistrationInfo, Class, Clef,
+    ADVANCED_PROGRAMS, TSHIRT_SIZES, BasicRegistrationInfo, BeginnerInstrumentInfo, Class, Clef,
     ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo, Period,
     Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
     WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe
 )
-from vdgsa_backend.conclave_registration.views.conclave_registration_views import BasicInfoForm
 from vdgsa_backend.selenium_test_base import SeleniumTestCaseBase
 
 
@@ -52,6 +48,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual(1, query.count())
 
         reg_entry = query.first()
+        assert reg_entry is not None
         self.assertEqual(Program.regular, reg_entry.program)
         self.assertEqual(reg_entry.conclave_config, self.conclave_config)
         self.assertEqual(reg_entry.user, self.user)
@@ -72,6 +69,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual(1, query.count())
 
         reg_entry = query.first()
+        assert reg_entry is not None
         self.assertEqual(Program.faculty_guest_other, reg_entry.program)
         self.assertEqual(reg_entry.conclave_config, self.conclave_config)
         self.assertEqual(reg_entry.user, self.user)
@@ -88,6 +86,8 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
             'Instruments', self.find('[data-testid=registration_section_header]').text)
 
     def test_membership_out_of_date_message(self) -> None:
+        assert self.user is not None
+        assert self.user.subscription is not None
         self.user.subscription.delete()
         self.login_as(self.user, dest_url=f'/conclave/{self.conclave_config.pk}/register')
         self.assertIn(
@@ -125,6 +125,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual(1, query.count())
 
         reg_entry = query.first()
+        assert reg_entry is not None
         self.assertEqual(Program.regular, reg_entry.program)
         self.assertEqual(reg_entry.conclave_config, self.conclave_config)
         self.assertEqual(reg_entry.user, user)
@@ -148,6 +149,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual(1, query.count())
 
         reg_entry = query.first()
+        assert reg_entry is not None
         self.assertEqual(Program.regular, reg_entry.program)
         self.assertEqual(reg_entry.conclave_config, self.conclave_config)
         self.assertEqual(reg_entry.user, self.user)
@@ -194,6 +196,7 @@ class ConclaveRegistrationLandingPageTestCase(_SetUp, SeleniumTestCaseBase):
         self.assertEqual(1, query.count())
 
         reg_entry = query.first()
+        assert reg_entry is not None
         self.assertEqual(Program.regular, reg_entry.program)
         self.assertEqual(reg_entry.conclave_config, self.conclave_config)
         self.assertEqual(reg_entry.user, user)
@@ -285,6 +288,8 @@ class StartRegistrationPermissionsTestCase(TestCase):
 
     def test_membership_expired_permission_denied(self) -> None:
         self.client.force_login(self.user)
+        assert self.user is not None
+        assert self.user.subscription is not None
         self.user.subscription.delete()
 
         response = self.client.post(
@@ -313,7 +318,7 @@ class _SetUpRegistrationEntry(_SetUp):
     registration_entry: RegistrationEntry
 
     def setUp(self) -> None:
-        super().setUp()  # type: ignore
+        super().setUp()
 
         self.registration_entry = RegistrationEntry.objects.create(
             conclave_config=self.conclave_config,

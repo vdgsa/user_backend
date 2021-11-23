@@ -1,12 +1,16 @@
+# type: ignore
 from __future__ import annotations
-from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
-    RentalItemBaseManager, RentalEvent, RentalState)
+
 from django.db import models
 from django.db.models.enums import TextChoices
-from django.utils import timezone
+
 from vdgsa_backend.accounts.models import User
-from vdgsa_backend.rental_viols.managers.InstrumentManager import (AccessoryManager, ViolManager,
-                                                                   ImageManager, ViolSize)
+from vdgsa_backend.rental_viols.managers.InstrumentManager import (
+    AccessoryManager, ImageManager, ViolManager, ViolSize
+)
+from vdgsa_backend.rental_viols.managers.RentalItemBaseManager import (
+    RentalEvent, RentalItemBaseManager, RentalState
+)
 
 
 class RentalProgram(TextChoices):

@@ -1,3 +1,5 @@
+# type: ignore
+
 from django.db import models
 from django.db.models import Count, Max, OuterRef, Q, Subquery
 from django.db.models.enums import TextChoices

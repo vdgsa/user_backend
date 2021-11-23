@@ -1,13 +1,8 @@
-from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
 
-from vdgsa_backend.rental_viols.models import (
-    Bow, Case, Viol, RentalHistory, WaitingList, RentalProgram
-)
-from vdgsa_backend.rental_viols.managers.InstrumentManager import (AccessoryManager, ViolManager,
-                                                                   ImageManager, ViolSize)
+from vdgsa_backend.rental_viols.managers.InstrumentManager import ViolSize
+from vdgsa_backend.rental_viols.models import Bow, Case, RentalProgram, Viol
 
 
 class ViolTestCase(TestCase):

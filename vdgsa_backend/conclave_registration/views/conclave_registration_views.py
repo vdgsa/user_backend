@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from abc import abstractmethod
 from itertools import chain
-from typing import Any, Dict, Final, Type, cast
+from typing import Any, Dict, Final, List, Type, cast
 
 import stripe  # type: ignore
 from django import forms
@@ -185,7 +185,7 @@ class _RegistrationStepViewBase(LoginRequiredMixin, UserPassesTestMixin, SingleO
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         form = self.get_form()
-        if not form.is_valid():
+        if not form.is_valid():  # type: ignore
             return self.render_page(form)
 
         form.save()
@@ -447,14 +447,14 @@ class BeginnerInstrumentsForm(_RegistrationStepFormBase, forms.ModelForm):
 
 class InstrumentsBringingView(_RegistrationStepViewBase):
     @property
-    def template_name(self) -> str:
+    def template_name(self) -> str:  # type: ignore
         if self.registration_entry.program in BEGINNER_PROGRAMS:
             return 'registration/instruments/beginner_instruments.html'
 
         return 'registration/instruments/instruments_bringing.html'
 
     @property
-    def form_class(self) -> Type[_RegistrationStepFormBase]:
+    def form_class(self) -> Type[_RegistrationStepFormBase]:  # type: ignore
         if self.registration_entry.program in BEGINNER_PROGRAMS:
             return BeginnerInstrumentsForm
 
@@ -473,10 +473,10 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
             return super().post(*args, **kwargs)
 
         form = self.form_class(self.registration_entry, self.request.POST)
-        if not form.is_valid():
+        if not form.is_valid():  # type: ignore
             return get_ajax_form_response(
                 'form_validation_error',
-                form,
+                form,  # type: ignore
                 form_template='registration/instruments/add_instrument_form_body.tmpl'
             )
 
@@ -488,12 +488,14 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
             form_template='registration/instruments/instrument.tmpl'
         )
 
-    def get_render_context(self, form: _RegistrationStepFormBase) -> dict[str, object]:
+    def get_render_context(  # type: ignore
+        self, form: _RegistrationStepFormBase
+    ) -> dict[str, object]:
         context = super().get_render_context(form)
         context['instruments'] = self.registration_entry.instruments_bringing.all()
         return context
 
-    def get_step_instance(self) -> BasicRegistrationInfo | None:
+    def get_step_instance(self) -> BeginnerInstrumentInfo | None:
         if (self.registration_entry.program in BEGINNER_PROGRAMS
                 and hasattr(self.registration_entry, 'beginner_instruments')):
             return self.registration_entry.beginner_instruments
@@ -620,7 +622,9 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
 
         return None
 
-    def get_render_context(self, form: _RegistrationStepFormBase) -> dict[str, object]:
+    def get_render_context(  # type: ignore
+        self, form: _RegistrationStepFormBase
+    ) -> dict[str, object]:
         context = super().get_render_context(form)
         context['classes_by_period'] = get_classes_by_period(
             self.registration_entry.conclave_config_id)
@@ -651,7 +655,7 @@ class TShirtsView(_RegistrationStepViewBase):
     form_class = TShirtsForm
     next_step_url_name = 'conclave-payment'
 
-    def get_step_instance(self) -> RegularProgramClassChoices | None:
+    def get_step_instance(self) -> TShirts | None:
         if hasattr(self.registration_entry, 'tshirts'):
             return self.registration_entry.tshirts
 
@@ -676,7 +680,7 @@ def _credit_card_number_validator(card_number: str) -> None:
 class PaymentForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = PaymentInfo
-        fields = []
+        fields: List[str] = []
 
     name_on_card = forms.CharField()
     card_number = forms.CharField(validators=[_credit_card_number_validator])
@@ -695,7 +699,7 @@ class PaymentView(_RegistrationStepViewBase):
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         form = self.get_form()
-        if not form.is_valid():
+        if not form.is_valid():  # type: ignore
             return self.render_page(form)
 
         payment_info = form.save(commit=False)
@@ -707,13 +711,13 @@ class PaymentView(_RegistrationStepViewBase):
             payment_method = stripe.PaymentMethod.create(
                 type='card',
                 card={
-                    'number': form.cleaned_data['card_number'],
-                    'exp_month': form.cleaned_data['expiration_month'],
-                    'exp_year': form.cleaned_data['expiration_year'],
-                    'cvc': form.cleaned_data['cvc'],
+                    'number': form.cleaned_data['card_number'],  # type: ignore
+                    'exp_month': form.cleaned_data['expiration_month'],  # type: ignore
+                    'exp_year': form.cleaned_data['expiration_year'],  # type: ignore
+                    'cvc': form.cleaned_data['cvc'],  # type: ignore
                 },
                 billing_details={
-                    'name': form.cleaned_data['name_on_card']
+                    'name': form.cleaned_data['name_on_card']  # type: ignore
                 }
             )
         except stripe.error.CardError as e:

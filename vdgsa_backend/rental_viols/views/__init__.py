@@ -11,12 +11,12 @@ from .cases import ListCasesView as ListCasesView
 from .cases import RetireCaseView as RetireCaseView
 from .cases import UpdateCaseView as UpdateCaseView
 from .images import AttachImageView as AttachImageView
+from .images import DeleteImageView as DeleteImageView
 from .images import ImageView as ImageView
 from .images import RentalContractView as RentalContractView
 from .views import AttachToRentalView as AttachToRentalView
 from .views import AttachToViolView as AttachToViolView
 from .views import CustodianDetailView as CustodianDetailView
-from .images import DeleteImageView as DeleteImageView
 from .views import ListCustodianView as ListCustodianView
 from .views import ListRentersView as ListRentersView
 from .views import NotesOnlyHistoryForm as NotesOnlyHistoryForm

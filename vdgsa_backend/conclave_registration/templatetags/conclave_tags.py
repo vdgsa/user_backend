@@ -25,6 +25,7 @@ def get_current_conclave() -> ConclaveRegistrationConfig | None:
     except Exception as e:
         import traceback
         traceback.print_exc()
+        raise
 
 
 def url_path_is_conclave_registration(url_path: str) -> bool:
