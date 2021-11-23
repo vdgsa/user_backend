@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class RentalViolsConfig(AppConfig):
-    name = 'rental_viols'
+    name = 'vdgsa_backend.rental_viols'

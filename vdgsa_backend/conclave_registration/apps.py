@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ConclaveRegistrationConfig(AppConfig):
-    name = 'conclave_registration'
+    name = 'vdgsa_backend.conclave_registration'
