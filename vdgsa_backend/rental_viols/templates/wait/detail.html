@@ -1,0 +1,34 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+{% block content %}
+<p>Waiting</p>
+
+<div class="card text-end">
+  <div class="card-header">
+    <a href="{% url 'wait-update' object.pk %}" class="btn btn-primary" >Edit</a>    
+    <a href="{% url 'soft-delete' 'WaitingList' object.entry_num %}" class="btn btn-primary" title="Remove"><i class="bi bi-trash"></i> Remove</a>
+
+  </div>
+</div>
+
+<div class="container border mt-3 mb-3 p-3">
+  <p class="h3">{{object.first_name}} {{object.last_name}}</p>
+  <div class="row">
+    <div class="col">
+      <p>email: {{object.email}}</p>
+      <p>Note: {{object.notes}}</p>
+      <p>Viol: {% if object.viol_num %}<a href="{% url 'viol-detail' object.viol_num.pk %}">{{object.viol_num}}</a>{% endif %}</p>
+      <p>Size: {{object.get_size_display}}</p>
+      <p>Date Requested: {{object.date_req}}</p>
+      <p>
+          {{object.address_line_1 | safe}} <br>
+          {{object.address_city}}, {{object.address_state}} 
+          {{object.address_postal_code}}<br>
+      </p>
+      <p>Phone: {{object.phone1}}</p>
+      <p>Record last modified: {{object.last_modified}}</p>
+    </div>
+    <p><a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a></p>
+  </div>
+
+{% endblock %}

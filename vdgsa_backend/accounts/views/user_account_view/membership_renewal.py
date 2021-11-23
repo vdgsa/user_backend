@@ -4,7 +4,6 @@ purchasing and renewing membership subscriptions.
 """
 
 import json
-from functools import cached_property
 from typing import Any, Dict, Final, List, Sequence, cast
 
 import stripe  # type: ignore
@@ -19,6 +18,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls.base import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 
@@ -26,11 +26,11 @@ from vdgsa_backend.accounts.models import (
     INTERNATIONAL_MEMBERSHIP_PRICE, REGULAR_MEMBERSHIP_PRICE, STUDENT_MEMBERSHIP_PRICE,
     MembershipSubscription, MembershipType, PendingMembershipSubscriptionPurchase, User
 )
-from vdgsa_backend.accounts.templatetags.filters import show_name, show_name_and_email
 from vdgsa_backend.accounts.views.permissions import (
     is_membership_secretary, is_requested_user_or_membership_secretary
 )
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
+from vdgsa_backend.templatetags.filters import show_name, show_name_and_email
 
 
 # See https://stripe.com/docs/webhooks/build#example-code
@@ -145,7 +145,7 @@ class PurchaseSubscriptionView(LoginRequiredMixin, UserPassesTestMixin, View):
 
         line_items = self._get_stripe_line_items(form)
         redirect_url = request.build_absolute_uri(
-            reverse('user-profile', kwargs={'pk': self.requested_user.pk}))
+            reverse('user-account', kwargs={'pk': self.requested_user.pk}))
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=line_items,

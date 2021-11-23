@@ -13,6 +13,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView
@@ -20,7 +22,7 @@ from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import include, path
-from django.urls.base import reverse, reverse_lazy
+from django.urls.base import reverse
 from django.urls.conf import re_path
 
 
@@ -41,7 +43,9 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('vdgsa_backend.accounts.urls')),
+    path('conclave/', include('vdgsa_backend.conclave_registration.urls')),
     path('schema/', include('vdgsa_backend.api_schema.urls')),
+    path('rentals/', include('vdgsa_backend.rental_viols.urls')),
     path('swp/', include('vdgsa_backend.stripe_wix_proxy.urls')),
     path('stripe_emails/', include('vdgsa_backend.stripe_email_webhook.urls')),
 
@@ -51,3 +55,7 @@ urlpatterns = [
 
     re_path('^$', lambda request: redirect(reverse('current-user-account'))),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

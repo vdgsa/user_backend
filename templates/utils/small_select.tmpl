@@ -1,0 +1,11 @@
+{% load vdgsa_tags %}
+
+<div class="my-1">
+  {% comment %} No label tag if label is empty. {% endcomment %}
+  {% if label or field.label %}
+  <label for="{{field.id_for_label}}" class="">
+    {% firstof label field.label %} <br>
+  </label>
+  {% endif %}
+  {{field | add_classes:"form-select form-select-sm"}}
+</div>

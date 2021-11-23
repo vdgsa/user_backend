@@ -1,0 +1,41 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+{% block content %}
+
+
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      <p>Renew {{oldrental}}</p>
+    </div>
+  </div>
+  
+{% if waiting %}
+    <div class="row">
+    <div class="col">
+      <p >Waiting list</p>
+      {% for wait in waiting %}
+       <div>{{wait}}</div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+</div>
+
+
+<form id="rental-return-form" method="post" action="{% url 'rental-renew' oldrental.entry_num %}">
+  {% csrf_token %} 
+
+  {% include 'utils/form_body.tmpl' with form=form %}
+
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Renew</button>
+    <a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a>
+  </div>
+</form>
+
+{% endblock %}
+

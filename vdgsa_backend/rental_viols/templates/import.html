@@ -1,0 +1,78 @@
+{% extends 'rentals.html' %}
+
+{% block content %}
+
+<p>Import page: 
+This is only for doing initial import of legacy data and will be removed.</p>
+
+<div class="card mt-3">
+<div class="card-body"> 
+
+  {% if fileurl %}
+  <p>Uploaded File: {{fileurl}}</p>
+  {% endif  %}
+
+  {% if file_list %}
+    <ul>
+    {% for file in file_list %}
+      <li>{{file}}</li>
+    {% endfor %}
+    </ul>
+  {% endif  %}
+
+
+
+  {% if renters %}
+  <table class="table">
+  <tr>
+    <th>lastname</th>
+    <th>lastname</th>
+    <th>email</th>
+    <th>found</th>
+
+  </tr>
+  {% for renter in renters %}
+  <tr>
+    <td>{{ renter.lastname }}</td>
+    <td>{{ renter.firstname }}</td>
+    <td>{{ renter.email }}</td>
+    <td>{{ renter.found }}</td>
+  </tr>
+  {% endfor %}
+  </table>
+  {% else %}
+
+  {% if missing  %}
+    <div>These files are missing:
+    <ul>
+     {% for file in missing %}
+     <li>{{file}}</li>
+    {% endfor %}
+    </ul>
+    </div>
+{% endif  %}
+    <form method = 'POST' class="col s12" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{new_form.as_p}}
+      
+        <!--Below is our main file upload input -->
+            <input type = "file" name = 'document'>
+            <div><button class="btn btn-primary m-2" type = "submit" >Upload</button></div>
+    </form>
+
+          <p>
+        <a href="{% url 'importRun' %}"
+          class="btn btn-primary">Run Import</a>
+          </p>
+  
+
+        <p>
+        <a href="{% url 'importDelete' %}"
+          class="btn btn-primary">Delete All Files</a>
+          </p>
+
+  {% endif  %}
+
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load conclave_tags %}
+
+<h3>Conclave {{conclave_config.year}} Registration Entries</h3>
+
+<div>
+  <a href="{% url 'download-registration-entries' conclave_config_pk=conclave_config.pk %}" download>
+    Download CSV
+  </a>
+</div>
+
+<table class="table">
+  <thead>
+    <tr>
+      <td>User</td>
+      <td>Program</td>
+      <td>Finalized</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in object_list %}
+    <tr class="entry-row"
+        onclick="window.location = '{% url 'conclave-basic-info' conclave_reg_pk=entry.pk %}'">
+      <td>{{entry.user | show_name_and_email}}</td>
+      <td>{{entry.program}}</td>
+      <td>{{entry.is_finalized}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+
+{% block page_style %}
+<style>
+.entry-row:hover {
+  cursor: pointer;
+  background-color: rgb(240, 240, 240);
+}
+</style>
+{% endblock %}

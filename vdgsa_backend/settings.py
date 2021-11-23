@@ -48,15 +48,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'django_extensions',
-
     'vdgsa_backend.accounts',
     'vdgsa_backend.api_schema',
+    'vdgsa_backend.rental_viols',
     'vdgsa_backend.stripe_wix_proxy',
     'vdgsa_backend.stripe_email_webhook',
-
-    'corsheaders'
+    'vdgsa_backend.conclave_registration',
+    'corsheaders',
 ]
 
 CORS_ALLOWED_ORIGINS: List[str] = []
@@ -86,6 +85,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'vdgsa_tags': 'vdgsa_backend.templatetags.filters',
+            }
         },
     },
 ]
@@ -149,5 +151,13 @@ STATICFILES_DIRS = [
 # In docker container, ends up being /usr/src/static
 STATIC_ROOT = BASE_DIR.parent / 'static'
 
+STATICFILES_FINDERS = (
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+)
+
 # Misc custom settings --------------------------------------------------------
 MAX_NUM_FAMILY_MEMBERS = 3
+
+MEDIA_ROOT = BASE_DIR.parent / 'uploads'
+MEDIA_URL = '/uploads/'

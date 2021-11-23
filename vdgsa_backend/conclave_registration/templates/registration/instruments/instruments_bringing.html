@@ -1,0 +1,123 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h3 data-testid="registration_section_header">Instruments</h3>
+
+<div>
+  Please add the instruments you'll be playing at Conclave. <br>
+  The official Conclave tuning pitch is A=415. <br>
+  Don't know what level you are? Use our
+  <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
+     target="_blank">
+    self-rating guide
+  </a>. <br><br>
+  To add an instrument, select the size, your level, <br>
+  and the clefs you read,
+  and click the "Add" button. <br>
+  Repeat this process for each instrument you'll be playing.
+</div>
+
+<div class="add-instrument-header mt-3">Add an instrument</div>
+<form method="post" id="add-instrument-form">
+  <div class="row">
+    <div class="col-md-8">
+      {% include 'registration/instruments/add_instrument_form_body.tmpl' %}
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Add</button>
+  </div>
+</form>
+
+<h3 class="mt-3">My Instruments</h3>
+<table id="instruments" class="table table-striped">
+  <tbody>
+  {% for instrument in instruments %}
+    <tr class="instrument-row">
+      <td>
+        {% include 'registration/instruments/instrument.tmpl'%}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="mt-4">
+  <div class="my-2">When you've finished adding instruments, click the button below to continue.</div>
+
+  <button
+    type="button"
+    class="btn btn-primary"
+    onclick="window.location = '{{next_step_url}}'"
+  >Save and continue</button>
+</div>
+
+<script>
+function add_delete_instrument_handler(jquery_elt) {
+  jquery_elt.on('click', function(event) {
+    event.preventDefault();
+    let row = jquery_elt.parents('.instrument-row');
+    let pk = jquery_elt.data()['instrumentpk'];
+
+    if (confirm('Remove this instrument?')) {
+      $.ajax({
+        type: 'POST',
+        url: `/conclave/register/instruments/${pk}/`,
+        headers: {
+          'X-CSRFToken': get_cookie('csrftoken')
+        },
+      }).done(function() {
+        row.remove();
+      }).catch(function() {
+        alert('An unexpected error occurred.');
+      });
+    }
+  });
+}
+
+$().ready(function() {
+  $('.delete-instrument').each(function(index, elt) {
+    console.log(elt);
+    add_delete_instrument_handler($(elt));
+  });
+
+  setup_ajax_submit('add-instrument-form', {
+    success: function(form, response_data) {
+      if (response_data.status === 'success') {
+        let new_elt = $(
+          '<tr class="instrument-row"><td>'
+          + response_data.rendered_form
+          + '</tr></td>'
+        );
+        $('#instruments').append(new_elt);
+        $('#id_clefs_wrapper input[type=checkbox]').prop('checked', false);
+        $('#id_level option:first').prop('selected', true);
+        $('#id_size option:first').prop('selected', true);
+        $('#id_name_if_other').val('');
+        $('#id_name_if_other_wrapper').hide();
+
+        add_delete_instrument_handler(new_elt.find('.delete-instrument'));
+      }
+      else if (response_data.status === 'form_validation_error') {
+        update_form_body(form, response_data);
+      }
+      else if (response_data.status === 'other_error' && response_data.extra_data.error_msg) {
+        window.alert(response_data.extra_data.error_msg);
+      }
+    },
+  });
+});
+</script>
+{% endblock %}
+
+{% block page_style %}
+{{block.super}}
+<style>
+.add-instrument-header {
+  font-size: 1.125rem;
+}
+</style>
+{% endblock %}

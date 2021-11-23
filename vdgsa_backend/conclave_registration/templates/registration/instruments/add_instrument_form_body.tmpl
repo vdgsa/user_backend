@@ -1,0 +1,21 @@
+{% include 'utils/form_body.tmpl' %}
+
+<script>
+if ($('#id_size').find(':selected').text() === 'Other') {
+  $('#id_name_if_other_wrapper').show();
+}
+else {
+  $('#id_name_if_other_wrapper').hide();
+}
+
+$('#id_size').on('change', function(event) {
+  if (event.target.value === 'other') {
+    $('#id_name_if_other_wrapper').show();
+    $('#id_name_if_other').attr('required', true);
+  }
+  else {
+    $('#id_name_if_other_wrapper').hide();
+    $('#id_name_if_other').attr('required', false);
+  }
+});
+</script>

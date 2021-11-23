@@ -5,6 +5,7 @@ from vdgsa_backend.accounts.models import MembershipSubscription, User
 
 class UserAdmin(admin.ModelAdmin):  # type: ignore
     exclude = ['password', 'last_login']
+    search_fields = ['first_name', 'last_name', 'username']
 
 
 class MembershipSubscriptionAdmin(admin.ModelAdmin):  # type: ignore

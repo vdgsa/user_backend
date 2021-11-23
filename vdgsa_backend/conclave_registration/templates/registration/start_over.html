@@ -1,0 +1,18 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+<h3>Start Over</h3>
+<form method="POST">
+  {% csrf_token %}
+  <div>
+    Are you sure you want to start over? <br>
+    Doing so will permanently delete
+    the registration information that you've entered so far.
+  </div>
+
+  <div class="mt-3">
+    <button type="submit" class="btn btn-primary">Start Over</button>
+  </div>
+</form>
+
+{% endblock %}

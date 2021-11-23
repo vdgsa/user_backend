@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class StripeWixProxyConfig(AppConfig):
-    name = 'stripe_wix_proxy'
+    name = 'vdgsa_backend.stripe_wix_proxy'

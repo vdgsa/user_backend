@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class MembersConfig(AppConfig):
-    name = 'accounts'
+    name = 'vdgsa_backend.accounts'

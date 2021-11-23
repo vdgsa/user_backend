@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load vdgsa_tags %}
+
+{% block page_body_wrapper %}
+<div class="px-2 py-1">
+  <a id="sidebar-toggle" href="#">Menu</a>
+</div>
+<div class="d-flex" id="wrapper">
+  <div id="sidebar">
+    <div id="sidebar-wrapper" class=" collapse-show bg-white">
+      <div class="list-group">
+        {% if registration_entry.class_selection_is_required %}
+        <a {% url 'conclave-instruments-bringing' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Instruments
+            {% if registration_entry.instruments_bringing.count or registration_entry.beginner_instruments %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+
+        <a {% url 'conclave-class-selection' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Classes
+            {% if registration_entry.regular_class_choices %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        {% endif %}
+
+        <a {% url 'conclave-basic-info' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Additional Info
+            {% if registration_entry.basic_info %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+
+        {% if registration_entry.class_selection_is_required %}
+        <a {% url 'conclave-work-study' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Work-Study
+            {% if registration_entry.work_study %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        {% endif %}
+
+        <!-- We don't need room and board until 2022 -->
+        <!-- <a
+          href="{% url 'conclave-housing' conclave_reg_pk=registration_entry.pk %}"
+          class="list-group-item list-group-item-action"
+        >Room and Board</a> -->
+        <a {% url 'conclave-tshirts' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Extras
+            {% if registration_entry.tshirts %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        <a {% url 'conclave-payment' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Summary & Payment
+            {% if registration_entry.payment_info %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-content-wrapper">
+    <div id="page-body" class="container-fluid mb-3">
+      {% with conclave_config=registration_entry.conclave_config %}
+        {% if registration_entry.is_finalized and not perms.conclave_registration.conclave_team %}
+          <div data-testid="registration_finalized_message">
+            Your registration has been finalized. If you need to change something,
+            please contact the Conclave Team.
+          </div>
+        {% elif perms.conclave_registration.conclave_team or conclave_config.is_open %}
+          {% if conclave_config.phase == 'late' %}
+          {% endif %}
+          {% block content %}{% endblock %}
+        {% elif conclave_config.phase == 'closed' %}
+          <div data-testid="registration_closed_message">
+            Registration for this year's conclave has closed.
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% url 'start-over' conclave_reg_pk=registration_entry.pk as start_over_url %}
+      {% if request.path != start_over_url %}
+        {% if not registration_entry.is_finalized or perms.conclave_registration.conclave_team %}
+        <div class="mt-4">
+          <a href="{{start_over_url}}"
+            id="start-over-link">
+            {% if registration_entry.is_finalized %}
+            Reset {{registration_entry.user | show_name_and_email}}'s registration
+            {% else %}
+            I want to start over
+            {% endif %}
+          </a>
+        </div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar Toggle Script -->
+<!-- Source: https://github.com/StartBootstrap/startbootstrap-simple-sidebar -->
+<script>
+  $("#sidebar-toggle").click(function(e) {
+    e.preventDefault();
+    $("#wrapper").toggleClass("collapsed");
+  });
+</script>
+{% endblock %}
+
+{% block page_style %}
+<style>
+/* Source: https://github.com/StartBootstrap/startbootstrap-simple-sidebar */
+
+@media only screen and (max-width: 600px) {
+  #wrapper {
+    overflow-x: hidden;
+  }
+}
+
+#sidebar-wrapper {
+  min-height: 100vh;
+  margin-left: -12rem;
+  -webkit-transition: margin .1s ease-out;
+  -moz-transition: margin .1s ease-out;
+  -o-transition: margin .1s ease-out;
+  transition: margin .1s ease-out;
+}
+
+#sidebar-wrapper .sidebar-heading {
+  padding: 0.875rem 1.25rem;
+  font-size: 1.2rem;
+}
+
+#sidebar-wrapper .list-group {
+  width: 12rem;
+}
+
+#page-content-wrapper {
+  min-width: 100vw;
+}
+
+#wrapper.collapsed #sidebar-wrapper {
+  margin-left: 0;
+}
+
+@media (min-width: 768px) {
+  #sidebar-wrapper {
+    margin-left: 0;
+  }
+
+  #page-content-wrapper {
+    min-width: 0;
+    width: 100%;
+  }
+
+  #wrapper.collapsed #sidebar-wrapper {
+    margin-left: -12rem;
+  }
+}
+</style>
+{% endblock %}

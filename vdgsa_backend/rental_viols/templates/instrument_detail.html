@@ -1,0 +1,213 @@
+{% load rental_tags %}
+<div>
+  <div class="row">
+    <div class="col">
+        <table class="table table-sm table-light">
+        <thead>
+            <tr>
+            <th scope="col" class="col-2"></th>
+            <th scope="col" class="col-5"></th>
+            <th scope="col" class="col-2"></th>
+            <th scope="col" class="col-3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <th scope="row">VdGSA #</th>
+            <td>{{item.vdgsa_number}}</td>
+            <th scope="row">Program</th>
+            <td>{{item.program}}</td>
+            </tr>
+
+          {% if  item.get_cname == 'Viol' %}
+            <tr>
+            <th scope="row"># Strings</th>
+            <td>{{item.strings}} </td>
+            <th scope="row">Renter</th>
+            <td>
+            {% if  item.renter %}
+              <a href="{% url 'renter-info' item.renter.pk %}" title="Go to Renter">{{item.renter.first_name}} {{item.renter.last_name}}</a>
+            {% endif %}
+            </td>
+            </tr>
+
+          {% else %}
+            <tr>
+            <th scope="row">Attached to Viol</th>
+            <td>
+            {% if  item.viol_num %}
+              <a href="{% url 'viol-detail' item.viol_num.viol_num %}" title="Go to Viol">{{item.viol_num}} </a>
+            {% endif %}
+            </td>
+            <th scope="row">Renter</th>
+            <td>
+            {% if  item.viol_num.renter %}
+              <a href="{% url 'renter-info' item.viol_num.renter.pk %}" title="Go to Renter">{{item.viol_num.renter.first_name}} {{item.viol_num.renter.last_name}}</a>
+            {% endif %}
+            </td>
+            </tr>
+          {% endif %}
+
+
+            <tr>
+            <th scope="row">Size</th>
+            <td>{{item.get_size_display}}</td>
+            <th scope="row">Value</th>
+            <td>{{item.value}}</td>
+            </tr>
+
+            <tr>
+            <th scope="row">Maker</th>
+            <td>{{item.maker}}</td>
+            <th scope="row">Custodian</th>
+            <td>
+              
+              {% if  item.storer %}
+              <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
+              {% endif %}
+              <a class="btn btn-sm btn-secondary float-end me-2" onClick="changeCustModal()"
+                >Change</a>
+            </td>
+            </tr>
+            
+            <tr>
+            <th scope="row">Description</th>
+            <td>{{item.description}}</td>
+            <th scope="row">Date Added</th>
+            <td>{{item.accession_date}}</td>
+            </tr>
+
+
+            <tr>
+            <th scope="row">Provenance </th>
+            <td>{{item.provenance}}</td>
+
+            <th scope="row">
+              {% if item.waitingList %}
+                Reserved
+              {% endif %}
+            </th>
+            <td>
+              {% if item.waitingList %}
+              {% for wl in item.waitingList.all %}
+                <a href="{% url 'wait-detail' wl.pk %}">
+                 {% if wl.renter_num %}
+                  {{wl.renter_num}}
+                 
+                 {% else %}
+                 
+                  {{wl.first_name}} 
+                  {{wl.last_name}} 
+                 {% endif %}
+                 </a>
+              {% endfor %}
+              {% endif %}
+            </td>
+            </tr>
+
+            <tr>
+            <th scope="row">Notes</th>
+            <td colspan="3">{{item.notes}}</td>
+            </tr>
+
+        </tbody>
+        </table>
+    </div>
+  </div> 
+</div>
+
+<script>
+  function changeCustModal() {
+    $("#custodianModal").modal("show");
+  }
+</script>
+<div class="modal fade" id="custodianModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Change Custodian</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>This action will assign a new Custodian for all of the items in this Viol, Bow, Case group.</p>
+        <div>
+        {{item}}
+        <ul>
+        {% if  item.get_cname == 'Viol' %}
+          {% for bow in item.bows.all %}
+          <li>{{bow}} </li>
+          {% endfor %}
+          {% for case in item.cases.all %}
+          <li>{{case}} </li>
+          {% endfor %}
+
+        {% elif  item.get_cname == 'Bow' %}
+          {% if item.viol_num %}
+            <li>{{item.viol_num}} </li>
+            {% for case in item.viol_num.cases.all %}
+            <li>{{case}} </li>
+            {% endfor %}
+          {% endif %}
+
+        {% else %}
+          {% if item.viol_num %}
+            <li>{{item.viol_num}} </li>
+            {% for bow in item.viol_num.bows.all %}
+            <li>{{bow}} </li>
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+        </ul>
+        </div>
+      <form id="rental-create-form" method="post" action="{% url 'cust-change' %}">
+        {% csrf_token %}
+        <input type='hidden' name="page" value="{{ request.path }}" />
+        {% if  item.get_cname == 'Viol' %}
+          <input type='hidden' name="viol_num" value="{{ item.pk }}" />
+          {% for bow in item.bows.all %}
+            <input type='hidden' name="bow_num" value="{{ bow.bow_num }}" />
+          {% endfor %}
+          {% for case in item.cases.all %}
+            <input type='hidden' name="case_num" value="{{ case.case_num }}" />
+          {% endfor %}
+
+        {% elif  item.get_cname == 'Bow' %}
+            <input type='hidden' name="bow_num" value="{{ item.pk }}" />
+          {% if item.viol_num %}
+            <input type='hidden' name="viol_num" value="{{ item.viol_num.pk }}" />
+            {% for case in item.viol_num.cases.all %}
+              <input type='hidden' name="case_num" value="{{ case.case_num }}" />
+            {% endfor %}
+          {% endif %}
+
+        {% else %}
+          {% if item.viol_num %}
+            <input type='hidden' name="case_num" value="{{ item.pk }}" />
+            <input type='hidden' name="viol_num" value="{{ item.viol_num.pk }}" />
+            {% for bow in item.viol_num.bows.all %}
+              <input type='hidden' name="bow_num" value="{{ bow.bow_num }}" />
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="user_id">Select User </label>
+            <input class="form-control" id="user-input" placeholder="Start typing to Search">
+          </div>
+        </div>
+
+        {% include './users/user-results-partial.html' %}
+        <div class="mt-2">
+          <button type="submit" class="btn btn-primary">Change Custodian</button>
+        </div>
+      </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

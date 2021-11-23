@@ -1,0 +1,95 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+{% block content %}
+
+<div class="card text-end">
+  <div class="card-header">
+  <div className="buttonbar-ctr d-flex justify-content-around ">
+    {% if object.state == RentalState.rented%}
+    <a href="{% url 'rental-renew' object.entry_num  %}" class="btn btn-primary" >Renew rental</a> 
+    <a href="{% url 'rental-return' object.entry_num %}" class="btn btn-primary" >Return from rental</a> 
+    {% endif%}
+    <a href="{% url 'rental-update' object.entry_num  %}" class="btn btn-primary" >Edit</a> 
+  </div> 
+  </div>
+ </div>
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      <p class="h3">Rental Agreement Detail</p>
+      <p class="h4">Rental Period:{{object.rental_start|default_if_none:""}}-{{object.rental_end|default_if_none:""}}</p>
+      <p>Uploaded Contract:
+        {% if object.contract_scan %}
+          <a href="/uploads/{{ object.contract_scan.document }}" target="_blank" title="Click for Rental Agreement"><i class="bi bi-file-earmark-text"></i></a>
+        {% else %}
+          <a href="{% url 'rental-upload' object.entry_num %}" >Attach Rental Agreement</a>
+        {% endif%}
+      </p>
+    </div>
+  </div>
+
+
+    <div class="row">
+    <div class="col">
+    {% if object.viol_num %}
+      {{ object.viol_num }}
+    {% else %}
+      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=viol" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+    {% endif%}
+    </div>
+    <div class="col">
+     {% if object.case_num %}
+      {{ object.case_num }}
+      {% else %}
+      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=case" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+     {% endif%}
+    </div>
+
+    <div class="col">
+      {% if object.bow_num %}
+      {{ object.bow_num }}
+      {% else %}
+        <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=bow" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
+      {% endif%}
+
+    </div>
+    </div>
+
+  <div class="row">
+    <div class="col">
+      <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Renter's current info:</h5>
+        <p class="card-text">
+          <span class="h3">{{object.renter_num.first_name}} {{object.renter_num.last_name}}</span><br>
+          email: <a href="mailto:{{object.renter_num.username}}">{{object.renter_num.username}}</a><br>
+          {{object.renter_num.address_line_1}}<br>
+          {% if object.renter_num.address_line_2 %}Phone: {{object.renter_num.address_line_2}}<br>{% endif%}
+          {{object.renter_num.address_city}},{{object.renter_num.address_state}} 
+          {{object.renter_num.address_postal_code}}<br>
+          {{object.renter_num.address_country}}<br></p>
+        <p>Phone: {{object.phone1}}</p>
+        {% if object.phone2 %}<p>Phone: {{object.phone2}}</p> {% endif%}
+      </div>
+      </div>
+    </div>
+  </div>
+      <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Notes:</h5>
+        <p class="card-text">{{object.notes}}</p>
+      </div>
+      </div>
+
+</div>
+
+
+    {% history_table history %}
+
+
+
+    <p><a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a></p>
+
+
+{% endblock %}

@@ -20,6 +20,7 @@ psycopg2 = "*"
 django-extensions = "*"
 django-cors-headers = "*"
 stripe = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.8"

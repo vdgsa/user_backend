@@ -65,6 +65,7 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
             'My Account',
             'Directory',
             'Wiki',
+            'Rental Viols',
             'Logout',
         ]
         self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])

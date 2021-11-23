@@ -1,0 +1,125 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load conclave_tags %}
+
+<h3>Summary & Payment</h3>
+
+<div class="mt-3 mb-2 fs-5">
+  Conclave {{registration_entry.conclave_config.year}} Registration for {{registration_entry.user | show_name}}
+</div>
+
+{% if missing_sections %}
+<div id="missing-sections-msg">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  You have not filled out the following required sections:
+  <ul>
+    {% for section in missing_sections%}
+    <li>{{section}}</li>
+    {% endfor %}
+  </ul>
+  Please complete them first and then return here to
+  enter payment information and finalize your registration.
+</div>
+{% else %}
+<div id="summary" class="mb-3">
+  {% include 'registration/payment/summary.tmpl' %}
+</div>
+
+<form method="post" id="conclave-go-to-payment-form">
+  {% csrf_token %}
+
+  <div class="credit-card-disclaimer">
+    Your credit card information will be processed through Stripe,
+    which accepts: Visa, MasterCard, American Express, Discover, Diners Club, and JCB.<br>
+    <b>We do not store your credit card information on our servers.</b><br>
+    <br>
+    We will not charge your card until after June 1.
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-4">
+      {% include 'utils/form_field.tmpl' with field=form.name_on_card %}
+    </div>
+  </div>
+  <div class="row mt-2">
+    <div class="col-md-4">
+      {% include 'utils/form_field.tmpl' with field=form.card_number %}
+    </div>
+  </div>
+  <div class="row mt-1">
+    <div class="col-6 col-md-4">
+      <div class="row gx-2">
+        <div class="col-5">
+          {% include 'utils/form_field.tmpl' with field=form.expiration_month label='Exp' %}
+        </div>
+        <div class="col-7">
+          <!-- Empty label for horizontal alignment -->
+          {% include 'utils/form_field.tmpl' with field=form.expiration_year label='  ' %}
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      {% include 'utils/form_field.tmpl' with field=form.cvc label="CVC" %}
+    </div>
+  </div>
+
+  {% if stripe_error %}
+  <div class="mt-2" id="stripe-error">{{stripe_error}}</div>
+  {% endif %}
+
+  <div class="mt-3">
+    <button type="submit" class="btn btn-primary">Finalize Registration</button>
+  </div>
+
+  {% if form.non_field_errors %}
+    <div class="non-field-errors">
+    {% for err in form.non_field_errors %}
+      <p class="form-error">{{ err }}</p>
+    {% endfor %}
+    </div>
+  {% endif %}
+</form>
+
+{% endif %}
+
+<script>
+$().ready(function() {
+  if ($('#stripe-error').length) {
+    document.getElementById('stripe-error').scrollIntoView();
+  }
+});
+</script>
+
+{% endblock %}
+
+{% block page_style %}
+{{block.super}}
+<style>
+#stripe-error {
+  color: crimson;
+  font-weight: bold;
+}
+
+#summary, .credit-card-disclaimer {
+  border: 1px solid black;
+  padding: .75rem 1rem;
+}
+
+#missing-sections-msg .bi-exclamation-triangle-fill {
+  color: crimson;
+}
+
+.credit-card-disclaimer {
+  background-color: #cfe2ff;
+  border-color: #cfe2ff;
+}
+
+@media only screen and (min-width: 768px) {
+  #summary, .credit-card-disclaimer {
+    width: 85%;
+  }
+}
+</style>
+{% endblock %}

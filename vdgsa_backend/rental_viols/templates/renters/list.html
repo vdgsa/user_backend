@@ -1,0 +1,85 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+
+{% block content %}
+<style>
+.dataTables_filter {
+   display: none;
+}
+</style>
+
+
+<div class="card text-end">
+  <div class="card-header">
+    <button class="btn btn-primary " onclick="location.href='{% url 'viol-rentOut' %}'">New Rental</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+
+    <form method="get" action="{% url 'list-renters' %}">
+      <div class="row">
+        <div class="col">
+          <label for="filter">Status:</label>
+          <select class="form-control" name="status" id="filter" onchange="javascript:this.form.submit()">
+            <option value="active" {% ifequal 'active' filter.status  %}selected{% endifequal %}>Active Renters</option>
+            <option value='inactive' {% ifequal 'inactive' filter.status  %}selected{% endifequal %}>Inactive</option>
+            <option value='all' {% ifequal 'all' filter.status  %}selected{% endifequal %}>All</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="filter">Search:</label>
+          <input type="text" class="form-control" id="searchbox">
+        </div>
+        </div>
+    </form>
+
+    <table id="renters-table" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Renter</th>
+          <th>Email</th>
+          <th>City, State</th>
+          <th>Membership Exp</th>
+          <th># Rentals</th>
+          <th>Rental End</th>
+
+        </tr>
+      </thead>  
+      <tbody>
+        {% for item in object_list %}
+        <tr>
+          <td>
+            <a href="{% url 'renter-info' pk=item.pk %}" title="View renter details">{{item.last_name}}, {{item.first_name}}</a>
+          </td>
+          <td>{{item.email}}</td>
+          <td>{{item.address_city}}, {{item.address_state}}</td>
+          
+          
+          <td>{{item.subscription.valid_until|date:'Y-m-d'}}</td>
+          <td>{{item.num_rentals}}</td>
+          <td class="text-nowrap">{{item.rental_end_date|date:'Y-m-d'}}</td>
+          
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#renters-table').DataTable({
+      "paging": false,
+      "info": false,
+    });
+
+    $("#searchbox").keyup(function() {
+      $('#renters-table').dataTable().fnFilter(this.value);
+    });    
+
+  });
+</script>
+
+{% endblock %}

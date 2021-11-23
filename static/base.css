@@ -67,6 +67,16 @@ a:active {
     border-color: hsl(47, 96%, 63%)!important;
 }
 
+.btn-secondary {
+    background-color: hsl(227, 96%, 70%)!important;
+    border-color: hsl(227, 96%, 70%)!important;
+}
+
+.btn-secondary:hover {
+    background-color: hsl(227, 96%, 63%)!important;
+    border-color: hsl(227, 96%, 63%)!important;
+}
+
 .btn-danger {
     background-color: hsl(357, 65%, 70%)!important;
     border-color: hsl(357, 65%, 70%)!important;
@@ -83,6 +93,24 @@ a:active {
     color: black;
 }
 
-.form-control, .form-control-sm, .form-control-lg {
+.form-control, .form-control-sm, .form-control-lg, .form-select {
     border-radius: 0!important;
+}
+
+.list-group {
+    border-radius: 0!important;
+}
+
+.list-group-item.active {
+    background-color: rgb(240, 240, 240)!important;
+    border: 1px solid rgba(0, 0, 0, .125)!important;
+
+}
+
+.alert {
+    border-radius: 0!important;
+}
+
+.alert.form-error {
+    color: black
 }

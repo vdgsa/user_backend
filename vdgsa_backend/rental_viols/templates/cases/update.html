@@ -1,0 +1,14 @@
+{% extends '../rentals.html' %}
+
+{% block content %}
+
+<p>Case update - VdGSA# {{ object.vdgsa_number }}</p>
+<form id="add-vsdr-form" method="post" action="{% url 'case-update' object.case_num %}">
+  {% csrf_token %} {% include 'utils/form_body.tmpl' with form=form %}
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Update</button>
+  </div>
+</form>
+
+{% endblock %}

@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ApiSchemaConfig(AppConfig):
-    name = 'api_schema'
+    name = 'vdgsa_backend.api_schema'

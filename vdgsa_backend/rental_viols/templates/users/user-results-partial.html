@@ -1,0 +1,44 @@
+
+
+
+<div class="form-row" id="replaceable-content">
+    <div class="form-group col-md-6">
+
+<script>
+$().ready(function() {
+ $('a.user-dropdown-content').click(function() {
+    console.log( $(this).attr('value'))
+    console.log( $(this).html())
+
+    $('#user-select').show()
+    $('#user-select').val($(this).attr('value'));
+    $('#user-input').val('')
+    $('.user-dropdown').hide()
+    $('#clickToSelect').hide()
+  });
+})
+</script>
+
+{% if users %}
+    <div id="clickToSelect">Click to select user</div>
+    <select class="form-control" name="user_id" id="user-select">
+    {% for user in users %}
+        <option value="{{user.pk}}"
+        >{{ user.first_name }} {{ user.last_name }} ({{ user.username }}) - {{user.address_city}}, {{user.address_state}} </option>
+    {% endfor %}
+    </select>
+  
+    {% for user in users %}
+    <div class="user-dropdown">
+        <a value="{{user.pk}}" class="user-dropdown-content" 
+        >{{ user.first_name }} {{ user.last_name }} ({{ user.username }}) - {{user.address_city}}, {{user.address_state}} </a>
+    <div>
+    
+    {% empty %}
+     <div class="user-dropdown-content">No people found.</div>
+    {% endfor %}
+    </div>
+    
+{% endif %}
+    </div>
+</div>

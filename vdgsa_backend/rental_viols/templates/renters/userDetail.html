@@ -1,0 +1,106 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+{% block content %}
+{% comment %}
+<div class="card">
+<div class="card-body">
+  <div className="buttonbar-ctr d-flex justify-content-around ">
+     <a href="{% url 'rental-renew' object.entry_num  %}" class="btn disabled" >Renew rental</a> 
+    <a href="{% url 'rental-return' object.entry_num %}" class="btn disabled" >Return from rental</a> 
+    <a href="{% url 'rental-update' object.entry_num  %}" class="btn btn-primary" >Edit</a>  
+ </div>
+ </div>
+ </div>
+
+{% endcomment %}
+
+
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+      <p class="h3">{{object.first_name}} {{object.last_name}}</p>      
+
+      <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Renter's current info:</h5>
+        <p class="card-text">
+        <p>email: <a href="mailto:{{object.username}}">{{object.username}}</a></p>
+          {{object.address_line_1}}<br>
+          {% if object.address_line_2 %}Phone: {{object.address_line_2}}<br>{% endif%}
+          {{object.address_city}},{{object.address_state}} 
+          {{object.address_postal_code}}<br>
+          {{object.address_country}}<br></p>
+        <p>Phone: {{object.phone1}}</p>
+        {% if object.phone2 %}<p>Phone: {{object.phone2}}</p> {% endif%}
+
+        {% if object.subscription is not None %}
+          {% if object.subscription.membership_type == 'lifetime' %}
+            <div  class="fw-bold">Lifetime Membership</div>
+          {% elif object.subscription_is_current %}
+          <div class="fw-bold">
+            Membership is valid until
+            <span id="valid-until-timestamp">
+              {{  object.subscription.valid_until|date:'Y-m-d' }}
+            </span>
+          </div>
+          {% else %}
+          <div class="fw-bold">
+            Membership <b>expired</b> on
+            <span id="valid-until-timestamp">
+              {{ object.subscription.valid_until|date:'Y-m-d' }}
+            </span>
+          </div>
+          {% endif %}
+          {% else %}
+          <div class="fw-bold">
+            No Membership found
+        {% endif %}
+      
+
+      </div>
+      </div>
+
+      <p class="m-5 text-end">Record last modified: {{object.last_modified|date:'Y-m-d'}}</p>
+
+      <p class="h3">      
+        {% comment %} {% if object.contract_scan %}
+          <a href="/uploads/{{ object.contract_scan.document }}" target="_blank" title="Click for Rental Agreement"><i class="bi bi-file-earmark-text"></i></a>
+        {% else %}
+          <a href="{% url 'rental-upload' object.entry_num %}" >Attach Rental Agreement</a>
+        {% endif%} {% endcomment %}
+      </p>
+    </div>
+  </div>
+
+<div class="row">
+    <div class="col">
+    {% comment %} {% if object.viol_num %}
+      {{ object.viol_num }}
+    {% else %}
+      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=viol" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+    {% endif%} {% endcomment %} 
+    </div>
+    <div class="col">
+     {% comment %} {% if object.case_num%}
+      {{ object.case_num }}
+      {% else %}
+      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=case" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+     {% endif%} {% endcomment %}
+
+    </div>
+    <div class="col">
+      {% comment %} {% if object.bow_num %}
+      {{ object.bow_num }}
+      {% else %}
+        <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=bow" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
+      {% endif%} {% endcomment %}
+    </div>
+  </div>
+
+</div>
+
+    {% history_table history %}
+
+    <p><a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a></p>
+{% endblock %}
