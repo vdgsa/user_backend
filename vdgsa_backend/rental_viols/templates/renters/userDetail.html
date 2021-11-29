@@ -63,13 +63,7 @@
 
       <p class="m-5 text-end">Record last modified: {{object.last_modified|date:'Y-m-d'}}</p>
 
-      <p class="h3">      
-        {% comment %} {% if object.contract_scan %}
-          <a href="/uploads/{{ object.contract_scan.document }}" target="_blank" title="Click for Rental Agreement"><i class="bi bi-file-earmark-text"></i></a>
-        {% else %}
-          <a href="{% url 'rental-upload' object.entry_num %}" >Attach Rental Agreement</a>
-        {% endif%} {% endcomment %}
-      </p>
+
     </div>
   </div>
 
