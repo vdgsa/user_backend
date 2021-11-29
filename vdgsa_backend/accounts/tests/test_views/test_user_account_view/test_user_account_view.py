@@ -65,6 +65,17 @@ class AccountsProfileUITestCase(SeleniumTestCaseBase):
             'My Account',
             'Directory',
             'Wiki',
+            'Logout',
+        ]
+        self.assertCountEqual(expected_navlinks_text, [link.text for link in navlinks])
+
+    def test_rental_viols_manager_sees_rental_viols_nav_link(self) -> None:
+        self.login_as(self.make_rental_manager())
+        navlinks = self.selenium.find_elements_by_css_selector('nav a')
+        expected_navlinks_text = [
+            'VdGSA',
+            "Members' Area",
+            'My Account',
             'Rental Viols',
             'Logout',
         ]

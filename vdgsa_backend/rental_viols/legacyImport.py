@@ -71,15 +71,18 @@ def findRenter(id):
         if(len(found) == 1):
             return found[0]
         else:
-            print('Could not find User for Renter renter_num ', id)
-            return None
+            nameMatch = User.objects.filter(Q(first_name__icontains=persons[0]['firstname']) & Q(
+                last_name__iexact=persons[0]['lastname']))
+            if(len(nameMatch) > 0):
+                return nameMatch[0]
+            else:
+                return None
     else:
         print('doh! Renter not found ', id)
         legacy = persons[0]['email'] or persons[0]['firstname'] + '.' + \
             persons[0]['lastname'] + '_' + \
             str(persons[0]['renter_num']) + '@legacy.rentalviols.org',
-        found = User.objects.filter(Q(first_name__icontains=persons[0]['firstname']) & Q(
-            last_name=persons[0]['lastname']) | Q(username=legacy))
+        found = User.objects.filter(Q(username=legacy))
         if(len(found) > 1):
             print('Found multiple in Users', found)
             return found
@@ -93,19 +96,17 @@ def findRenter(id):
 def findStorer(id):
     legacy_users = openJson('storers')
     persons = list(filter(lambda legacy: legacy['storer_num'] == id, legacy_users))
-    if(len(persons) > 1):
-        print('found more than one!', persons)
-    if(len(persons) == 1):
-        found = User.objects.filter(Q(first_name__icontains=persons[0]['firstname']) & Q(
-            last_name=persons[0]['lastname']) | Q(username__iexact=persons[0]['email']))
-        if(len(found) > 1):
-            print('Found multiple in Users', found)
-            return found
+    if(len(persons) > 0):
+        found = User.objects.filter(Q(username__iexact=persons[0]['email']))
         if(len(found) == 1):
             return found[0]
         else:
-            print('Could not find User for Storer storer_num ', id)
-            return None
+            nameMatch = User.objects.filter(Q(first_name__icontains=persons[0]['firstname']) & Q(
+                last_name__iexact=persons[0]['lastname']))
+            if(len(nameMatch) > 0):
+                return nameMatch[0]
+            else:
+                return None
     else:
         print('doh! Storer not found ', id)
         legacy = persons[0]['email'] or persons[0]['firstname'] + '.' + \
