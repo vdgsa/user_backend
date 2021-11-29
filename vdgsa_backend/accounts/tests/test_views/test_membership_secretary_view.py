@@ -139,6 +139,8 @@ class _TestData(Protocol):
     user4_current_subscription: MembershipSubscription
     user7_lifetime_subscription: MembershipSubscription
 
+    # user1_deceased: User
+
 
 def _test_data_init(test_obj: _TestData) -> None:
     test_obj.num_users = 10
@@ -157,6 +159,15 @@ def _test_data_init(test_obj: _TestData) -> None:
     test_obj.membership_secretary.user_permissions.add(
         Permission.objects.get(codename='membership_secretary')
     )
+
+    MembershipSubscription.objects.create(
+        owner=test_obj.users[1],
+        membership_type=MembershipType.lifetime,
+        valid_until=None,
+        years_renewed=[2020]
+    )
+    test_obj.users[1].is_deceased = True
+    test_obj.users[1].save()
 
     test_obj.user0_expired_subscription = MembershipSubscription.objects.create(
         owner=test_obj.users[0],

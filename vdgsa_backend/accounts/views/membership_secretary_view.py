@@ -4,10 +4,11 @@ Contains views for the membership secretary dashboard (referred to as
 """
 
 import csv
-from typing import Any, Dict, Iterable, List, Literal
+from typing import Any, Dict, Iterable, Literal
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models.query import QuerySet
 from django.http.response import HttpResponse
 from django.urls.base import reverse
 from django.views.generic.base import View
@@ -63,6 +64,11 @@ class AddUserView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return reverse('user-account', kwargs={'pk': self.object.pk})
 
 
+def _filter_active_users(queryset: QuerySet[User]) -> Iterable[User]:
+    queryset = queryset.exclude(is_deceased=True)
+    return filter(lambda membership: membership.subscription_is_current, queryset)
+
+
 class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = User
     template_name = 'membership_secretary/membership_secretary.html'
@@ -75,10 +81,7 @@ class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView)
         queryset = super().get_queryset().select_related(
             'subscription_is_family_member_for', 'owned_subscription')
 
-        if self.all_users:
-            return queryset
-
-        return filter(lambda membership: membership.subscription_is_current, queryset)
+        return queryset if self.all_users else _filter_active_users(queryset)
 
     @property
     def all_users(self) -> bool:
@@ -96,10 +99,12 @@ class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView)
 
 class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
-        users: Iterable[User] = User.objects.all().select_related(
+        user_query: QuerySet[User] = User.objects.all().select_related(
             'subscription_is_family_member_for', 'owned_subscription')
         if self.request.GET.get('all_users', 'false').lower() != 'true':
-            users = filter(lambda membership: membership.subscription_is_current, users)
+            users = _filter_active_users(user_query)
+        else:
+            users = user_query
 
         field_names = [
             'Database ID',
@@ -109,6 +114,8 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
             'Membership Type',
             'Membership Expires',
             'Membership is Current',
+            'Primary Membership Email',
+            'Is Primary Membership Holder',
             'Year Joined',
             'Years Renewed',
 
@@ -158,6 +165,11 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
                     user.subscription.membership_type if user.subscription is not None else ''),
                 'Membership Expires': self._get_membership_expiration(user),
                 'Membership is Current': self._format_bool(user.subscription_is_current),
+                'Primary Membership Email': (
+                    user.subscription.owner.username if user.subscription is not None else ''),
+                'Is Primary Membership Holder': self._format_bool(
+                    user.is_primary_membership_holder
+                ),
                 'Year Joined': (
                     user.subscription.years_renewed[0] if user.subscription is not None else ''),
                 'Years Renewed': (

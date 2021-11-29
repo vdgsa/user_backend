@@ -74,7 +74,7 @@ class User(AbstractUser):
 
     @property
     def subscription(self) -> Optional[MembershipSubscription]:
-        if hasattr(self, 'owned_subscription'):
+        if self.is_primary_membership_holder:
             return self.owned_subscription
 
         return self.subscription_is_family_member_for
@@ -91,6 +91,10 @@ class User(AbstractUser):
             self.subscription.valid_until is not None
             and timezone.now() <= self.subscription.valid_until
         )
+
+    @property
+    def is_primary_membership_holder(self) -> bool:
+        return hasattr(self, 'owned_subscription')
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         # User.email is used by some out-of-the-box features (like
