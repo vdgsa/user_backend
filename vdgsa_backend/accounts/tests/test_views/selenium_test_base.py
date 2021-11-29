@@ -63,6 +63,15 @@ class SeleniumTestCaseBase(LiveServerTestCase):
         )
         return board_member
 
+    def make_rental_manager(self) -> User:
+        rental_manager = User.objects.create_user(
+            username=f'rental_manager@wee.com', password='password'
+        )
+        rental_manager.user_permissions.add(
+            Permission.objects.get(codename='rental_manager')
+        )
+        return rental_manager
+
     def find(self, selector: str) -> Any:
         """
         Alias for self.selenium.find_element_by_css_selector('selector')
