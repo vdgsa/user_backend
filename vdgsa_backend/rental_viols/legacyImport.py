@@ -36,8 +36,7 @@ class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
 def getLegacyDir():
     legacy_upload_dir = os.path.join(settings.MEDIA_ROOT, 'legacy_upload')
     if (not os.path.exists(legacy_upload_dir)):
-        os.mkdir(legacy_upload_dir)
-
+        os.mkdirs(legacy_upload_dir, exist_ok=True)
     return legacy_upload_dir
 
 
