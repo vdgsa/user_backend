@@ -119,10 +119,11 @@
 
     <div id="class-choices">
       {% csrf_token %}
+      {% if show_first_period %}
       <div class="period-header fs-4 mt-2">
         1st Period: {{registration_entry.conclave_config.first_period_time_label}}
       </div>
-      <div>
+      <div class="period-choices">
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period1_choice1 label='Choice 1'%}
           {% include 'utils/small_select.tmpl' with field=form.period1_choice1_instrument label='Instrument Preference'%}
@@ -136,11 +137,9 @@
           {% include 'utils/small_select.tmpl' with field=form.period1_choice3_instrument label='Instrument Preference'%}
         </div>
       </div>
-      <!-- NOTE: The teen beginners program meets after 4th period -->
-      {% if registration_entry.program != 'beginners' and registration_entry.program != 'seasoned_players' %}
+      {% endif %}
 
-      <div class="divider"></div>
-
+      {% if show_second_period %}
       <div class="period-header fs-4 mt-2">
         2nd Period: {{registration_entry.conclave_config.second_period_time_label}}
       </div>
@@ -159,10 +158,8 @@
         </div>
       </div>
       {% endif %}
-      {% if registration_entry.program != 'consort_coop' %}
 
-      <div class="divider"></div>
-
+      {% if show_third_period %}
       <div class="period-header fs-4 mt-2">
         3rd Period: {{registration_entry.conclave_config.third_period_time_label}}
       </div>
@@ -181,12 +178,10 @@
         </div>
       </div>
       {% endif %}
-      {% if registration_entry.program != 'advanced_projects' %}
 
-      <div class="divider"></div>
-
+      {% if show_fourth_period %}
       <div class="period-header fs-4 mt-2">
-        4th Period: {{registration_entry.conclave_config.fourth_period_time_label}}
+        4th Period Freebie: {{registration_entry.conclave_config.fourth_period_time_label}}
       </div>
       <div>
         <div class="choice-wrapper">
@@ -219,11 +214,6 @@
 {% block page_style %}
 {{block.super}}
 <style>
-
-.divider {
-  border-bottom: 1px solid rgb(220, 220, 220);
-  margin-right: .5rem;
-}
 
 .period-header {
   font-weight: bold;

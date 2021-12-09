@@ -118,7 +118,8 @@ class YesNoMaybe(models.TextChoices):
 
 
 class Program(models.TextChoices):
-    regular = 'regular', 'Regular Curriculum (part- and full-time)'
+    regular = 'regular', 'Regular Curriculum'
+    part_time = 'part_time', 'Part-Time Curriculum (1 class + optional freebie)'
     beginners = 'beginners', 'Introduction to the Viol (free)'
     teen_beginners = 'teen_beginners', 'Teen Beginners (free)'
     consort_coop = 'consort_coop', 'Consort Cooperative'
@@ -423,6 +424,8 @@ class RegularProgramClassChoices(models.Model):
 
     comments = models.TextField(blank=True)
 
+    # These fields are for programs that choose courses in specific
+    # periods (e.g. regular, consort coop)
     period1_choice1 = _make_class_choice_field()
     period1_choice1_instrument = _make_class_instrument_field()
     period1_choice2 = _make_class_choice_field()
@@ -450,46 +453,43 @@ class RegularProgramClassChoices(models.Model):
     period4_choice2_instrument = _make_class_instrument_field()
     period4_choice3 = _make_class_choice_field()
     period4_choice3_instrument = _make_class_instrument_field()
+    # end period-specific fields
 
-    @cached_property
-    def period1_choices(self) -> list[_ClassChoiceDict]:
-        return [
-            {'class': self.period1_choice1, 'instrument': self.period1_choice1_instrument},
-            {'class': self.period1_choice2, 'instrument': self.period1_choice2_instrument},
-            {'class': self.period1_choice3, 'instrument': self.period1_choice3_instrument},
-        ]
+    # These fields are for programs that can choose classes
+    # across periods because they can only take one class
+    # (e.g. part-time, seasoned players)
+    flex_choice1 = _make_class_choice_field()
+    flex_choice1_instrument = _make_class_instrument_field()
 
-    @cached_property
-    def period2_choices(self) -> list[_ClassChoiceDict]:
-        return [
-            {'class': self.period2_choice1, 'instrument': self.period2_choice1_instrument},
-            {'class': self.period2_choice2, 'instrument': self.period2_choice2_instrument},
-            {'class': self.period2_choice3, 'instrument': self.period2_choice3_instrument},
-        ]
+    flex_choice2 = _make_class_choice_field()
+    flex_choice2_instrument = _make_class_instrument_field()
 
-    @cached_property
-    def period3_choices(self) -> list[_ClassChoiceDict]:
-        return [
-            {'class': self.period3_choice1, 'instrument': self.period3_choice1_instrument},
-            {'class': self.period3_choice2, 'instrument': self.period3_choice2_instrument},
-            {'class': self.period3_choice3, 'instrument': self.period3_choice3_instrument},
-        ]
-
-    @cached_property
-    def period4_choices(self) -> list[_ClassChoiceDict]:
-        return [
-            {'class': self.period4_choice1, 'instrument': self.period4_choice1_instrument},
-            {'class': self.period4_choice2, 'instrument': self.period4_choice2_instrument},
-            {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
-        ]
+    flex_choice3 = _make_class_choice_field()
+    flex_choice3_instrument = _make_class_instrument_field()
 
     @cached_property
     def by_period(self) -> dict[Period, list[_ClassChoiceDict]]:
         return {
-            Period.first: self.period1_choices,
-            Period.second: self.period2_choices,
-            Period.third: self.period3_choices,
-            Period.fourth: self.period4_choices,
+            Period.first: [
+                {'class': self.period1_choice1, 'instrument': self.period1_choice1_instrument},
+                {'class': self.period1_choice2, 'instrument': self.period1_choice2_instrument},
+                {'class': self.period1_choice3, 'instrument': self.period1_choice3_instrument},
+            ],
+            Period.second: [
+                {'class': self.period2_choice1, 'instrument': self.period2_choice1_instrument},
+                {'class': self.period2_choice2, 'instrument': self.period2_choice2_instrument},
+                {'class': self.period2_choice3, 'instrument': self.period2_choice3_instrument},
+            ],
+            Period.third: [
+                {'class': self.period3_choice1, 'instrument': self.period3_choice1_instrument},
+                {'class': self.period3_choice2, 'instrument': self.period3_choice2_instrument},
+                {'class': self.period3_choice3, 'instrument': self.period3_choice3_instrument},
+            ],
+            Period.fourth: [
+                {'class': self.period4_choice1, 'instrument': self.period4_choice1_instrument},
+                {'class': self.period4_choice2, 'instrument': self.period4_choice2_instrument},
+                {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
+            ]
         }
 
     @property

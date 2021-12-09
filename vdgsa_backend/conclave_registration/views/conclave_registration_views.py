@@ -641,9 +641,44 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
         self, form: _RegistrationStepFormBase
     ) -> dict[str, object]:
         context = super().get_render_context(form)
-        context['classes_by_period'] = get_classes_by_period(
-            self.registration_entry.conclave_config_id)
+        classes_offered = get_classes_by_period(self.registration_entry.conclave_config_id)
+        if not self._show_first_period:
+            classes_offered.pop(Period.first)
+        if not self._show_second_period:
+            classes_offered.pop(Period.second)
+        if not self._show_third_period:
+            classes_offered.pop(Period.third)
+        if not self._show_fourth_period:
+            classes_offered.pop(Period.fourth)
+
+        context.update({
+            'classes_by_period': classes_offered,
+
+            'show_first_period': self._show_first_period,
+            'show_second_period': self._show_second_period,
+            'show_third_period': self._show_third_period,
+            'show_fourth_period': self._show_fourth_period,
+        })
         return context
+
+    @property
+    def _show_first_period(self) -> bool:
+        return self.registration_entry.program in [Program.regular]
+
+    @property
+    def _show_second_period(self) -> bool:
+        return self.registration_entry.program in [Program.regular]
+
+    @property
+    def _show_third_period(self) -> bool:
+        return self.registration_entry.program in [Program.regular, Program.consort_coop]
+
+    @property
+    def _show_fourth_period(self) -> bool:
+        """
+        Fourth period contains only freebie classes.
+        """
+        return self.registration_entry.program in [Program.regular, Program.beginners]
 
 
 class TShirtsForm(_RegistrationStepFormBase, forms.ModelForm):
