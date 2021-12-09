@@ -27,12 +27,12 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo,
+    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo,
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
     PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
     TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
-from vdgsa_backend.conclave_registration.templatetags.conclave_tags import get_current_conclave
+from vdgsa_backend.conclave_registration.templatetags.conclave_tags import format_period_long, get_current_conclave
 
 from .permissions import is_conclave_team
 
@@ -510,7 +510,7 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
         context['instruments'] = self.registration_entry.instruments_bringing.all()
         return context
 
-    def get_step_instance(self) -> AdditionalRegistrationInfo | None:
+    def get_step_instance(self) -> BeginnerInstrumentInfo | None:
         if (self.registration_entry.program in BEGINNER_PROGRAMS
                 and hasattr(self.registration_entry, 'beginner_instruments')):
             return self.registration_entry.beginner_instruments
@@ -560,6 +560,8 @@ _INSTRUMENT_FIELD_NAMES_BY_PERIOD: Final = {
 
 
 class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelForm):
+    instance: RegularProgramClassChoices
+
     class Meta:
         model = RegularProgramClassChoices
         # Interleave the class choice and instrument choice field names
@@ -596,34 +598,59 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
 
     def full_clean(self) -> None:
         super().full_clean()
+        # This check will prevent us from running our extra validation
+        # if all we're doing is rendering for a GET request.
+        if not hasattr(self, 'cleaned_data'):
+            return
 
-        # if self.instance.num_classes_selected < self.min_num_classes:
-        #     raise ValidationError(
-        #         'Please specify your class preferences '
-        #         f'for at least {self.min_num_classes} period(s).'
-        #     )
+        if self.registration_entry.program == Program.regular:
+            if self._num_non_freebie_classes < 2:
+                self.add_error(
+                    None,
+                    'Regular Curriculum (full-time) attendees must select at least '
+                    '2 non-freebie courses to attend. If you want to take only one '
+                    'class, you should register as part-time. '
+                    "If you don't want to take any classes, you should register "
+                    'as a non-playing attendee.'
+                )
 
-        if self.instance.num_classes_selected > self.max_num_classes:
-            self.add_error(
-                None,
-                'Please specify your class preferences '
-                f'for no more than {self.max_num_classes} period(s).'
-            )
-
-    # @property
-    # def min_num_classes(self) -> int:
-    #     return 0
+        self._validate_period_preferences(Period.first)
+        self._validate_period_preferences(Period.second)
+        self._validate_period_preferences(Period.third)
+        self._validate_period_preferences(Period.fourth)
 
     @property
-    def max_num_classes(self) -> int:
-        program = self.registration_entry.program
-        if program == Program.beginners:
-            return 1
+    def _num_non_freebie_classes(self) -> int:
+        count = 0
+        for choices in self.instance.by_period.values():
+            if any(choice['class'] is not None for choice in choices):
+                count += 1
 
-        if program in ADVANCED_PROGRAMS:
-            return 2
+        return count
 
-        return 4
+    def _validate_period_preferences(self, period: Period) -> None:
+        choices = [
+            choice['class'] for choice in self.instance.by_period[period]
+            if choice['class'] is not None
+        ]
+
+        if len(choices) == 0:
+            return
+
+        if len(choices) != 3:
+            self.add_error(
+                None,
+                f'{format_period_long(period)}: You must select a 1st, 2nd, and 3rd choice. '
+                'If you do not want to take a class during this period, please '
+                'set all three choices to "No class."'
+            )
+
+        if len(set(choices)) != len(choices):
+            self.add_error(
+                None,
+                f'{format_period_long(period)}: You must select different classes for '
+                'your 1st, 2nd, and 3rd choices.'
+            )
 
 
 class RegularProgramClassSelectionView(_RegistrationStepViewBase):

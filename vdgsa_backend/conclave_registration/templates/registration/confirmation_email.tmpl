@@ -22,6 +22,8 @@ Instruments
 
 Class Preferences
 -------------------------------------------------------------------------------
+{% comment %}
+TODO: Update class logic
 {% if class_selection_required and registration_entry.regular_class_choices.num_classes_selected == 0 %}No classes selected.
 {% else %}Period 1
 =================
@@ -47,6 +49,7 @@ Period 4
   - 2nd Choice: {% firstof registration_entry.regular_class_choices.period4_choice2 'No class' %}
   - 3rd Choice: {% firstof registration_entry.regular_class_choices.period4_choice3 'No class' %}
 {% endif %}{% endif %}
+{% endcomment %}
 T-Shirts
 -------------------------------------------------------------------------------
 {% with registration_entry.tshirts as tshirts %}{% if not tshirts or not tshirts.tshirt1 and not tshirts.tshirt2 %}No T-Shirts{% else %}
@@ -56,10 +59,13 @@ T-Shirts
 
 Summary of Charges So Far
 -------------------------------------------------------------------------------
+{% comment %}
+TODO: Update tuition and charges
 {% if registration_entry.class_selection_is_required %}- {{registration_entry.regular_class_choices.num_classes_selected}} {% if registration_entry.program != 'regular' %}Add-on {% endif %}Classes Selected: ${{registration_entry.tuition_charge}}
 {% endif %}{% if registration_entry.late_fee %}- Late registration: ${{registration_entry.late_fee}}
 {% endif %}- {{registration_entry.num_tshirts}} T-Shirts: ${{registration_entry.tshirts_charge}}
 - Donation: ${{registration_entry.donation}}
+{% endcomment %}
 
 Total: ${{registration_entry.total_charges}}
 

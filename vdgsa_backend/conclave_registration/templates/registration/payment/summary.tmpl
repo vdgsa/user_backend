@@ -41,6 +41,9 @@
 
 <div class="fs-5 mt-2">Class Preferences</div>
 <div id="classes-summary" class="ps-3">
+{% comment %}
+TODO: Update class summary based on selected program
+
   {% if class_selection_required and registration_entry.regular_class_choices.num_classes_selected == 0 %}
   <div id="no-classes-message">
     No classes selected.
@@ -143,6 +146,7 @@
     </li>
   </ul>
   {% endif %}
+{% endcomment %}
 </div>
 {% endif %}
 
@@ -178,7 +182,10 @@
         {% if registration_entry.program != 'regular' %}
         Add-on
         {% endif %}
+{% comment %}
+TODO: Update tuition logic
         Classes Selected: {{registration_entry.regular_class_choices.num_classes_selected}}
+{% endcomment %}
       </td>
       <td style="text-align: right;">
         {{registration_entry.tuition_charge}}

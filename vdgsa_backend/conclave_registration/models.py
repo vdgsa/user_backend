@@ -191,22 +191,15 @@ class RegistrationEntry(models.Model):
     def total_minus_work_study(self) -> int:
         return self.total_charges - self.tuition_charge
 
+    # TODO: Update and put this logic somewhere else, add DB options for
+    # the numbers.
     @property
     def tuition_charge(self) -> int:
         if self.program in NO_CLASS_PROGRAMS:
             return 0
 
         if self.program == Program.regular:
-            if self.regular_class_choices.num_classes_selected <= 1:
-                return 100
-            else:
-                return 200
-
-        if self.program in BEGINNER_PROGRAMS:
-            return 0 if self.regular_class_choices.num_classes_selected == 0 else 100
-
-        if self.program in ADVANCED_PROGRAMS:
-            return 100 if self.regular_class_choices.num_classes_selected == 0 else 200
+            return 200
 
         return 100
 
@@ -491,15 +484,6 @@ class RegularProgramClassChoices(models.Model):
                 {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
             ]
         }
-
-    @property
-    def num_classes_selected(self) -> int:
-        count = 0
-        for choices in self.by_period.values():
-            if any(choice['class'] is not None for choice in choices):
-                count += 1
-
-        return count
 
 
 # We won't need this until 2022
