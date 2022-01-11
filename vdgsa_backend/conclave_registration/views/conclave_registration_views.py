@@ -622,7 +622,10 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
     @property
     def _num_non_freebie_classes(self) -> int:
         count = 0
-        for choices in self.instance.by_period.values():
+
+        choices_by_period = dict(self.instance.by_period)
+        choices_by_period.pop(Period.fourth)
+        for choices in choices_by_period.values():
             if any(choice['class'] is not None for choice in choices):
                 count += 1
 
