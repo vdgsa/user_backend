@@ -122,7 +122,7 @@ class Program(models.TextChoices):
     part_time = 'part_time', 'Part-Time Curriculum (1 class + optional freebie)'
     beginners = 'beginners', 'Introduction to the Viol (free)'
     consort_coop = 'consort_coop', 'Consort Cooperative'
-    seasoned_players = 'seasoned_players', 'Seasoned Players'
+    seasoned_players = 'seasoned_players', 'Seasoned Players/Advanced Projects'
     advanced_projects = 'advanced_projects', 'Advanced Projects'
     faculty_guest_other = 'faculty_guest_other', 'Faculty'
     # non_playing_attendee = 'non_playing_attendee', 'Non-Playing Attendee'
@@ -130,6 +130,7 @@ class Program(models.TextChoices):
 
 BEGINNER_PROGRAMS = [Program.beginners]
 ADVANCED_PROGRAMS = [Program.consort_coop, Program.seasoned_players, Program.advanced_projects]
+FLEXIBLE_CLASS_SELECTION_PROGRAMS = [Program.part_time, Program.seasoned_players]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
     # Program.beginners,
@@ -165,8 +166,8 @@ class RegistrationEntry(models.Model):
         return self.program not in NO_CLASS_PROGRAMS
 
     @property
-    def is_advanced_program(self) -> bool:
-        return self.program in ADVANCED_PROGRAMS
+    def uses_flexible_class_selection(self) -> bool:
+        return self.program in FLEXIBLE_CLASS_SELECTION_PROGRAMS
 
     @property
     def is_finalized(self) -> bool:

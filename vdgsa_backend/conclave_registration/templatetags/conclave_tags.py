@@ -43,7 +43,7 @@ def format_registration_phase(registration_phase: str) -> str:
     return RegistrationPhase(registration_phase).label
 
 
-_PERIOD_STRS = {
+PERIOD_STRS = {
     1: '1st',
     2: '2nd',
     3: '3rd',
@@ -52,7 +52,7 @@ _PERIOD_STRS = {
 
 
 def format_period_long(period: int) -> str:
-    return f'{_PERIOD_STRS[period]} Period'
+    return f'{PERIOD_STRS[period]} Period'
 
 
 def format_instrument_size(instrument_size: str) -> str:

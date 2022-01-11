@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from abc import abstractmethod
 from itertools import chain
-from typing import Any, Dict, Final, List, Type, cast
+from typing import Any, Dict, Final, List, Optional, Tuple, Type, cast
 
 import stripe  # type: ignore
 from django import forms
@@ -32,7 +32,7 @@ from vdgsa_backend.conclave_registration.models import (
     PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
     TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
-from vdgsa_backend.conclave_registration.templatetags.conclave_tags import format_period_long, get_current_conclave
+from vdgsa_backend.conclave_registration.templatetags.conclave_tags import PERIOD_STRS, format_period_long, get_current_conclave
 
 from .permissions import is_conclave_team
 
@@ -559,6 +559,10 @@ _INSTRUMENT_FIELD_NAMES_BY_PERIOD: Final = {
 }
 
 
+def flex_choice_class_label(class_) -> str:
+    return f'{PERIOD_STRS[class_.period]} Per: ' + str(class_)
+
+
 class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelForm):
     instance: RegularProgramClassChoices
 
@@ -574,7 +578,16 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                     chain.from_iterable(_INSTRUMENT_FIELD_NAMES_BY_PERIOD.values()),
                 )
             )
-        ) + ['comments', 'wants_extra_beginner_class']
+        ) + [
+            'comments',
+            'wants_extra_beginner_class',
+            'flex_choice1',
+            'flex_choice1_instrument',
+            'flex_choice2',
+            'flex_choice2_instrument',
+            'flex_choice3',
+            'flex_choice3_instrument',
+        ]
 
         widgets = {
             'comments': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
@@ -601,6 +614,39 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         self.fields['wants_extra_beginner_class'].required = (
             self.registration_entry.program == Program.beginners)
 
+        if self.registration_entry.uses_flexible_class_selection:
+            non_freebie_classes = Class.objects.filter(
+                conclave_config=self.registration_entry.conclave_config
+            ).exclude(period=Period.fourth)
+
+            self.fields['flex_choice1'].queryset = non_freebie_classes
+            self.fields['flex_choice1'].label_from_instance = flex_choice_class_label
+            self.fields['flex_choice1_instrument'].queryset = InstrumentBringing.objects.filter(
+                registration_entry=self.registration_entry
+            )
+            self.fields['flex_choice1_instrument'].empty_label = 'Any I listed'
+
+            self.fields['flex_choice2'].queryset = non_freebie_classes
+            self.fields['flex_choice2'].label_from_instance = flex_choice_class_label
+            self.fields['flex_choice2_instrument'].queryset = InstrumentBringing.objects.filter(
+                registration_entry=self.registration_entry
+            )
+            self.fields['flex_choice2_instrument'].empty_label = 'Any I listed'
+
+            self.fields['flex_choice3'].queryset = non_freebie_classes
+            self.fields['flex_choice3'].label_from_instance = flex_choice_class_label
+            self.fields['flex_choice3_instrument'].queryset = InstrumentBringing.objects.filter(
+                registration_entry=self.registration_entry
+            )
+            print(self.fields['flex_choice3_instrument'].choices)
+            self.fields['flex_choice3_instrument'].empty_label = 'Any I listed'
+
+            if (self.registration_entry.uses_flexible_class_selection
+                    and self.registration_entry.program == Program.part_time):
+                self.fields['flex_choice1'].required = True
+                self.fields['flex_choice2'].required = True
+                self.fields['flex_choice3'].required = True
+
     def full_clean(self) -> None:
         super().full_clean()
         # This check will prevent us from running our extra validation
@@ -623,6 +669,8 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         self._validate_period_preferences(Period.second)
         self._validate_period_preferences(Period.third)
         self._validate_period_preferences(Period.fourth)
+
+        self._validate_extra_class_preferences()
 
     @property
     def _num_non_freebie_classes(self) -> int:
@@ -660,6 +708,42 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                 'your 1st, 2nd, and 3rd choices.'
             )
 
+    def _validate_extra_class_preferences(self) -> None:
+        if not self.registration_entry.uses_flexible_class_selection:
+            return
+
+        if self.registration_entry.program == Program.part_time:
+            # We don't have any more validation to do for part time
+            # extra class selection.
+            return
+
+        # Seasoned players should specify all three choices.
+        extra_class_choices = [
+            self.instance.flex_choice1,
+            self.instance.flex_choice2,
+            self.instance.flex_choice3
+        ]
+        print(extra_class_choices)
+        num_choices = sum(1 for choice in extra_class_choices if choice is not None)
+        print(num_choices)
+        if num_choices == 0:
+            return
+
+        if num_choices != len(extra_class_choices):
+            self.add_error(
+                None,
+                'Extra non-freebie class: You must select a 1st, 2nd, and 3rd choice. '
+                'If you do not want to take an extra class, please '
+                'set all three choices to "No class."'
+            )
+
+        if len(set(extra_class_choices)) != len(extra_class_choices):
+            self.add_error(
+                None,
+                f'You must select different classes for '
+                'your 1st, 2nd, and 3rd choices.'
+            )
+
 
 class RegularProgramClassSelectionView(_RegistrationStepViewBase):
     template_name = 'registration/regular_class_selection.html'
@@ -677,14 +761,15 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
     ) -> dict[str, object]:
         context = super().get_render_context(form)
         classes_offered = get_classes_by_period(self.registration_entry.conclave_config_id)
-        if not self._show_first_period:
-            classes_offered.pop(Period.first)
-        if not self._show_second_period:
-            classes_offered.pop(Period.second)
-        if not self._show_third_period:
-            classes_offered.pop(Period.third)
-        if not self._show_fourth_period:
-            classes_offered.pop(Period.fourth)
+        if not self.registration_entry.uses_flexible_class_selection:
+            if not self._show_first_period:
+                classes_offered.pop(Period.first)
+            if not self._show_second_period:
+                classes_offered.pop(Period.second)
+            if not self._show_third_period:
+                classes_offered.pop(Period.third)
+            if not self._show_fourth_period:
+                classes_offered.pop(Period.fourth)
 
         context.update({
             'classes_by_period': classes_offered,
@@ -694,7 +779,6 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
             'show_third_period': self._show_third_period,
             'show_fourth_period': self._show_fourth_period,
         })
-        print(context, flush=True)
         return context
 
     @property
@@ -714,7 +798,9 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
         """
         Fourth period contains only freebie classes.
         """
-        return self.registration_entry.program in [Program.regular, Program.beginners]
+        return self.registration_entry.program in [
+            Program.regular, Program.beginners, Program.seasoned_players, Program.part_time
+        ]
 
 
 class TShirtsForm(_RegistrationStepFormBase, forms.ModelForm):

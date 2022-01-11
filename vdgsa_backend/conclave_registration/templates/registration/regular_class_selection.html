@@ -30,6 +30,8 @@
     two classes may choose classes in any period other than 3rd Period,
     when their program meets.
     Adding any classes will increase your registration fee by $100.
+  {% elif registration_entry.program == 'part_time' %}
+    FIXMEEEEEEEEEEEEEE
   {% elif registration_entry.program == 'seasoned_players' %}
     Participants in the Seasoned Players Program who want to add one or
     two classes may choose classes in any period other than 2nd Period,
@@ -58,6 +60,31 @@
     </div>
   </div>
   {% endif %}
+
+  {% if registration_entry.uses_flexible_class_selection %}
+  <h3>
+    {% if registration_entry.program == 'part_time' %}
+    Class Preferences
+    {% elif registration_entry.program == 'seasoned_players' %}
+    Extra Non-Freebie Class
+    {% endif %}
+  </h3>
+  <div class="period-choices">
+    <div class="choice-wrapper">
+      {% include 'utils/small_select.tmpl' with field=form.flex_choice1 label='Choice 1'%}
+      {% include 'utils/small_select.tmpl' with field=form.flex_choice1_instrument label='Instrument Preference'%}
+    </div>
+    <div class="choice-wrapper">
+      {% include 'utils/small_select.tmpl' with field=form.flex_choice2 label='Choice 2'%}
+      {% include 'utils/small_select.tmpl' with field=form.flex_choice2_instrument label='Instrument Preference'%}
+    </div>
+    <div class="choice-wrapper">
+      {% include 'utils/small_select.tmpl' with field=form.flex_choice3 label='Choice 3'%}
+      {% include 'utils/small_select.tmpl' with field=form.flex_choice3_instrument label='Instrument Preference'%}
+    </div>
+  </div>
+  {% endif %}
+
   <div id="hide-classes-button-wrapper" class="my-2">
     <a href="#class-list" data-bs-toggle="collapse" aria-controls="class-list">
       Show/hide class descriptions
