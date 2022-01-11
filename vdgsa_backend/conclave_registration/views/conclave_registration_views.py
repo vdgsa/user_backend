@@ -574,11 +574,13 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                     chain.from_iterable(_INSTRUMENT_FIELD_NAMES_BY_PERIOD.values()),
                 )
             )
-        ) + ['comments']
+        ) + ['comments', 'wants_extra_beginner_class']
 
         widgets = {
             'comments': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
+
+    wants_extra_beginner_class = YesNoRadioField(label='')
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
@@ -595,6 +597,9 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                 registration_entry=self.registration_entry
             )
             self.fields[field_name].empty_label = 'Any I listed'
+
+        self.fields['wants_extra_beginner_class'].required = (
+            self.registration_entry.program == Program.beginners)
 
     def full_clean(self) -> None:
         super().full_clean()
@@ -689,6 +694,7 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
             'show_third_period': self._show_third_period,
             'show_fourth_period': self._show_fourth_period,
         })
+        print(context, flush=True)
         return context
 
     @property

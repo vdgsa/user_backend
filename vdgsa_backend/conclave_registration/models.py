@@ -121,22 +121,18 @@ class Program(models.TextChoices):
     regular = 'regular', 'Regular Curriculum'
     part_time = 'part_time', 'Part-Time Curriculum (1 class + optional freebie)'
     beginners = 'beginners', 'Introduction to the Viol (free)'
-    teen_beginners = 'teen_beginners', 'Teen Beginners (free)'
     consort_coop = 'consort_coop', 'Consort Cooperative'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     advanced_projects = 'advanced_projects', 'Advanced Projects'
     faculty_guest_other = 'faculty_guest_other', 'Faculty'
-    # exhibitor = 'exhibitor', 'Vendors'
-    # non_playing_attendee = 'non_playing_attendee'
+    # non_playing_attendee = 'non_playing_attendee', 'Non-Playing Attendee'
 
 
-BEGINNER_PROGRAMS = [Program.beginners, Program.teen_beginners]
+BEGINNER_PROGRAMS = [Program.beginners]
 ADVANCED_PROGRAMS = [Program.consort_coop, Program.seasoned_players, Program.advanced_projects]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
-    Program.beginners,
-    Program.teen_beginners,  # For legacy purposes
-    # Program.exhibitor,
+    # Program.beginners,
     # Program.non_playing_attendee,
 ]
 
@@ -408,6 +404,9 @@ _ClassChoiceDict = TypedDict(
     '_ClassChoiceDict', {'class': Class, 'instrument': InstrumentBringing})
 
 
+# Note: The name of this class (and related classes and files) is out of date.
+# It should be called "ClassSelection", and it functions as a fat interface for all
+# types of class selection.
 class RegularProgramClassChoices(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,
@@ -416,6 +415,11 @@ class RegularProgramClassChoices(models.Model):
     )
 
     comments = models.TextField(blank=True)
+
+    # This field lets Beginner registrants sign up for an extra
+    # beginners+ class (costs money).
+    wants_extra_beginner_class = models.TextField(
+        choices=YesNo.choices, default=YesNo.no, blank=True)
 
     # These fields are for programs that choose courses in specific
     # periods (e.g. regular, consort coop)
