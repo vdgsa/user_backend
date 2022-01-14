@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'vdgsa_backend.stripe_email_webhook',
     'vdgsa_backend.conclave_registration',
     'corsheaders',
+
+    'markdownify.apps.MarkdownifyConfig',
 ]
 
 CORS_ALLOWED_ORIGINS: List[str] = []
@@ -155,6 +157,26 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
+
+MARKDOWNIFY = {
+    "default": {
+        "WHITELIST_TAGS": [
+            'a',
+            'abbr',
+            'acronym',
+            'b',
+            'blockquote',
+            'em',
+            'i',
+            'li',
+            'ol',
+            'p',
+            'strong',
+            'ul',
+            'br',
+        ]
+    }
+}
 
 # Misc custom settings --------------------------------------------------------
 MAX_NUM_FAMILY_MEMBERS = 3

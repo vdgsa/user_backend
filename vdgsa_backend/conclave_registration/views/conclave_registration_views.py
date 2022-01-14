@@ -875,7 +875,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             'other_dietary_needs': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'banquet_food_choice': widgets.RadioSelect(),
             'banquet_guest_name': widgets.TextInput(),
-            # 'banquet_guest_food_choice': widgets.RadioSelect(),
         }
 
     is_bringing_child = YesNoRadioField(label='', required=False)
@@ -886,13 +885,23 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
     # just pass it through to the underlying postgres array field.
     dietary_needs = _PassThroughField(
         widget=widgets.CheckboxSelectMultiple(choices=DietaryNeeds.choices),
-        label=''
+        label='',
+        required=False
     )
 
     def __init__(self, registration_entry: RegistrationEntry, *args: Any, **kwargs: Any):
         super().__init__(registration_entry, *args, **kwargs)
         if 'dietary_needs' not in self.initial and self.instance is not None:
             self.initial['dietary_needs'] = self.instance.dietary_needs
+
+        arrival_dates: List[str] = (
+            self.registration_entry.conclave_config.arrival_date_options.split('\n'))
+        departure_dates: List[str] = (
+            self.registration_entry.conclave_config.departure_date_options.split('\n'))
+        self.fields['arrival_day'].widget = widgets.Select(
+            choices=list(zip(arrival_dates, arrival_dates)))
+        self.fields['departure_day'].widget = widgets.Select(
+            choices=list(zip(departure_dates, departure_dates)))
 
     def full_clean(self) -> None:
         super().full_clean()

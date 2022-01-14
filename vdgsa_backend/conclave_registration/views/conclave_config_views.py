@@ -37,17 +37,37 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'third_period_time_label',
             'fourth_period_time_label',
 
+            'housing_form_top_markdown',
+            'housing_form_pre_arrival_markdown',
+            'arrival_date_options',
+            'departure_date_options',
+
             'tshirt_image_url',
+
         ]
 
         labels = {
             'phase': 'Registration Phase',
+            'housing_form_top_markdown': (
+                'Text to display at the top of the housing form. Rendered as markdown'),
+            'housing_form_pre_arrival_markdown': (
+                'Text to display before the arrival/departure section of the housing form. '
+                'Rendered as markdown'),
+            'arrival_date_options': (
+                'A list of allowed conclave arrival dates, each separated by a newline'),
+            'departure_date_options': (
+                'A list of allowed conclave arrival dates, each separated by a newline'),
         }
 
         widgets = {
             'phase': widgets.RadioSelect,
             'archival_video_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'photo_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+
+            'housing_form_top_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'departure_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'housing_form_pre_arrival_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
 

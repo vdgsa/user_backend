@@ -34,6 +34,15 @@ class ConclaveRegistrationConfig(models.Model):
     third_period_time_label = models.CharField(max_length=255, blank=True)
     fourth_period_time_label = models.CharField(max_length=255, blank=True)
 
+    # Markdown text to go at the beginning of the housing form.
+    housing_form_top_markdown = models.TextField(blank=True)
+
+    arrival_date_options = models.TextField(blank=True)
+    departure_date_options = models.TextField(blank=True)
+    # Markdown text to go in the housing form just before the arrival/departure fields.
+    housing_form_pre_arrival_markdown = models.TextField(blank=True)
+
+
     tshirt_image_url = models.URLField(blank=True)
 
     @property
@@ -504,11 +513,6 @@ class RegularProgramClassChoices(models.Model):
         }
 
 
-# We won't need this until 2022
-# class RoomAndBoard(models.Model):
-#     pass
-
-
 TSHIRT_SIZES: Final = [
     "Men's S",
     "Men's M",
@@ -570,8 +574,8 @@ class Housing(models.Model):
     normal_bed_time = models.TextField(
         choices=NormalBedtime.choices, blank=False, default=NormalBedtime.no_preference)
 
-    arrival_day = models.TextField(choices=[('fixme1', 'FIXME2')])
-    departure_day = models.TextField(choices=[('fixme1', 'FIXME2')])
+    arrival_day = models.TextField()
+    departure_day = models.TextField()
 
     is_bringing_child = models.TextField(choices=YesNo.choices, default=YesNo.no)
     contact_others_bringing_children = models.TextField(choices=YesNo.choices, default=YesNo.no)
@@ -582,7 +586,7 @@ class Housing(models.Model):
     additional_housing_info = models.TextField(blank=True)
 
     dietary_needs = ArrayField(
-        models.CharField(max_length=50, choices=DietaryNeeds.choices), blank=True)
+        models.CharField(max_length=50, choices=DietaryNeeds.choices), blank=True, default=list)
     other_dietary_needs = models.TextField(blank=True)
 
     banquet_food_choice = models.TextField(

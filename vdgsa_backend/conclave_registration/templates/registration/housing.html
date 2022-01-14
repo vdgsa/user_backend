@@ -2,6 +2,7 @@
 {% block content %}
 
 {% load vdgsa_tags %}
+{% load markdownify %}
 
 <h3 data-testid="registration_section_header">Housing</h3>
 
@@ -13,12 +14,8 @@
   </div>
 {% endif %}
 
-<p>
-  <b>
-    Please fill out this form <i>even if you are living off campus.</i><br>
-    Exhibitors and non-playing attendees must also complete this form.
-  </b>
-</p>
+
+{{registration_entry.conclave_config.housing_form_top_markdown | markdownify}}
 
 <form method="post">
   {% csrf_token %}
@@ -111,8 +108,7 @@
   </div>
 
   <h4 class="mt-2">Arrival and Departure Dates</h4>
-  <p>Some text about arrival and departure dates.</p>
-  <!-- FIXME: Customizable arrival and departure info -->
+  {{registration_entry.conclave_config.housing_form_pre_arrival_markdown | markdownify}}
 
   <div class="row mt-2">
     <div class="col-md-6">

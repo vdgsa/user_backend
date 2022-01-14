@@ -15,12 +15,13 @@ uritemplate = "*"
 selenium = "*"
 
 [packages]
-django = "*"
+django = "<3.3"
 psycopg2 = "*"
 django-extensions = "*"
 django-cors-headers = "*"
 stripe = "*"
 pillow = "*"
+django-markdownify = "*"
 
 [requires]
 python_version = "3.8"
