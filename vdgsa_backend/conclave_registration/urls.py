@@ -37,7 +37,7 @@ urlpatterns = [
          views.RegularProgramClassSelectionView.as_view(),
          name='conclave-class-selection'),
     path('register/<int:conclave_reg_pk>/housing/',
-         lambda _: _, name='conclave-housing'),  # type: ignore
+         views.HousingView.as_view(), name='conclave-housing'),
     path('register/<int:conclave_reg_pk>/tshirts/', views.TShirtsView.as_view(),
          name='conclave-tshirts'),
     path('register/<int:conclave_reg_pk>/payment/', views.PaymentView.as_view(),

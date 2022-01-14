@@ -514,6 +514,72 @@ TSHIRT_SIZES: Final = [
 ]
 
 
+class HousingRoomType(models.TextChoices):
+    single = 'single'
+    double = 'double'
+    off_campus = 'off_campus'
+
+
+class NormalBedtime(models.TextChoices):
+    no_preference = 'no_preference'
+    early = 'early', 'Early to bed (11pm)'
+    late = 'late', 'Late night (could be 2am!)'
+
+
+class DietaryNeeds(models.TextChoices):
+    vegetarian = 'vegetarian'
+    vegan = 'vegan'
+    dairy_free = 'dairy_free'
+    gluten_free = 'gluten_free'
+    nut_allergy = 'nut_allergy'
+    shellfish_allergy = 'shellfish_allergy'
+
+
+class BanquetFoodChoices(models.TextChoices):
+    beef = 'beef'
+    salmon = 'salmon'
+    vegan = 'vegan'
+    not_attending = 'not_attending'
+
+
+class Housing(models.Model):
+    registration_entry = models.OneToOneField(
+        RegistrationEntry,
+        on_delete=models.CASCADE,
+        related_name='housing',
+    )
+
+    room_type = models.TextField(choices=HousingRoomType.choices, blank=False, default='')
+    roommate_request = models.TextField(blank=True)
+    share_suite_request = models.TextField(blank=True)
+    room_near_person_request = models.TextField(blank=True)
+
+    normal_bed_time = models.TextField(
+        choices=NormalBedtime.choices, blank=False, default=NormalBedtime.no_preference)
+
+    arrival_day = models.TextField(choices=[('fixme1', 'FIXME2')])
+    departure_day = models.TextField(choices=[('fixme1', 'FIXME2')])
+
+    is_bringing_child = models.TextField(choices=YesNo.choices, default=YesNo.no)
+    contact_others_bringing_children = models.TextField(choices=YesNo.choices, default=YesNo.no)
+
+    wants_housing_subsidy = models.BooleanField(default=False)
+    wants_canadian_currency_exchange_discount = models.BooleanField(default=False)
+
+    additional_housing_info = models.TextField(blank=True)
+
+    dietary_needs = ArrayField(
+        models.CharField(max_length=50, choices=DietaryNeeds.choices), blank=True)
+    other_dietary_needs = models.TextField(blank=True)
+
+    banquet_food_choice = models.TextField(
+        choices=BanquetFoodChoices.choices, blank=False, default='')
+    is_bringing_guest_to_banquet = models.TextField(choices=YesNo.choices)
+    banquet_guest_name = models.TextField(blank=True)
+    banquet_guest_food_choice = models.TextField(
+        choices=BanquetFoodChoices.choices[:-1], blank=True)
+
+
 class TShirts(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,

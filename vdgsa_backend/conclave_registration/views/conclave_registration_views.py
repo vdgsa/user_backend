@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from abc import abstractmethod
 from itertools import chain
-from typing import Any, Dict, Final, List, Optional, Tuple, Type, cast
+from typing import Any, Dict, Final, List, Type, cast
 
 import stripe  # type: ignore
 from django import forms
@@ -28,7 +28,7 @@ from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
     BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo,
-    BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, InstrumentBringing,
+    BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType, InstrumentBringing,
     PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
     TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
@@ -325,7 +325,7 @@ class AdditionalInfoView(_RegistrationStepViewBase):
     @property
     def next_step_url_name(self) -> str:  # type: ignore
         if self.registration_entry.program in NO_CLASS_PROGRAMS:
-            return 'conclave-tshirts'
+            return 'conclave-housing'
 
         return 'conclave-work-study'
 
@@ -396,7 +396,7 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
 class WorkStudyApplicationView(_RegistrationStepViewBase):
     template_name = 'registration/work_study.html'
     form_class = WorkStudyForm
-    next_step_url_name = 'conclave-tshirts'
+    next_step_url_name = 'conclave-housing'
 
     def get_step_instance(self) -> WorkStudyApplication | None:
         if hasattr(self.registration_entry, 'work_study'):
@@ -559,7 +559,7 @@ _INSTRUMENT_FIELD_NAMES_BY_PERIOD: Final = {
 }
 
 
-def flex_choice_class_label(class_) -> str:
+def flex_choice_class_label(class_: Class) -> str:
     return f'{PERIOD_STRS[class_.period]} Per: ' + str(class_)
 
 
@@ -649,6 +649,11 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
 
     def full_clean(self) -> None:
         super().full_clean()
+        # Running the validation logic below will cause an exception to
+        # be thrown if "self.cleaned_data" is not available. Validation
+        # gets triggered by our non-field-error display code near the top
+        # of the template, and self.cleaned_data
+        # is typically not available when rendering for a GET request
         # This check will prevent us from running our extra validation
         # if all we're doing is rendering for a GET request.
         if not hasattr(self, 'cleaned_data'):
@@ -801,6 +806,118 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
         return self.registration_entry.program in [
             Program.regular, Program.beginners, Program.seasoned_players, Program.part_time
         ]
+
+
+class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
+    class Meta:
+        fields = [
+            'room_type',
+            'roommate_request',
+            'share_suite_request',
+            'room_near_person_request',
+            'normal_bed_time',
+            'arrival_day',
+            'departure_day',
+            'is_bringing_child',
+            'contact_others_bringing_children',
+            'wants_housing_subsidy',
+            'wants_canadian_currency_exchange_discount',
+            'additional_housing_info',
+            'dietary_needs',
+            'other_dietary_needs',
+            'banquet_food_choice',
+            'is_bringing_guest_to_banquet',
+            'banquet_guest_name',
+            'banquet_guest_food_choice',
+        ]
+        model = Housing
+
+        labels = {
+            'room_type': '',
+            'roommate_request': '',
+            'share_suite_request': '',
+            'room_near_person_request': '',
+            'normal_bed_time': '',
+            'arrival_day': '',
+            'departure_day': '',
+            'additional_housing_info': '',
+            'dietary_needs': '',
+            'other_dietary_needs': '',
+            'banquet_food_choice': '',
+            'is_bringing_guest_to_banquet': '',
+            'banquet_guest_name': '',
+            'banquet_guest_food_choice': '',
+        }
+
+        widgets = {
+            'room_type': widgets.RadioSelect(),
+            'roommate_request': widgets.TextInput(),
+            'share_suite_request': widgets.TextInput(),
+            'room_near_person_request': widgets.TextInput(),
+            'normal_bed_time': widgets.RadioSelect(),
+            'additional_housing_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'dietary_needs': widgets.CheckboxSelectMultiple(choices=DietaryNeeds.choices),
+            'other_dietary_needs': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'banquet_food_choice': widgets.RadioSelect(),
+            'banquet_guest_name': widgets.TextInput(),
+            # 'banquet_guest_food_choice': widgets.RadioSelect(),
+        }
+
+    is_bringing_child = YesNoRadioField(label='', required=False)
+    contact_others_bringing_children = YesNoRadioField(label='', required=False)
+    is_bringing_guest_to_banquet = YesNoRadioField(label='', required=True)
+
+    # We don't want the field to process the "dietary_needs" data in any way,
+    # just pass it through to the underlying postgres array field.
+    dietary_needs = _PassThroughField(
+        widget=widgets.CheckboxSelectMultiple(choices=DietaryNeeds.choices),
+        label=''
+    )
+
+    def __init__(self, registration_entry: RegistrationEntry, *args: Any, **kwargs: Any):
+        super().__init__(registration_entry, *args, **kwargs)
+        if 'dietary_needs' not in self.initial and self.instance is not None:
+            self.initial['dietary_needs'] = self.instance.dietary_needs
+
+    def full_clean(self) -> None:
+        super().full_clean()
+
+        # Running the validation logic below will cause an exception to
+        # be thrown if "self.cleaned_data" is not available. Validation
+        # gets triggered by our non-field-error display code near the top
+        # of the template, and self.cleaned_data
+        # is typically not available when rendering for a GET request
+        # This check will prevent us from running our extra validation
+        # if all we're doing is rendering for a GET request.
+        if not hasattr(self, 'cleaned_data'):
+            return
+
+        if (self.instance.room_type != HousingRoomType.off_campus
+                and not self.instance.normal_bed_time):
+            self.add_error(None, 'Please specify your preferred normal bedtime.')
+
+        if self.instance.is_bringing_guest_to_banquet == YesNo.yes:
+            print('guest food: ', self.instance.banquet_guest_food_choice)
+            print('guest_name: ', self.instance.banquet_guest_name)
+            if not (self.instance.banquet_guest_food_choice and self.instance.banquet_guest_name):
+                self.add_error(
+                    None,
+                    'Banquet guest info: You indicated that you are '
+                    'bringing a guest to the banquet. '
+                    'Please provide their name and food choice.'
+                )
+
+
+class HousingView(_RegistrationStepViewBase):
+    template_name = 'registration/housing.html'
+    form_class = HousingForm
+    next_step_url_name = 'conclave-tshirts'
+
+    def get_step_instance(self) -> Housing | None:
+        if hasattr(self.registration_entry, 'housing'):
+            return self.registration_entry.housing
+
+        return None
 
 
 class TShirtsForm(_RegistrationStepFormBase, forms.ModelForm):

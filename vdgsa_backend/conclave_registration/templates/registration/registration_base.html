@@ -73,11 +73,18 @@
         </a>
         {% endif %}
 
-        <!-- We don't need room and board until 2022 -->
-        <!-- <a
+        <a
           href="{% url 'conclave-housing' conclave_reg_pk=registration_entry.pk %}"
           class="list-group-item list-group-item-action"
-        >Room and Board</a> -->
+        >
+          <div class="d-flex justify-content-between">
+            Housing
+            {% if registration_entry.housing %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+
         <a {% url 'conclave-tshirts' conclave_reg_pk=registration_entry.pk as url %}
           href="{{url}}"
           class="

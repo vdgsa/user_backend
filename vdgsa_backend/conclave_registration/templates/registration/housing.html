@@ -1,0 +1,253 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h3 data-testid="registration_section_header">Housing</h3>
+
+{% if form.non_field_errors %}
+  <div class="non-field-errors">
+  {% for err in form.non_field_errors %}
+    <div class="form-error alert alert-danger" role="alert">{{err}}</div>
+  {% endfor %}
+  </div>
+{% endif %}
+
+<p>
+  <b>
+    Please fill out this form <i>even if you are living off campus.</i><br>
+    Exhibitors and non-playing attendees must also complete this form.
+  </b>
+</p>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      What type of room do you want?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.room_type %}
+    </div>
+  </div>
+
+  <div id="roommate-preference-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        Roommate preference
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.roommate_request %}
+      </div>
+    </div>
+  </div>
+
+  <div id="suite-preference-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        I would like to share a suite with
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.share_suite_request %}
+      </div>
+    </div>
+  </div>
+
+  <div id="room-near-preference-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        I would like a room near
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.room_near_person_request %}
+      </div>
+    </div>
+  </div>
+
+  <div id="bedtime-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        Normal bedtime
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.normal_bed_time %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Are you planning to bring a child to Conclave?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.is_bringing_child %}
+    </div>
+  </div>
+
+  <div id="child-folks-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        Would you like to be put in touch with other folks bringing children?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.contact_others_bringing_children %}
+      </div>
+    </div>
+  </div>
+
+  <h4 class="mt-2">Arrival and Departure Dates</h4>
+  <p>Some text about arrival and departure dates.</p>
+  <!-- FIXME: Customizable arrival and departure info -->
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Arrival date
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.arrival_day %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Departure date
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.departure_day %}
+    </div>
+  </div>
+
+  <h4 class="mt-2">Adjustments to Housing Costs</h4>
+  <div class="row">
+    <div class="col-md-6">
+      {% with label='I am requesting the $150 student/limited income housing subsidy'%}
+        {% include 'utils/form_field.tmpl' with field=form.wants_housing_subsidy %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      {% with label='I am a Canadian resident requesting a 5% currency exchange rate discount'%}
+        {% include 'utils/form_field.tmpl' with field=form.wants_canadian_currency_exchange_discount %}
+      {% endwith %}
+    </div>
+  </div>
+
+  <h4 class="mt-2">Additional Housing Comments</h4>
+  <div class="row">
+    <div class="col-md-6">
+       Additional comments or questions related to housing.
+      (If you prefer to be housed in a single-gender suite, let us know here.)
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.additional_housing_info %}
+    </div>
+  </div>
+
+  <hr>
+
+  <h4 class="mt-3">Diet and Banquet</h4>
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Dietary needs (select all that apply)
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.dietary_needs %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Additional dietary needs (dietary restrictions, allergies, etc.)
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.other_dietary_needs %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Banquet food choice (may be amended on arrival)
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.banquet_food_choice %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Are you bringing a guest to the banquet ($45 banquet fee)?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.is_bringing_guest_to_banquet %}
+    </div>
+  </div>
+
+  <div id="banquet-guest-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        Guest's name
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.banquet_guest_name %}
+      </div>
+    </div>
+
+    <div class="row mt-2">
+      <div class="col-md-6">
+        Guest's banquet food choice
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.banquet_guest_food_choice %}
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Save and continue</button>
+  </div>
+</form>
+
+<script>
+  radio_button_hide('room_type', '#roommate-preference-wrapper', {show_values: ['double']});
+  radio_button_hide('room_type', '#suite-preference-wrapper', {show_values: ['single', 'double']});
+  radio_button_hide('room_type', '#room-near-preference-wrapper', {show_values: ['single', 'double']});
+  radio_button_hide('room_type', '#bedtime-wrapper', {show_values: ['single', 'double']});
+  radio_button_hide('is_bringing_child', '#child-folks-wrapper');
+  radio_button_hide('is_bringing_guest_to_banquet', '#banquet-guest-wrapper');
+</script>
+{% endblock %}
