@@ -29,12 +29,14 @@ function radio_button_hide(
         }
 
         $(`input[name="${radio_buttons_name}"]`).change(function() {
-            console.log('heeiiii')
-            if (args.show_values.includes($(this).val())) {
+            let value = $(this).val();
+            if (args.show_values.includes(value)) {
                 $(element_to_toggle_selector).show();
+                args.on_change(value);
             }
             else {
                 $(element_to_toggle_selector).hide();
+                args.on_change(value);
             }
         });
     });

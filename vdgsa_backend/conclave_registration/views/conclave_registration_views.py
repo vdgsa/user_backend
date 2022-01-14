@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 from django.db.models.base import Model
 from django.forms import widgets
 from django.forms.fields import BooleanField, ChoiceField
+from django.forms.utils import ErrorDict
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -27,12 +28,15 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo,
-    BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType, InstrumentBringing,
-    PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
-    TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
+    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo, BeginnerInstrumentInfo,
+    Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType,
+    InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase,
+    RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe,
+    get_classes_by_period
 )
-from vdgsa_backend.conclave_registration.templatetags.conclave_tags import PERIOD_STRS, format_period_long, get_current_conclave
+from vdgsa_backend.conclave_registration.templatetags.conclave_tags import (
+    PERIOD_STRS, format_period_long, get_current_conclave
+)
 
 from .permissions import is_conclave_team
 
@@ -346,6 +350,7 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = WorkStudyApplication
         fields = [
+            'wants_work_study',
             'nickname_and_pronouns',
             'phone_number',
             'can_receive_texts_at_phone_number',
@@ -369,6 +374,8 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
 
         labels = dict(zip(fields, itertools.repeat('')))
 
+    wants_work_study = YesNoRadioField(label='')
+
     can_receive_texts_at_phone_number = YesNoRadioField(label='')
 
     has_been_to_conclave = YesNoRadioField(label='')
@@ -391,6 +398,17 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
         widget=widgets.CheckboxSelectMultiple(choices=WorkStudyJob.choices),
         label=''
     )
+
+    def full_clean(self) -> None:
+        # If the user doesn't want to apply for work study, don't perform
+        # any other validation.
+        if self.data.get('wants_work_study', '') == YesNo.no:
+            self.cleaned_data = {'wants_work_study': YesNo.no}
+            self._errors = ErrorDict()
+            # _post_clean() sets attributes on the model instance.
+            self._post_clean()  # type: ignore
+        else:
+            super().full_clean()
 
 
 class WorkStudyApplicationView(_RegistrationStepViewBase):
@@ -638,7 +656,6 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             self.fields['flex_choice3_instrument'].queryset = InstrumentBringing.objects.filter(
                 registration_entry=self.registration_entry
             )
-            print(self.fields['flex_choice3_instrument'].choices)
             self.fields['flex_choice3_instrument'].empty_label = 'Any I listed'
 
             if (self.registration_entry.uses_flexible_class_selection
@@ -728,9 +745,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             self.instance.flex_choice2,
             self.instance.flex_choice3
         ]
-        print(extra_class_choices)
         num_choices = sum(1 for choice in extra_class_choices if choice is not None)
-        print(num_choices)
         if num_choices == 0:
             return
 
@@ -897,8 +912,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             self.add_error(None, 'Please specify your preferred normal bedtime.')
 
         if self.instance.is_bringing_guest_to_banquet == YesNo.yes:
-            print('guest food: ', self.instance.banquet_guest_food_choice)
-            print('guest_name: ', self.instance.banquet_guest_name)
             if not (self.instance.banquet_guest_food_choice and self.instance.banquet_guest_name):
                 self.add_error(
                     None,

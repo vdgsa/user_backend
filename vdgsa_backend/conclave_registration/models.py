@@ -293,6 +293,8 @@ class WorkStudyApplication(models.Model):
         related_name='work_study'
     )
 
+    wants_work_study = models.TextField(choices=YesNo.choices, blank=False, default='')
+
     nickname_and_pronouns = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=50)
     can_receive_texts_at_phone_number = models.TextField(choices=YesNo.choices)
@@ -306,11 +308,22 @@ class WorkStudyApplication(models.Model):
 
     student_info = models.TextField(blank=True)
 
-    job_preferences = ArrayField(models.CharField(max_length=100, choices=WorkStudyJob.choices))
+    job_preferences = ArrayField(
+        models.CharField(max_length=100, choices=WorkStudyJob.choices),
+        default=list
+    )
     relevant_job_experience = models.TextField()
 
     other_skills = models.TextField(blank=True)
     other_info = models.TextField(blank=True)
+
+    def full_clean(self, *args: Any, **kwargs: Any) -> None:
+        # If the user doesn't want to apply for work study, don't perform
+        # any other validation.
+        if self.wants_work_study == YesNo.no:
+            pass
+        else:
+            super().full_clean(*args, **kwargs)
 
     def clean(self) -> None:
         super().clean()
