@@ -19,6 +19,12 @@ function radio_button_hide(
         on_change: function() {}
     }
 ) {
+    if (args.show_values === undefined) {
+        args.show_values = ['yes'];
+    }
+    if (args.on_change === undefined) {
+        args.on_change = function() {};
+    };
     $().ready(function() {
         let initial_value = $(`input[name="${radio_buttons_name}"]:checked`).val();
         if (args.show_values.includes(initial_value)) {

@@ -6,9 +6,9 @@ from django.urls import reverse
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
 from vdgsa_backend.conclave_registration.models import (
-    ADVANCED_PROGRAMS, TSHIRT_SIZES, AdditionalRegistrationInfo, BeginnerInstrumentInfo, Class,
-    Clef, ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo,
-    Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
+    TSHIRT_SIZES, AdditionalRegistrationInfo, BeginnerInstrumentInfo, Class, Clef,
+    ConclaveRegistrationConfig, InstrumentBringing, InstrumentChoices, Level, PaymentInfo, Period,
+    Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
     WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe
 )
 from vdgsa_backend.selenium_test_base import SeleniumTestCaseBase
@@ -871,69 +871,69 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
         self.assertEqual('100', self.find('#tuition-charge-row td:last-child').text)
         self.assertEqual('100', self.find('#total-charges-cell').text)
 
-    def test_no_classes_advanced_programs(self) -> None:
-        RegularProgramClassChoices.objects.create(registration_entry=self.registration_entry)
-        for program in ADVANCED_PROGRAMS:
-            self.registration_entry.program = program
-            self.registration_entry.save()
-            self.login_as(
-                self.user,
-                dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
-            )
+    # def test_no_classes_advanced_programs(self) -> None:
+    #     RegularProgramClassChoices.objects.create(registration_entry=self.registration_entry)
+    #     for program in ADVANCED_PROGRAMS:
+    #         self.registration_entry.program = program
+    #         self.registration_entry.save()
+    #         self.login_as(
+    #             self.user,
+    #             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
+    #         )
 
-            self.assertEqual(
-                'Add-on Classes Selected: 0',
-                self.find('#tuition-charge-row td:first-child').text
-            )
-            self.assertEqual('100', self.find('#tuition-charge-row td:last-child').text)
-            self.assertEqual('100', self.find('#total-charges-cell').text)
+    #         self.assertEqual(
+    #             'Add-on Classes Selected: 0',
+    #             self.find('#tuition-charge-row td:first-child').text
+    #         )
+    #         self.assertEqual('100', self.find('#tuition-charge-row td:last-child').text)
+    #         self.assertEqual('100', self.find('#total-charges-cell').text)
 
-            self.selenium.delete_all_cookies()
+    #         self.selenium.delete_all_cookies()
 
-    def test_one_class_advanced_programs(self) -> None:
-        RegularProgramClassChoices.objects.create(
-            registration_entry=self.registration_entry,
-            period2_choice1=self.conclave_config.classes.all()[1],
-        )
-        for program in ADVANCED_PROGRAMS:
-            self.registration_entry.program = program
-            self.registration_entry.save()
-            self.login_as(
-                self.user,
-                dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
-            )
+    # def test_one_class_advanced_programs(self) -> None:
+    #     RegularProgramClassChoices.objects.create(
+    #         registration_entry=self.registration_entry,
+    #         period2_choice1=self.conclave_config.classes.all()[1],
+    #     )
+    #     for program in ADVANCED_PROGRAMS:
+    #         self.registration_entry.program = program
+    #         self.registration_entry.save()
+    #         self.login_as(
+    #             self.user,
+    #             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
+    #         )
 
-            self.assertEqual(
-                'Add-on Classes Selected: 1',
-                self.find('#tuition-charge-row td:first-child').text
-            )
-            self.assertEqual('200', self.find('#tuition-charge-row td:last-child').text)
-            self.assertEqual('200', self.find('#total-charges-cell').text)
+    #         self.assertEqual(
+    #             'Add-on Classes Selected: 1',
+    #             self.find('#tuition-charge-row td:first-child').text
+    #         )
+    #         self.assertEqual('200', self.find('#tuition-charge-row td:last-child').text)
+    #         self.assertEqual('200', self.find('#total-charges-cell').text)
 
-            self.selenium.delete_all_cookies()
+    #         self.selenium.delete_all_cookies()
 
-    def test_two_classes_advanced_programs(self) -> None:
-        RegularProgramClassChoices.objects.create(
-            registration_entry=self.registration_entry,
-            period1_choice1=self.conclave_config.classes.all()[0],
-            period3_choice1=self.conclave_config.classes.all()[2],
-        )
-        for program in ADVANCED_PROGRAMS:
-            self.registration_entry.program = program
-            self.registration_entry.save()
-            self.login_as(
-                self.user,
-                dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
-            )
+    # def test_two_classes_advanced_programs(self) -> None:
+    #     RegularProgramClassChoices.objects.create(
+    #         registration_entry=self.registration_entry,
+    #         period1_choice1=self.conclave_config.classes.all()[0],
+    #         period3_choice1=self.conclave_config.classes.all()[2],
+    #     )
+    #     for program in ADVANCED_PROGRAMS:
+    #         self.registration_entry.program = program
+    #         self.registration_entry.save()
+    #         self.login_as(
+    #             self.user,
+    #             dest_url=f'/conclave/register/{self.registration_entry.pk}/payment'
+    #         )
 
-            self.assertEqual(
-                'Add-on Classes Selected: 2',
-                self.find('#tuition-charge-row td:first-child').text
-            )
-            self.assertEqual('200', self.find('#tuition-charge-row td:last-child').text)
-            self.assertEqual('200', self.find('#total-charges-cell').text)
+    #         self.assertEqual(
+    #             'Add-on Classes Selected: 2',
+    #             self.find('#tuition-charge-row td:first-child').text
+    #         )
+    #         self.assertEqual('200', self.find('#tuition-charge-row td:last-child').text)
+    #         self.assertEqual('200', self.find('#total-charges-cell').text)
 
-            self.selenium.delete_all_cookies()
+    #         self.selenium.delete_all_cookies()
 
     def test_tuition_and_donation(self) -> None:
         RegularProgramClassChoices.objects.create(registration_entry=self.registration_entry)

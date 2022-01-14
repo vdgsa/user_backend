@@ -48,8 +48,9 @@ Period 4
   - 1st Choice: {% firstof registration_entry.regular_class_choices.period4_choice1 'No class' %}
   - 2nd Choice: {% firstof registration_entry.regular_class_choices.period4_choice2 'No class' %}
   - 3rd Choice: {% firstof registration_entry.regular_class_choices.period4_choice3 'No class' %}
-{% endif %}{% endif %}
+{% endif %}
 {% endcomment %}
+{% endif %}
 T-Shirts
 -------------------------------------------------------------------------------
 {% with registration_entry.tshirts as tshirts %}{% if not tshirts or not tshirts.tshirt1 and not tshirts.tshirt2 %}No T-Shirts{% else %}
