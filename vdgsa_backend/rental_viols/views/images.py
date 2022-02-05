@@ -36,7 +36,7 @@ from vdgsa_backend.rental_viols.models import (
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 from vdgsa_backend.rental_viols.views.utils import (
-    NotesOnlyHistoryForm, RentalViewBase, ReserveViolModelForm, _createUserStamp
+    NotesOnlyHistoryForm, RentalEditBase, RentalViewBase, ReserveViolModelForm, _createUserStamp
 )
 
 
@@ -76,7 +76,7 @@ class ImageView(RentalViewBase, View):
             return response
 
 
-class DeleteImageView(RentalViewBase, View):
+class DeleteImageView(RentalEditBase, View):
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {"picture_id": self.kwargs['picture_id']}
@@ -88,7 +88,7 @@ class DeleteImageView(RentalViewBase, View):
         return redirect(reverse(type + '-detail', args=[vbc_number]))
 
 
-class AttachImageView(RentalViewBase, FormView):
+class AttachImageView(RentalEditBase, FormView):
     """Attach Image"""
     template_name = 'upload_image.html'
     form_class = ImageForm

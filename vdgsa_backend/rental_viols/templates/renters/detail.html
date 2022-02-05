@@ -35,22 +35,28 @@
     {% if object.viol_num %}
       {{ object.viol_num }}
     {% else %}
-      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=viol" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+      {% if  perms.accounts.rental_manager %}
+        <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=viol" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+      {% endif%}
     {% endif%}
     </div>
     <div class="col">
      {% if object.case_num %}
       {{ object.case_num }}
-      {% else %}
-      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=case" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
-     {% endif%}
+      {% else %} 
+        {% if  perms.accounts.rental_manager %}
+        <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=case" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+        {% endif%}
+      {% endif%}
     </div>
 
     <div class="col">
       {% if object.bow_num %}
       {{ object.bow_num }}
       {% else %}
-        <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=bow" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
+        {% if  perms.accounts.rental_manager %}
+          <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=bow" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
+        {% endif%}
       {% endif%}
 
     </div>

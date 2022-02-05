@@ -10,7 +10,9 @@
 
 <div class="card text-end">
   <div class="card-header">
- <a class="btn btn-primary" href="{% url 'add-case' %}">Add Case</a>
+    {% if  perms.accounts.rental_manager %}
+      <a class="btn btn-primary" href="{% url 'add-case' %}">Add Case</a>
+    {% endif %}
   </div>
 </div>
 <div class="card">

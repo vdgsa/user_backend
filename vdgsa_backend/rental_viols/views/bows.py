@@ -35,7 +35,7 @@ from vdgsa_backend.rental_viols.models import (
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 from vdgsa_backend.rental_viols.views.utils import (
-    NotesOnlyHistoryForm, RentalViewBase, ReserveViolModelForm, _createUserStamp
+    NotesOnlyHistoryForm, RentalEditBase, RentalViewBase, ReserveViolModelForm, _createUserStamp
 )
 
 
@@ -73,9 +73,6 @@ class ListBowsView(RentalViewBase, ListView):
         else:
             queryset = Bow.objects.get_all()
 
-        # for bow in queryset:
-            # print(bow.__dict__)
-
         return queryset
 
 
@@ -108,7 +105,7 @@ class BowForm(forms.ModelForm):
         }
 
 
-class AddBowView(RentalViewBase, SuccessMessageMixin, CreateView):
+class AddBowView(RentalEditBase, SuccessMessageMixin, CreateView):
     model = Bow
     form_class = BowForm
     initial = {
@@ -118,7 +115,7 @@ class AddBowView(RentalViewBase, SuccessMessageMixin, CreateView):
     template_name = 'bows/add_bow.html'
 
 
-class UpdateBowView(RentalViewBase, SuccessMessageMixin, UpdateView):
+class UpdateBowView(RentalEditBase, SuccessMessageMixin, UpdateView):
     model = Bow
     form_class = BowForm
     template_name = 'bows/update.html'
@@ -175,7 +172,7 @@ class AvailableBowView(RentalViewBase, FormView):
         return reverse('bow-detail', args=[self.request.POST.get('pk')])
 
 
-class RetireBowView(RentalViewBase, FormView):
+class RetireBowView(RentalEditBase, FormView):
     """Retire Bow"""
     template_name = './retireMulti.html'
     form_class = NotesOnlyHistoryForm

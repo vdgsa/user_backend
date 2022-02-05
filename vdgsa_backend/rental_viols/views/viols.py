@@ -22,7 +22,7 @@ from vdgsa_backend.rental_viols.models import (
     Bow, Case, Image, RentalHistory, RentalProgram, Viol, ViolSize, WaitingList
 )
 from vdgsa_backend.rental_viols.views.utils import (
-    NotesOnlyHistoryForm, RentalViewBase, ReserveViolModelForm
+    NotesOnlyHistoryForm, RentalEditBase, RentalViewBase, ReserveViolModelForm
 )
 
 
@@ -100,7 +100,7 @@ class ViolForm(forms.ModelForm):
         }
 
 
-class DetachFromViolView(RentalViewBase, View):
+class DetachFromViolView(RentalEditBase, View):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         if self.request.GET.get('viol_num'):
             viol = Viol.objects.get(pk=self.request.GET['viol_num'])
@@ -131,7 +131,7 @@ class DetachFromViolView(RentalViewBase, View):
         return redirect(reverse('viol-detail', args=[self.request.GET['viol_num']]))
 
 
-class ChangeCustView(RentalViewBase, SuccessMessageMixin, View):
+class ChangeCustView(RentalEditBase, SuccessMessageMixin, View):
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
         if self.request.POST.get('user_id'):
@@ -155,7 +155,7 @@ class ChangeCustView(RentalViewBase, SuccessMessageMixin, View):
         return HttpResponseRedirect(self.request.POST.get('page'))
 
 
-class ReserveViolView(RentalViewBase, FormView):
+class ReserveViolView(RentalEditBase, FormView):
     template_name = 'renters/reserve.html'
     form_class = ReserveViolModelForm
     model = ReserveViolModelForm
@@ -212,7 +212,7 @@ class ReserveViolView(RentalViewBase, FormView):
         return super().form_valid(form)
 
 
-class AddViolView(RentalViewBase, SuccessMessageMixin, CreateView):
+class AddViolView(RentalEditBase, SuccessMessageMixin, CreateView):
     model = Viol
     form_class = ViolForm
     initial = {
@@ -222,7 +222,7 @@ class AddViolView(RentalViewBase, SuccessMessageMixin, CreateView):
     success_message = "%(size)s viol was created successfully"
 
 
-class UpdateViolView(RentalViewBase, SuccessMessageMixin, UpdateView):
+class UpdateViolView(RentalEditBase, SuccessMessageMixin, UpdateView):
     model = Viol
     form_class = ViolForm
     template_name = 'viols/update.html'
@@ -292,7 +292,7 @@ class AvailableViolView(RentalViewBase, FormView):
         return reverse('viol-detail', args=[self.request.POST.get('viol_num')])
 
 
-class RetireViolView(RentalViewBase, FormView):
+class RetireViolView(RentalEditBase, FormView):
     """Renew Rental Agreement"""
     template_name = './retireMulti.html'
     form_class = NotesOnlyHistoryForm

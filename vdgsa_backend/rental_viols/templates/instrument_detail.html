@@ -62,11 +62,13 @@
             <th scope="row">Custodian</th>
             <td>
               
+              {% if  perms.accounts.rental_manager %}
               {% if  item.storer %}
-              <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
+                <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
+                {% endif %}
+                <a class="btn btn-sm btn-secondary float-end me-2" onClick="changeCustModal()"
+                  >Change</a>
               {% endif %}
-              <a class="btn btn-sm btn-secondary float-end me-2" onClick="changeCustModal()"
-                >Change</a>
             </td>
             </tr>
             

@@ -14,6 +14,9 @@ from .images import AttachImageView as AttachImageView
 from .images import DeleteImageView as DeleteImageView
 from .images import ImageView as ImageView
 from .images import RentalContractView as RentalContractView
+from .user import MoveRentalUserReference as MoveRentalUserReference
+from .user import UserSearchView as UserSearchView
+from .user import ViewUserInfo as ViewUserInfo
 from .views import AttachToRentalView as AttachToRentalView
 from .views import AttachToViolView as AttachToViolView
 from .views import CustodianDetailView as CustodianDetailView
@@ -32,8 +35,6 @@ from .views import RentOutView as RentOutView
 from .views import SoftDeleteView as SoftDeleteView
 from .views import UpdateRentalView as UpdateRentalView
 from .views import UploadRentalView as UploadRentalView
-from .views import UserSearchView as UserSearchView
-from .views import ViewUserInfo as ViewUserInfo
 from .viols import AddViolView as AddViolView
 from .viols import AvailableViolView as AvailableViolView
 from .viols import ChangeCustView as ChangeCustView
