@@ -633,36 +633,42 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             self.registration_entry.program == Program.beginners)
 
         if self.registration_entry.uses_flexible_class_selection:
-            non_freebie_classes = Class.objects.filter(
-                conclave_config=self.registration_entry.conclave_config
-            ).exclude(period=Period.fourth)
+            self.flexible_class_selection_init()
 
-            self.fields['flex_choice1'].queryset = non_freebie_classes
-            self.fields['flex_choice1'].label_from_instance = flex_choice_class_label
-            self.fields['flex_choice1_instrument'].queryset = InstrumentBringing.objects.filter(
-                registration_entry=self.registration_entry
-            )
-            self.fields['flex_choice1_instrument'].empty_label = 'Any I listed'
+    def flexible_class_selection_init(self) -> None:
+        class_options_queryset = Class.objects.filter(
+            conclave_config=self.registration_entry.conclave_config
+        ).exclude(period=Period.fourth)
 
-            self.fields['flex_choice2'].queryset = non_freebie_classes
-            self.fields['flex_choice2'].label_from_instance = flex_choice_class_label
-            self.fields['flex_choice2_instrument'].queryset = InstrumentBringing.objects.filter(
-                registration_entry=self.registration_entry
-            )
-            self.fields['flex_choice2_instrument'].empty_label = 'Any I listed'
+        if self.registration_entry.program == Program.seasoned_players:
+            class_options_queryset = class_options_queryset.exclude(period=Period.second)
 
-            self.fields['flex_choice3'].queryset = non_freebie_classes
-            self.fields['flex_choice3'].label_from_instance = flex_choice_class_label
-            self.fields['flex_choice3_instrument'].queryset = InstrumentBringing.objects.filter(
-                registration_entry=self.registration_entry
-            )
-            self.fields['flex_choice3_instrument'].empty_label = 'Any I listed'
+        self.fields['flex_choice1'].queryset = class_options_queryset
+        self.fields['flex_choice1'].label_from_instance = flex_choice_class_label
+        self.fields['flex_choice1_instrument'].queryset = InstrumentBringing.objects.filter(
+            registration_entry=self.registration_entry
+        )
+        self.fields['flex_choice1_instrument'].empty_label = 'Any I listed'
 
-            if (self.registration_entry.uses_flexible_class_selection
-                    and self.registration_entry.program == Program.part_time):
-                self.fields['flex_choice1'].required = True
-                self.fields['flex_choice2'].required = True
-                self.fields['flex_choice3'].required = True
+        self.fields['flex_choice2'].queryset = class_options_queryset
+        self.fields['flex_choice2'].label_from_instance = flex_choice_class_label
+        self.fields['flex_choice2_instrument'].queryset = InstrumentBringing.objects.filter(
+            registration_entry=self.registration_entry
+        )
+        self.fields['flex_choice2_instrument'].empty_label = 'Any I listed'
+
+        self.fields['flex_choice3'].queryset = class_options_queryset
+        self.fields['flex_choice3'].label_from_instance = flex_choice_class_label
+        self.fields['flex_choice3_instrument'].queryset = InstrumentBringing.objects.filter(
+            registration_entry=self.registration_entry
+        )
+        self.fields['flex_choice3_instrument'].empty_label = 'Any I listed'
+
+        if (self.registration_entry.uses_flexible_class_selection
+                and self.registration_entry.program == Program.part_time):
+            self.fields['flex_choice1'].required = True
+            self.fields['flex_choice2'].required = True
+            self.fields['flex_choice3'].required = True
 
     def full_clean(self) -> None:
         super().full_clean()
