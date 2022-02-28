@@ -803,15 +803,15 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
 
     @property
     def _show_first_period(self) -> bool:
-        return self.registration_entry.program in [Program.regular]
+        return self.registration_entry.program in [Program.regular, Program.consort_coop]
 
     @property
     def _show_second_period(self) -> bool:
-        return self.registration_entry.program in [Program.regular]
+        return self.registration_entry.program in [Program.regular, Program.consort_coop]
 
     @property
     def _show_third_period(self) -> bool:
-        return self.registration_entry.program in [Program.regular, Program.consort_coop]
+        return self.registration_entry.program in [Program.regular]
 
     @property
     def _show_fourth_period(self) -> bool:
