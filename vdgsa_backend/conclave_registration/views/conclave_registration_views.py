@@ -427,8 +427,8 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = InstrumentBringing
         fields = [
-            'purpose',
             'size',
+            'purpose',
             'name_if_other',
             'level',
             'clefs',
@@ -1055,12 +1055,11 @@ class PaymentView(_RegistrationStepViewBase):
     def _get_missing_sections(self) -> list[str]:
         missing_sections = []
 
-        if (self.registration_entry.program in BEGINNER_PROGRAMS
-                and not hasattr(self.registration_entry, 'beginner_instruments')):
-            missing_sections.append('Instruments')
-
         if self.registration_entry.class_selection_is_required:
-            if self.registration_entry.instruments_bringing.count() == 0:
+            if (self.registration_entry.program in BEGINNER_PROGRAMS
+                    and not hasattr(self.registration_entry, 'beginner_instruments')):
+                missing_sections.append('Instruments')
+            elif self.registration_entry.instruments_bringing.count() == 0:
                 missing_sections.append('Instruments')
 
             if not hasattr(self.registration_entry, 'regular_class_choices'):

@@ -225,15 +225,21 @@
       <div>
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period4_choice1 label='Choice 1'%}
-          {% include 'utils/small_select.tmpl' with field=form.period4_choice1_instrument label='Instrument Preference'%}
+          {% if registration_entry.program != 'beginners' %}
+            {% include 'utils/small_select.tmpl' with field=form.period4_choice1_instrument label='Instrument Preference'%}
+          {% endif %}
         </div>
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period4_choice2 label='Choice 2'%}
-          {% include 'utils/small_select.tmpl' with field=form.period4_choice2_instrument label='Instrument Preference'%}
+          {% if registration_entry.program != 'beginners' %}
+            {% include 'utils/small_select.tmpl' with field=form.period4_choice2_instrument label='Instrument Preference'%}
+          {% endif %}
         </div>
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period4_choice3 label='Choice 3'%}
-          {% include 'utils/small_select.tmpl' with field=form.period4_choice3_instrument label='Instrument Preference'%}
+          {% if registration_entry.program != 'beginners' %}
+            {% include 'utils/small_select.tmpl' with field=form.period4_choice3_instrument label='Instrument Preference'%}
+          {% endif %}
         </div>
       </div>
       {% endif %}
