@@ -59,7 +59,7 @@ class ConclaveRegistrationConfig(models.Model):
     double_room_cost = models.IntegerField(blank=True, default=0)
     banquet_guest_fee = models.IntegerField(blank=True, default=0)
 
-    tshirt_price = models.IntegerField(blank=True, default=0)
+    tshirt_price = models.IntegerField(blank=True, default=25)
     late_registration_fee = models.IntegerField(blank=True, default=0)
 
     @property
