@@ -42,8 +42,25 @@ class ConclaveRegistrationConfig(models.Model):
     # Markdown text to go in the housing form just before the arrival/departure fields.
     housing_form_pre_arrival_markdown = models.TextField(blank=True)
 
-
     tshirt_image_url = models.URLField(blank=True)
+
+    # Fees and such
+    regular_tuition = models.IntegerField(blank=True, default=0)
+    part_time_tuition = models.IntegerField(blank=True, default=0)
+    consort_coop_tuition = models.IntegerField(blank=True, default=0)
+    seasoned_players_tuition = models.IntegerField(blank=True, default=0)
+    non_playing_attendee_fee = models.IntegerField(blank=True, default=0)
+
+    intro_to_viol_extra_class_fee = models.IntegerField(blank=True, default=0)
+    consort_coop_one_extra_class_fee = models.IntegerField(blank=True, default=0)
+    consort_coop_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
+
+    single_room_cost = models.IntegerField(blank=True, default=0)
+    double_room_cost = models.IntegerField(blank=True, default=0)
+    banquet_guest_fee = models.IntegerField(blank=True, default=0)
+
+    tshirt_price = models.IntegerField(blank=True, default=0)
+    late_registration_fee = models.IntegerField(blank=True, default=0)
 
     @property
     def is_open(self) -> bool:

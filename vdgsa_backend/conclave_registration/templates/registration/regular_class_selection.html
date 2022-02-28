@@ -35,24 +35,23 @@
     for levels.
   {% elif registration_entry.program == 'beginners' %}
     Participants in the Adult Beginners Program can sign up for an additional
-    Beginners+ class for $XX TBD. You may also sign up for a 4th period
+    Beginners+ class for ${{intro_to_viol_extra_class_fee}}.
+    You may also sign up for a 4th period
     class at no additional charge. To sign up for a 4th period freebie class,
     please select a 1st, 2nd, and 3rd choice for 4th period below.
   {% elif registration_entry.program == 'consort_coop' %}
     Participants in the Consort Cooperative Program who want to add one
     class may choose from 2nd period, while those who want to add two classes
     may choose from 1st and 2nd Periods. Adding one class will increase your
-    registration fee by $XX and adding two classes will increase it by $YY.
+    registration fee by ${{registration_entry.conclave_config.consort_coop_one_extra_class_fee}}
+    and adding two classes will increase it by
+    ${{registration_entry.conclave_config.consort_coop_two_extra_classes_fee}}.
   {% elif registration_entry.program == 'seasoned_players' %}
     Participants in the Seasoned Players Program who want to add one or
     two classes may choose classes in any period other than 2nd Period,
     when their program meets.
-    Adding any classes will increase your registration fee by $100.
-  {% elif registration_entry.program == 'advanced_projects' %}
-    Participants in the Advanced Projects Program who want to add one or
-    two classes may choose classes in any period other than 4th Period,
-    when their program meets.
-    Adding any classes will increase your registration fee by $100.
+    Adding any classes will increase your registration fee by
+    ${{registration_entry.conclave_config.seasoned_players_tuition}}.
   {% endif %}
 </div>
 
