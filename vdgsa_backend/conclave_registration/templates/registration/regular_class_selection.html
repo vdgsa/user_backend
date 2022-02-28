@@ -18,8 +18,14 @@
   {% if registration_entry.program == 'regular' %}
     Full time participants in the regular curriculum may choose classes for any
     two or three periods (plus an optional fourth class from among the
-    "freebie" offerings). Part time participants in the regular curriculum my
-    choose classes in any one period
+    "freebie" offerings). Please refer to the
+    <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
+       target="_blank">
+      self-rating guide
+    </a>
+    for levels.
+  {% elif registration_entry.program == 'part_time' %}
+    FIXMEEEEEEEEEEEEEE
   {% elif registration_entry.program == 'beginners' %}
     Participants in the Adult Beginners Program can sign up for an additional
     Beginners+ class for a small fee. You may also sign up for a 4th period
@@ -30,8 +36,6 @@
     two classes may choose classes in any period other than 3rd Period,
     when their program meets.
     Adding any classes will increase your registration fee by $100.
-  {% elif registration_entry.program == 'part_time' %}
-    FIXMEEEEEEEEEEEEEE
   {% elif registration_entry.program == 'seasoned_players' %}
     Participants in the Seasoned Players Program who want to add one or
     two classes may choose classes in any period other than 2nd Period,
