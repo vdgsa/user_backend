@@ -132,6 +132,7 @@
     </div>
   </div>
 
+  {% if registration_entry.program != 'faculty_guest_other' %}
   <h4 class="mt-2">Adjustments to Housing Costs</h4>
   <div class="row">
     <div class="col-md-6">
@@ -148,6 +149,7 @@
       {% endwith %}
     </div>
   </div>
+  {% endif %}
 
   <h4 class="mt-2">Additional Housing Comments</h4>
   <div class="row">
