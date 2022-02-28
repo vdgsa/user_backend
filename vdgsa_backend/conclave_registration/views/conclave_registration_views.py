@@ -354,8 +354,6 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
             'nickname_and_pronouns',
             'phone_number',
             'can_receive_texts_at_phone_number',
-            'home_timezone',
-            'other_timezone',
             'has_been_to_conclave',
             'has_done_work_study',
             'student_info',
@@ -380,19 +378,6 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
 
     has_been_to_conclave = YesNoRadioField(label='')
     has_done_work_study = YesNoRadioField(label='')
-
-    home_timezone = ChoiceField(
-        choices=(
-            ('EDT', 'EDT (Eastern Daylight Time) UTC/GMT -4 hours -- '
-                    'this is CONCLAVE OFFICIAL TIME'),
-            ('CDT', 'CDT (Central)'),
-            ('MDT', 'MDT (Mountain)'),
-            ('PDT', 'PDT (Pacific Daylight Time) UTC/GMT -7 hours -- this is where Koren, '
-                    'the work-study coordinator, lives!'),
-            ('other', 'Other'),
-        ),
-        widget=widgets.RadioSelect
-    )
 
     job_preferences = _PassThroughField(
         widget=widgets.CheckboxSelectMultiple(choices=WorkStudyJob.choices),

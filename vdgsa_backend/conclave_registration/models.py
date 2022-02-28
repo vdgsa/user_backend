@@ -324,10 +324,6 @@ class WorkStudyApplication(models.Model):
     nickname_and_pronouns = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=50)
     can_receive_texts_at_phone_number = models.TextField(choices=YesNo.choices)
-    home_timezone = models.TextField()  # We'll specify choices in the form
-    other_timezone = models.CharField(max_length=255, blank=True)
-
-    # Do we need "which conclave program are you enrolling in?"
 
     has_been_to_conclave = models.TextField(choices=YesNo.choices)
     has_done_work_study = models.TextField(choices=YesNo.choices)

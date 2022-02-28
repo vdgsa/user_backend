@@ -60,35 +60,6 @@
         accidentally contact you in the middle of your night!
       </div>
     </div>
-    <div class="row">
-      <div class="col-md-8">
-        {% for radio in form.home_timezone %}
-        {% if not forloop.last %}
-        <div class="form-check">
-          {{radio | add_classes:"form-check-input"}}
-          <label for="{{radio.id_for_label}}" class="form-check-label">
-            {{radio.choice_label}}
-          </label>
-        </div>
-        {% else %}
-        <div class="d-flex align-items-center">
-          <div class="form-check me-2">
-            {{radio | add_classes:"form-check-input"}}
-            <label for="{{radio.id_for_label}}" class="form-check-label">
-              {{radio.choice_label}}
-            </label>
-          </div>
-          <div class="flex-grow-1">
-            {{form.other_timezone | add_classes:"form-control form-control-sm"}}
-          </div>
-        </div>
-        {% endif %}
-        {% endfor %}
-        <div class="form-field-errors mt-1">
-          {{form.home_timezone.errors}}
-        </div>
-      </div>
-    </div>
 
     <div class="row mt-4">
       <div class="col-md-8">

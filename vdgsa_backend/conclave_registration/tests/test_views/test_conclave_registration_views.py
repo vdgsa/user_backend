@@ -529,8 +529,6 @@ _WORK_STUDY_DATA = {
     'nickname_and_pronouns': '',
     'phone_number': '1111111111',
     'can_receive_texts_at_phone_number': YesNo.yes,
-    'home_timezone': 'EDT',
-    'other_timezone': '',
     'has_been_to_conclave': YesNo.yes,
     'has_done_work_study': YesNo.yes,
     'student_info': '',

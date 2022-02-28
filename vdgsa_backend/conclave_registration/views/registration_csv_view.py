@@ -90,8 +90,6 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
         'nickname_and_pronouns',
         'phone_number',
         'can_receive_texts_at_phone_number',
-        'home_timezone',
-        'other_timezone',
         'has_been_to_conclave',
         'has_done_work_study',
         'student_info',
@@ -240,10 +238,6 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             'can_receive_texts_at_phone_number': (
                 entry.work_study.can_receive_texts_at_phone_number
                 if hasattr(entry, 'work_study') else ''),
-            'home_timezone': (
-                entry.work_study.home_timezone if hasattr(entry, 'work_study') else ''),
-            'other_timezone': (
-                entry.work_study.other_timezone if hasattr(entry, 'work_study') else ''),
             'has_been_to_conclave': (
                 entry.work_study.has_been_to_conclave if hasattr(entry, 'work_study') else ''),
             'has_done_work_study': (
