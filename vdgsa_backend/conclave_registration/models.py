@@ -1,6 +1,7 @@
 from __future__ import annotations
+from email.policy import default
 
-from typing import Any, Final, TypedDict
+from typing import Any, Final, List, Literal, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
@@ -51,9 +52,10 @@ class ConclaveRegistrationConfig(models.Model):
     seasoned_players_tuition = models.IntegerField(blank=True, default=0)
     non_playing_attendee_fee = models.IntegerField(blank=True, default=0)
 
-    intro_to_viol_extra_class_fee = models.IntegerField(blank=True, default=0)
+    beginners_extra_class_fee = models.IntegerField(blank=True, default=0)
     consort_coop_one_extra_class_fee = models.IntegerField(blank=True, default=0)
     consort_coop_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
+    seasoned_players_extra_class_fee = models.IntegerField(blank=True, default=0)
 
     single_room_cost = models.IntegerField(blank=True, default=0)
     double_room_cost = models.IntegerField(blank=True, default=0)
@@ -61,6 +63,10 @@ class ConclaveRegistrationConfig(models.Model):
 
     tshirt_price = models.IntegerField(blank=True, default=25)
     late_registration_fee = models.IntegerField(blank=True, default=0)
+
+    work_study_scholarship_amount = models.IntegerField(blank=True, default=0)
+    housing_subsidy_amount = models.IntegerField(blank=True, default=150)
+    canadian_discount_percent = models.IntegerField(blank=True, default=5)
 
     @property
     def is_open(self) -> bool:
@@ -196,50 +202,15 @@ class RegistrationEntry(models.Model):
         return self.program in FLEXIBLE_CLASS_SELECTION_PROGRAMS
 
     @property
+    def is_applying_for_work_study(self) -> bool:
+        return (
+            hasattr(self, 'work_study')
+            and self.work_study.wants_work_study == YesNo.yes
+        )
+
+    @property
     def is_finalized(self) -> bool:
         return self.payment_info is not None and self.payment_info.stripe_payment_method_id != ''
-
-    @property
-    def total_charges(self) -> int:
-        return self.tuition_charge + self.tshirts_charge + self.late_fee + self.donation
-
-    @property
-    def donation(self) -> int:
-        if not hasattr(self, 'tshirts'):
-            return 0
-
-        return self.tshirts.donation
-
-    @property
-    def total_minus_work_study(self) -> int:
-        return self.total_charges - self.tuition_charge
-
-    # TODO: Update and put this logic somewhere else, add DB options for
-    # the numbers.
-    @property
-    def tuition_charge(self) -> int:
-        if self.program in NO_CLASS_PROGRAMS:
-            return 0
-
-        if self.program == Program.regular:
-            return 200
-
-        return 100
-
-    @property
-    def late_fee(self) -> int:
-        return 25 if self.is_late else 0
-
-    @property
-    def num_tshirts(self) -> int:
-        if not hasattr(self, 'tshirts'):
-            return 0
-
-        return sum((1 for item in [self.tshirts.tshirt1, self.tshirts.tshirt2] if item))
-
-    @property
-    def tshirts_charge(self) -> int:
-        return self.num_tshirts * 25
 
 
 class AdditionalRegistrationInfo(models.Model):
@@ -431,11 +402,6 @@ def _make_class_instrument_field() -> Any:
         InstrumentBringing, on_delete=models.SET_NULL, related_name='+', null=True, blank=True)
 
 
-class TuitionOption(models.TextChoices):
-    full_time = 'full_time', 'Full Time (2-3 Classes)'
-    part_time = 'part_time', 'Part Time (1 Class)'
-
-
 _ClassChoiceDict = TypedDict(
     '_ClassChoiceDict', {'class': Class, 'instrument': InstrumentBringing})
 
@@ -524,6 +490,18 @@ class RegularProgramClassChoices(models.Model):
                 {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
             ]
         }
+
+    @cached_property
+    def num_non_freebie_classes(self) -> int:
+        count = 0
+
+        choices_by_period = dict(self.by_period)
+        choices_by_period.pop(Period.fourth)
+        for choices in choices_by_period.values():
+            if any(choice['class'] is not None for choice in choices):
+                count += 1
+
+        return count
 
 
 TSHIRT_SIZES: Final = [
@@ -640,7 +618,6 @@ class PaymentInfo(models.Model):
     # We'll consider registration to be finalized when
     # this field has a value.
     stripe_payment_method_id = models.TextField(blank=True)
-
 
 # =================================================================================================
 

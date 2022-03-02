@@ -34,6 +34,7 @@ from vdgsa_backend.conclave_registration.models import (
     RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe,
     get_classes_by_period
 )
+from vdgsa_backend.conclave_registration.summary_and_charges import get_charges_summary
 from vdgsa_backend.conclave_registration.templatetags.conclave_tags import (
     PERIOD_STRS, format_period_long, get_current_conclave
 )
@@ -668,7 +669,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             return
 
         if self.registration_entry.program == Program.regular:
-            if self._num_non_freebie_classes < 2:
+            if self.instance.num_non_freebie_classes < 2:
                 self.add_error(
                     None,
                     'Regular Curriculum (full-time) attendees must select at least '
@@ -684,18 +685,6 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         self._validate_period_preferences(Period.fourth)
 
         self._validate_extra_class_preferences()
-
-    @property
-    def _num_non_freebie_classes(self) -> int:
-        count = 0
-
-        choices_by_period = dict(self.instance.by_period)
-        choices_by_period.pop(Period.fourth)
-        for choices in choices_by_period.values():
-            if any(choice['class'] is not None for choice in choices):
-                count += 1
-
-        return count
 
     def _validate_period_preferences(self, period: Period) -> None:
         choices = [
@@ -727,7 +716,8 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
 
         if self.registration_entry.program == Program.part_time:
             # We don't have any more validation to do for part time
-            # extra class selection.
+            # extra class selection because the flex_choice fields
+            # are marked as required for part-timers.
             return
 
         # Seasoned players should specify all three choices.
@@ -894,6 +884,17 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         self.fields['departure_day'].widget = widgets.Select(
             choices=list(zip(departure_dates, departure_dates)))
 
+        housing_subsidy_amount = registration_entry.conclave_config.housing_subsidy_amount
+        self.fields['wants_housing_subsidy'].label = (
+            f'I am requesting the ${housing_subsidy_amount} student/limited income housing subsidy'
+        )
+
+        canadian_discount = registration_entry.conclave_config.canadian_discount_percent
+        self.fields['wants_canadian_currency_exchange_discount'].label = (
+            f'I am a Canadian resident requesting a {canadian_discount}% '
+            'currency exchange rate discount'
+        )
+
     def full_clean(self) -> None:
         super().full_clean()
 
@@ -1041,6 +1042,7 @@ class PaymentView(_RegistrationStepViewBase):
         context = super().get_render_context(form)
         context['missing_sections'] = self._get_missing_sections()
         context['class_selection_required'] = self.registration_entry.class_selection_is_required
+        context['charges_summary'] = get_charges_summary(self.registration_entry)
         return context
 
     def _get_missing_sections(self) -> list[str]:

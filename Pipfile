@@ -22,6 +22,7 @@ django-cors-headers = "*"
 stripe = "*"
 pillow = "*"
 django-markdownify = "*"
+mypy = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.10"

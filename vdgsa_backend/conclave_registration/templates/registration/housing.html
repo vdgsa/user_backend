@@ -136,17 +136,13 @@
   <h4 class="mt-2">Adjustments to Housing Costs</h4>
   <div class="row">
     <div class="col-md-6">
-      {% with label='I am requesting the $150 student/limited income housing subsidy'%}
-        {% include 'utils/form_field.tmpl' with field=form.wants_housing_subsidy %}
-      {% endwith %}
+      {% include 'utils/form_field.tmpl' with field=form.wants_housing_subsidy %}
     </div>
   </div>
 
   <div class="row">
     <div class="col-md-6">
-      {% with label='I am a Canadian resident requesting a 5% currency exchange rate discount'%}
-        {% include 'utils/form_field.tmpl' with field=form.wants_canadian_currency_exchange_discount %}
-      {% endwith %}
+      {% include 'utils/form_field.tmpl' with field=form.wants_canadian_currency_exchange_discount %}
     </div>
   </div>
   {% endif %}

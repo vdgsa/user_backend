@@ -49,14 +49,18 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'consort_coop_tuition',
             'seasoned_players_tuition',
             'non_playing_attendee_fee',
-            'intro_to_viol_extra_class_fee',
+            'beginners_extra_class_fee',
             'consort_coop_one_extra_class_fee',
             'consort_coop_two_extra_classes_fee',
+            'seasoned_players_extra_class_fee',
             'single_room_cost',
             'double_room_cost',
             'banquet_guest_fee',
             'tshirt_price',
             'late_registration_fee',
+            'work_study_scholarship_amount',
+            'housing_subsidy_amount',
+            'canadian_discount_percent',
         ]
 
         labels = {

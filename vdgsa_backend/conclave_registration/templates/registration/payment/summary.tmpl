@@ -1,4 +1,7 @@
 {% load conclave_tags %}
+{{charges_summary}}
+
+{% with registration_entry.housing as housing %}
 
 <div class="fs-5">Program</div>
 <div id="chosen-program" class="ps-3">
@@ -150,6 +153,30 @@ TODO: Update class summary based on selected program
 </div>
 {% endif %}
 
+<div class="fs-5 mt-2">Housing</div>
+<div id="housing-summary" class="ps-3">
+  <div>Room type: {{housing.room_type | format_room_type}}</div>
+  {% if housing.room_type == 'double' %}
+  <div>Requested roommate: {% firstof housing.roommate_request 'No preference' %}</div>
+  {% endif %}
+  {% if housing.room_type != 'off_campus' %}
+  <div>Requested suite with: {% firstof housing.share_suite_request 'No preference' %}</div>
+  <div>Requested room near: {% firstof housing.room_near_person_request 'No preference' %}</div>
+  {% endif %}
+
+  <div class="mt-2">
+    <div>Arrival date: {{housing.arrival_day}}</div>
+    <div>Departure date: {{housing.departure_day}}</div>
+  </div>
+
+  <div class="mt-2">
+    <div>Dietary needs: {% firstof housing.dietary_needs|format_dietary_needs 'None' %}</div>
+    {% if housing.other_dietary_needs %}
+    <div>Additional dietary needs: {{housing.other_dietary_needs}}</div>
+    {% endif %}
+  </div>
+</div>
+
 <div class="fs-5 mt-2">T-Shirts</div>
 {% with registration_entry.tshirts as tshirts %}
   {% if not tshirts or not tshirts.tshirt1 and not tshirts.tshirt2 %}
@@ -166,7 +193,7 @@ TODO: Update class summary based on selected program
   {% endif %}
 {% endwith %}
 
-<div style="border-bottom: 1px solid rgb(220, 220, 220);" class="my-3"></div>
+<hr>
 
 <table id="charges-table" class="table">
   <thead>
@@ -176,52 +203,50 @@ TODO: Update class summary based on selected program
     </tr>
   </thead>
   <tbody>
-    {% if registration_entry.class_selection_is_required %}
-    <tr id="tuition-charge-row">
-      <td>
-        {% if registration_entry.program != 'regular' %}
-        Add-on
-        {% endif %}
-{% comment %}
-TODO: Update tuition logic
-        Classes Selected: {{registration_entry.regular_class_choices.num_classes_selected}}
-{% endcomment %}
-      </td>
-      <td style="text-align: right;">
-        {{registration_entry.tuition_charge}}
-      </td>
+    {% for charge in charges_summary.charges %}
+    <tr>
+      <td>{{charge.display_name}}</td>
+      <td style="text-align: right">{{charge.amount}}</td>
+    </tr>
+    {% endfor %}
+
+    {% if charges_summary.apply_work_study_scholarship %}
+    <tr>
+      <td>Work-Study Scholarship (If Awarded*)</td>
+      <td style="text-align: right">-{{conclave_config.work_study_scholarship_amount}}</td>
     </tr>
     {% endif %}
-    {% if registration_entry.late_fee %}
-    <tr id="late-fee-charge-row">
-      <td>
-        Late registration
-      </td>
-      <td style="text-align: right;">{{registration_entry.late_fee}}</td>
+
+    {% if charges_summary.apply_housing_subsidy %}
+    <tr>
+      <td>Limited-Income Housing Subsidy (If Available)</td>
+      <td style="text-align: right">-{{conclave_config.housing_subsidy_amount}}</td>
     </tr>
     {% endif %}
-    <tr id="tshirts-charge-row">
-      <td>T-Shirts: {{registration_entry.num_tshirts}}</td>
-      <td style="text-align: right;">{{registration_entry.tshirts_charge}}</td>
+
+    <tr>
+      <td><b>Subtotal</b></td>
+      <td style="text-align: right">{{charges_summary.subtotal}}</td>
     </tr>
-    <tr id="donation-charge-row">
-      <td>Donation</td>
-      <td style="text-align: right;">{{registration_entry.donation}}</td>
+
+    {% if charges_summary.apply_canadian_discount %}
+    <tr>
+      <td>Canadian Exchange Rate Discount</td>
+      <td style="text-align: right">-{{conclave_config.canadian_discount_percent}}%</td>
     </tr>
+    {% endif %}
+
     <tr>
       <td><b>Total</b></td>
-      <td id="total-charges-cell" style="text-align: right;">
-        <b>{{registration_entry.total_charges}}</b>
-      </td>
+      <td style="text-align: right">${{charges_summary.total}}</td>
     </tr>
   </tbody>
 </table>
-{% if registration_entry.work_study %}
+{% if charges_summary.apply_work_study_scholarship %}
 <div id="work-study-charges-msg">
-  If you receive your ${{registration_entry.tuition_charge}}
-  Work-Study fee waiver, the total will be
-  ${{registration_entry.total_minus_work_study}}.
-  Work-Study positions will be awarded by June 15. Work-Study applicants
+  *Work-Study positions will be awarded by June 15. Work-Study applicants
   will not be charged until positions are finalized.
 </div>
 {% endif %}
+
+{% endwith %}
