@@ -25,7 +25,7 @@
     </a>
     for levels.
   {% elif registration_entry.program == 'part_time' %}
-    Part time participants may choose one class in any period
+    Part time participants may choose one class from any period
     (plus an optional fourth period class from among the "freebie" offerings).
     Please refer to the
     <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
@@ -235,21 +235,15 @@
       <div>
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period4_choice1 label='Choice 1'%}
-          {% if registration_entry.program != 'beginners' %}
-            {% include 'utils/small_select.tmpl' with field=form.period4_choice1_instrument label='Instrument Preference'%}
-          {% endif %}
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice1_instrument label='Instrument Preference'%}
         </div>
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period4_choice2 label='Choice 2'%}
-          {% if registration_entry.program != 'beginners' %}
-            {% include 'utils/small_select.tmpl' with field=form.period4_choice2_instrument label='Instrument Preference'%}
-          {% endif %}
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice2_instrument label='Instrument Preference'%}
         </div>
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period4_choice3 label='Choice 3'%}
-          {% if registration_entry.program != 'beginners' %}
-            {% include 'utils/small_select.tmpl' with field=form.period4_choice3_instrument label='Instrument Preference'%}
-          {% endif %}
+          {% include 'utils/small_select.tmpl' with field=form.period4_choice3_instrument label='Instrument Preference'%}
         </div>
       </div>
       {% endif %}

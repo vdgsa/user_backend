@@ -123,7 +123,10 @@
         {% if registration_entry.is_finalized and not perms.conclave_registration.conclave_team %}
           <div data-testid="registration_finalized_message">
             Your registration has been finalized. If you need to change something,
-            please contact the Conclave Team.
+            please contact the Conclave Team. Below is a summary of your registration.
+          </div>
+          <div class="mb-3">
+            {% include 'registration/payment/summary.tmpl' %}
           </div>
         {% elif perms.conclave_registration.conclave_team or conclave_config.is_open %}
           {% if conclave_config.phase == 'late' %}

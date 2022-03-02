@@ -695,7 +695,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if len(choices) == 0:
             return
 
-        if len(choices) != 3:
+        if len(choices) != 3 and period != Period.fourth:  # Allow < 3 choices for freebies
             self.add_error(
                 None,
                 f'{format_period_long(period)}: You must select a 1st, 2nd, and 3rd choice. '
