@@ -1,5 +1,4 @@
 {% load conclave_tags %}
-{{charges_summary}}
 
 {% with registration_entry.housing as housing %}
 
@@ -192,6 +191,7 @@ TODO: Update class summary based on selected program
     </ul>
   {% endif %}
 {% endwith %}
+{% endwith %}
 
 <hr>
 
@@ -248,5 +248,3 @@ TODO: Update class summary based on selected program
   will not be charged until positions are finalized.
 </div>
 {% endif %}
-
-{% endwith %}
