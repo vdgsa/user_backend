@@ -334,8 +334,9 @@ class Clef(models.TextChoices):
 class InstrumentChoices(models.TextChoices):
     treble = 'treble'
     tenor = 'tenor'
-    bass = 'bass'
-    other = 'other'
+    bass = 'bass', '6-string Bass'
+    bass_7_string = '7-string Bass'
+    other = 'other', 'Other Instrument or Rennaissance Viol'
 
 
 class InstrumentPurpose(models.TextChoices):
