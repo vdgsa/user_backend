@@ -608,6 +608,9 @@ class TShirts(models.Model):
     )
     donation = models.IntegerField(blank=True, default=0)
 
+    def as_list(self) -> list[str]:
+        return [self.tshirt1, self.tshirt2]
+
 
 class PaymentInfo(models.Model):
     registration_entry = models.OneToOneField(

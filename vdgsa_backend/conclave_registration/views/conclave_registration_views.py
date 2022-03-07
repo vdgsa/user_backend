@@ -34,7 +34,7 @@ from vdgsa_backend.conclave_registration.models import (
     RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe,
     get_classes_by_period
 )
-from vdgsa_backend.conclave_registration.summary_and_charges import get_charges_summary
+from vdgsa_backend.conclave_registration.summary_and_charges import get_charges_summary, get_registration_summary
 from vdgsa_backend.conclave_registration.templatetags.conclave_tags import (
     PERIOD_STRS, format_period_long, get_current_conclave
 )
@@ -1042,6 +1042,7 @@ class PaymentView(_RegistrationStepViewBase):
         context = super().get_render_context(form)
         context['missing_sections'] = self._get_missing_sections()
         context['class_selection_required'] = self.registration_entry.class_selection_is_required
+        context['registration_summary'] = get_registration_summary(self.registration_entry)
         context['charges_summary'] = get_charges_summary(self.registration_entry)
         return context
 
