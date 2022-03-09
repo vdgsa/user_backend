@@ -1,80 +1,113 @@
-{% load conclave_tags %}{% load vdgsa_tags %}Dear {{registration_entry.user | show_name}},
-
+{% load conclave_tags %}{% load vdgsa_tags %}{% load humanize %}
+Dear {{registration_entry.user | show_name}},
+{% comment %}
+HACK: We will postprocess the rendered template to strip out blank lines and
+leading whitespace. To keep a blank line, put a <br> tag and nothing else on that line.
+{% endcomment %}
+<br>
 Thank you for registering for Conclave! Below is a summary of your registration.
-{% if registration_entry.program == 'advanced_projects' %}
-Please take a moment to fill out this questionnaire for Advanced Projects participants: https://forms.gle/8FFvnoPBmztjRqA3A
-{% endif %}
+<br>
 Program
--------------------------------------------------------------------------------
-{{registration_entry.program | format_program}}
-
+=======
+{{registration_summary.program | format_program}}
+<br>
 {% if class_selection_required %}
 Work-Study
--------------------------------------------------------------------------------
-Applying for a work-study position: {% if registration_entry.work_study %}Yes{% else %}No{% endif %}
+==========
+Applying for a work-study position: {{registration_summary.work_study | yesno:'Yes,No'}}
+{% endif %}
 
+{% if registration_summary.instruments %}
+<br>
 Instruments
--------------------------------------------------------------------------------
-{% with is_beginner=registration_entry.program|is_beginner_program %}{% if is_beginner %}{% if registration_entry.beginner_instruments.needs_instrument == 'yes' %}Needs help finding an instrument{% else %}Bringing a {{registration_entry.beginner_instruments.instrument_bringing}} viol
-{% endif %}{% elif not registration_entry.instruments_bringing.count %}You are not bringing any instruments.
-{% else %}{% for instrument in registration_entry.instruments_bringing.all %}- {{instrument}}
-{% endfor %}{% endif %}{% endwith %}
-
-Class Preferences
--------------------------------------------------------------------------------
-{% comment %}
-TODO: Update class logic
-{% if class_selection_required and registration_entry.regular_class_choices.num_classes_selected == 0 %}No classes selected.
-{% else %}Period 1
-=================
-  - 1st Choice: {% firstof registration_entry.regular_class_choices.period1_choice1 'No class' %}
-  - 2nd Choice: {% firstof registration_entry.regular_class_choices.period1_choice2 'No class' %}
-  - 3rd Choice: {% firstof registration_entry.regular_class_choices.period1_choice3 'No class' %}
-
-Period 2
-=================
-  - 1st Choice: {% firstof registration_entry.regular_class_choices.period2_choice1 'No class' %}
-  - 2nd Choice: {% firstof registration_entry.regular_class_choices.period2_choice2 'No class' %}
-  - 3rd Choice: {% firstof registration_entry.regular_class_choices.period2_choice3 'No class' %}
-
-Period 3
-=================
-  - 1st Choice: {% firstof registration_entry.regular_class_choices.period3_choice1 'No class' %}
-  - 2nd Choice: {% firstof registration_entry.regular_class_choices.period3_choice2 'No class' %}
-  - 3rd Choice: {% firstof registration_entry.regular_class_choices.period3_choice3 'No class' %}
-
-Period 4
-=================
-  - 1st Choice: {% firstof registration_entry.regular_class_choices.period4_choice1 'No class' %}
-  - 2nd Choice: {% firstof registration_entry.regular_class_choices.period4_choice2 'No class' %}
-  - 3rd Choice: {% firstof registration_entry.regular_class_choices.period4_choice3 'No class' %}
+===========
+{% for instrument in registration_summary.instruments %}- {{instrument}}
+{% endfor %}
 {% endif %}
-{% endcomment %}
+
+{% if registration_summary.classes %}
+<br>
+Classes
+=======
+  {% if registration_summary.classes.wants_beginners_plus_class %}
+  - Beginners+ Class
+  {% endif %}
+  {% if registration_summary.classes.flexible_class_preferences %}
+    {% for pref in registration_summary.classes.flexible_class_preferences %}
+    - {{forloop.counter | ordinal}} Choice: {{pref}}</li>
+    {% endfor %}
+  <br>
+  {% endif %}
+
+  {% with registration_summary.classes.per_period_class_preferences as classes %}
+    {% if classes %}
+      {% for period, prefs in classes.items %}
+      {% if prefs %}
+      {{period | ordinal}} Period
+        {% for pref in prefs %}
+        - {{forloop.counter | ordinal}} Choice: {{pref}}
+        {% endfor %}
+      {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% if registration_summary.classes.freebie_preferences %}
+  4th Period Freebie
+    {% for pref in registration_summary.classes.freebie_preferences %}
+    - {{forloop.counter | ordinal}} Choice: {{pref}}
+    {% endfor %}
+  {% endif %}
 {% endif %}
+
+{% if registration_summary.housing %}
+<br>
+Housing
+=======
+{% for item in registration_summary.housing %}
+- {{item}}
+{% endfor %}
+{% endif %}
+<br>
 T-Shirts
--------------------------------------------------------------------------------
-{% with registration_entry.tshirts as tshirts %}{% if not tshirts or not tshirts.tshirt1 and not tshirts.tshirt2 %}No T-Shirts{% else %}
-{% if tshirts.tshirt1 %}- T-Shirt 1: {{tshirts.tshirt1}}{% endif %}
-{% if tshirts.tshirt2 %}- T-Shirt 2: {{tshirts.tshirt2}}{% endif %}{% endif %}{% endwith %}
-
-
+========
+{% if registration_summary.tshirts %}
+  {% for item in registration_summary.tshirts %}
+    1. {{item}}
+  {% endfor %}
+{% else %}
+No T-Shirts
+{% endif %}
+<br>
+________________________________________________________________________
+<br>
+<br>
 Summary of Charges So Far
--------------------------------------------------------------------------------
-{% comment %}
-TODO: Update tuition and charges
-{% if registration_entry.class_selection_is_required %}- {{registration_entry.regular_class_choices.num_classes_selected}} {% if registration_entry.program != 'regular' %}Add-on {% endif %}Classes Selected: ${{registration_entry.tuition_charge}}
-{% endif %}{% if registration_entry.late_fee %}- Late registration: ${{registration_entry.late_fee}}
-{% endif %}- {{registration_entry.num_tshirts}} T-Shirts: ${{registration_entry.tshirts_charge}}
-- Donation: ${{registration_entry.donation}}
-{% endcomment %}
+=========================
+{% for charge in charges_summary.charges %}
+{{charge.display_name}}: {{charge.amount}}
+{% endfor %}
 
-Total: ${{registration_entry.total_charges}}
-
-{% if registration_entry.work_study %}If you receive your ${{registration_entry.tuition_charge}}
-Work-Study fee waiver, the total will be ${{registration_entry.total_minus_work_study}}.
-Work-Study positions will be awarded by June 15. Work-Study applicants
-will not be charged until positions are finalized.
+{% if charges_summary.apply_work_study_scholarship %}
+Work-Study Scholarship (If Awarded*): -{{conclave_config.work_study_scholarship_amount}}</td>
 {% endif %}
 
+{% if charges_summary.apply_housing_subsidy %}
+Limited-Income Housing Subsidy (If Available): -{{conclave_config.housing_subsidy_amount}}
+{% endif %}
+<br>
+*Subtotal:* {{charges_summary.subtotal}}
+
+{% if charges_summary.apply_canadian_discount %}
+Canadian Exchange Rate Discount: -{{conclave_config.canadian_discount_percent}}%
+{% endif %}
+*Total:* ${{charges_summary.total}}
+<br>
+{% if charges_summary.apply_work_study_scholarship %}
+  *Work-Study positions will be awarded by June 15. Work-Study applicants
+  will not be charged until positions are finalized.
+</div>
+{% endif %}
+<br>
 Sincerely,
 VdGSA Conclave and Web Teams

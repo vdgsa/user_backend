@@ -10,13 +10,7 @@
 <div class="fs-5 mt-2">Work-Study</div>
 <div id="work-study-summary" class="ps-3">
   Applying for a work-study position:
-  <b>
-    {% if registration_summary.work_study %}
-    Yes
-    {% else %}
-    No
-    {% endif %}
-  </b>
+  <b>{{registration_summary.work_study | yesno:'Yes,No'}}</b>
 </div>
 {% endif %}
 
@@ -53,14 +47,14 @@
   {% with registration_summary.classes.per_period_class_preferences as classes %}
     {% if classes %}
       {% for period, prefs in classes.items %}
-      {% if prefs %}
-      <div>{{period | ordinal}} Period</div>
-      <ul>
-        {% for pref in prefs %}
-        <li>{{forloop.counter | ordinal}} Choice: {{pref}}</li>
-        {% endfor %}
-      </ul>
-      {% endif %}
+        {% if prefs %}
+        <div>{{period | ordinal}} Period</div>
+        <ul>
+          {% for pref in prefs %}
+          <li>{{forloop.counter | ordinal}} Choice: {{pref}}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
       {% endfor %}
     {% endif %}
   {% endwith %}

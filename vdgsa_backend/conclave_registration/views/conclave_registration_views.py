@@ -1107,11 +1107,28 @@ def send_confirmation_email(registration_entry: RegistrationEntry) -> None:
             'conclave.manager@vdgsa.org',
             'conclave.manager@gmail.com',
         ],
-        message=render_to_string(
-            'registration/confirmation_email.tmpl',
-            {
-                'registration_entry': registration_entry,
-                'class_selection_required': registration_entry.class_selection_is_required
-            }
+        message=_postprocess_confirmation_email(
+            render_to_string(
+                'registration/confirmation_email.tmpl',
+                {
+                    'registration_entry': registration_entry,
+                    'class_selection_required': registration_entry.class_selection_is_required,
+                    'registration_summary': get_registration_summary(registration_entry),
+                    'charges_summary': get_charges_summary(registration_entry),
+                }
+            )
         )
     )
+
+
+def _postprocess_confirmation_email(message: str) -> str:
+    result = ''
+    for line in message.splitlines():
+        line = line.strip()
+        if line == '<br>':
+            result += '\n'
+        elif line:
+            result += line
+            result += '\n'  # Add back a newline since we stripped whitespace
+
+    return result
