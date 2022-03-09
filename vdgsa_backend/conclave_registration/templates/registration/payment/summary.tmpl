@@ -33,7 +33,7 @@
 
 {% if registration_summary.classes %}
 <div class="fs-5 mt-2">Classes</div>
-<div id="classes-summary" class="ps-3">
+<div id="classes-summary">
   {% if registration_summary.classes.wants_beginners_plus_class %}
   <ul>
     <li>
@@ -45,7 +45,7 @@
   {% if registration_summary.classes.flexible_class_preferences %}
   <ul>
     {% for pref in registration_summary.classes.flexible_class_preferences %}
-    <li>{{forloop.counter | ordinal}} Choice: pref</li>
+    <li>{{forloop.counter | ordinal}} Choice: {{pref}}</li>
     {% endfor %}
   </ul>
   {% endif %}
@@ -53,12 +53,14 @@
   {% with registration_summary.classes.per_period_class_preferences as classes %}
     {% if classes %}
       {% for period, prefs in classes.items %}
+      {% if prefs %}
       <div>{{period | ordinal}} Period</div>
       <ul>
         {% for pref in prefs %}
         <li>{{forloop.counter | ordinal}} Choice: {{pref}}</li>
         {% endfor %}
       </ul>
+      {% endif %}
       {% endfor %}
     {% endif %}
   {% endwith %}

@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import TypedDict
 
 from vdgsa_backend.conclave_registration.models import (
-    BeginnerInstrumentInfo, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType,
+    BanquetFoodChoices, BeginnerInstrumentInfo, ClassChoiceDict, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType, InstrumentBringing,
     InstrumentChoices, Period, Program, RegistrationEntry,
     RegularProgramClassChoices, TShirts, YesNo
 )
@@ -65,23 +65,36 @@ def get_class_summary(registration_entry: RegistrationEntry) -> ClassSummary | N
 
     class_choices: RegularProgramClassChoices = registration_entry.regular_class_choices
 
-    flexible_class_prefs = [
-        registration_entry.regular_class_choices.flex_choice1,
-        registration_entry.regular_class_choices.flex_choice2,
-        registration_entry.regular_class_choices.flex_choice3
+    flexible_class_prefs: list[ClassChoiceDict] = [
+        {'class': registration_entry.regular_class_choices.flex_choice1,
+         'instrument': registration_entry.regular_class_choices.flex_choice1_instrument},
+        {'class': registration_entry.regular_class_choices.flex_choice2,
+         'instrument': registration_entry.regular_class_choices.flex_choice2_instrument},
+        {'class': registration_entry.regular_class_choices.flex_choice3,
+         'instrument': registration_entry.regular_class_choices.flex_choice3_instrument},
     ]
-    # Note: All three choices are required, so this filter should leave us with
-    # three on zero choices in the list
-    flexible_class_prefs = [str(choice) for choice in flexible_class_prefs if choice is not None]
     per_period_prefs = _get_per_period_class_preferences(class_choices)
     freebie_prefs = per_period_prefs.pop(Period.fourth)
     result = {
         'wants_beginners_plus_class': class_choices.wants_extra_beginner_class == YesNo.yes,
-        'flexible_class_preferences': flexible_class_prefs,
+        # Note: All three choices are required, so this filter should leave us with
+        # three or zero choices in the list
+        'flexible_class_preferences': [
+            f"{choice_dict['class']} ({_instrument_to_str(choice_dict['instrument'])}) "
+            f"({Period(choice_dict['class'].period).label})"
+            for choice_dict in flexible_class_prefs if choice_dict['class'] is not None
+        ],
         'per_period_class_preferences': per_period_prefs,
         'freebie_preferences': freebie_prefs,
     }
-    return result if any(result.values()) else None
+
+    selected_any_classes = (
+        result['wants_beginners_plus_class']
+        or result['flexible_class_preferences']
+        or any(result['per_period_class_preferences'].values())
+        or result['freebie_preferences']
+    )
+    return result if selected_any_classes else None
 
 
 def _get_per_period_class_preferences(
@@ -95,11 +108,16 @@ def _get_per_period_class_preferences(
     return {
         period: [
             # Display class as "{Name} ({Preferred Instrument})"
-            f"{choice_dict['class']} ({instr if (instr := choice_dict['instrument']) else 'Any'})"
+            f"{choice_dict['class']} ({_instrument_to_str(choice_dict['instrument'])})"
             for choice_dict in choices if choice_dict['class'] is not None
         ]
         for period, choices in class_choices.by_period.items()
     }
+
+
+def _instrument_to_str(instrument: InstrumentBringing | None) -> str:
+    return 'Any' if instrument is None else str(instrument)
+
 
 
 def get_housing_summary(registration_entry: RegistrationEntry) -> list[str]:
@@ -120,7 +138,6 @@ def get_housing_summary(registration_entry: RegistrationEntry) -> list[str]:
         room_near_pref = req if (req := housing.room_near_person_request) else 'No preference'
         summary_items.append(f'Requesting a room near: {room_near_pref}')
 
-
     summary_items += [
         f'Arrival date: {housing.arrival_day}',
         f'Departure date: {housing.departure_day}',
@@ -133,6 +150,21 @@ def get_housing_summary(registration_entry: RegistrationEntry) -> list[str]:
         )
     if housing.other_dietary_needs:
         summary_items.append('Additional dietary needs: ' + housing.other_dietary_needs)
+
+    if housing.banquet_food_choice == BanquetFoodChoices.not_attending:
+        summary_items.append('Attending Banquet: No')
+    else:
+        summary_items += [
+            'Attending Banquet: Yes',
+            f'Banquet Food Choice: {BanquetFoodChoices(housing.banquet_food_choice).label}',
+        ]
+
+        if housing.is_bringing_guest_to_banquet == YesNo.yes:
+            summary_items += [
+                f'Banquet Guest: {housing.banquet_guest_name}',
+                ('Banquet Guest Food Choice: '
+                 f'{BanquetFoodChoices(housing.banquet_guest_food_choice).label}'),
+            ]
 
     return summary_items
 
@@ -225,9 +257,13 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
 
 def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
-    display_name = f'Tuition ({Program(registration_entry.program).label})'
+    program = registration_entry.program
+    if program == Program.non_playing_attendee:
+        display_name = 'Attendance Fee'
+    else:
+        display_name = f'Tuition: {Program(program).label}'
 
-    match(registration_entry.program):
+    match(program):
         case Program.regular:
             return {
                 'display_name': display_name,
@@ -271,7 +307,7 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
     class_choices: RegularProgramClassChoices = registration_entry.regular_class_choices
 
     match(registration_entry.program):
-        case Program.beginners if registration_entry.wants_extra_beginner_class == YesNo.yes:
+        case Program.beginners if class_choices.wants_extra_beginner_class == YesNo.yes:
             return {
                 'display_name': 'Beginners+ Add-On Class',
                 'amount': conclave_config.beginners_extra_class_fee

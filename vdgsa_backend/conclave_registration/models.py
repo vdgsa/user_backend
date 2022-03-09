@@ -1,7 +1,6 @@
 from __future__ import annotations
-from email.policy import default
 
-from typing import Any, Final, List, Literal, TypedDict
+from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
@@ -27,6 +26,7 @@ class ConclaveRegistrationConfig(models.Model):
     )
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
+    liability_release_text = models.TextField(blank=True)
     archival_video_release_text = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
 
@@ -228,9 +228,9 @@ class AdditionalRegistrationInfo(models.Model):
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
 
+    liability_release = models.BooleanField()
     archival_video_release = models.BooleanField()
     photo_release_auth = models.TextField(choices=YesNo.choices)
-    # liability_release = models.BooleanField()
 
     other_info = models.TextField(blank=True)
 
@@ -335,7 +335,7 @@ class InstrumentChoices(models.TextChoices):
     treble = 'treble'
     tenor = 'tenor'
     bass = 'bass', '6-string Bass'
-    bass_7_string = '7-string Bass'
+    bass_7_string = 'bass_7_string', '7-string Bass'
     other = 'other', 'Other Instrument or Rennaissance Viol'
 
 
@@ -403,8 +403,8 @@ def _make_class_instrument_field() -> Any:
         InstrumentBringing, on_delete=models.SET_NULL, related_name='+', null=True, blank=True)
 
 
-_ClassChoiceDict = TypedDict(
-    '_ClassChoiceDict', {'class': Class, 'instrument': InstrumentBringing})
+ClassChoiceDict = TypedDict(
+    'ClassChoiceDict', {'class': Class, 'instrument': InstrumentBringing})
 
 
 # Note: The name of this class (and related classes and files) is out of date.
@@ -468,7 +468,7 @@ class RegularProgramClassChoices(models.Model):
     flex_choice3_instrument = _make_class_instrument_field()
 
     @cached_property
-    def by_period(self) -> dict[Period, list[_ClassChoiceDict]]:
+    def by_period(self) -> dict[Period, list[ClassChoiceDict]]:
         return {
             Period.first: [
                 {'class': self.period1_choice1, 'instrument': self.period1_choice1_instrument},

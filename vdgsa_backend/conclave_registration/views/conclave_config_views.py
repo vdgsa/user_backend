@@ -29,6 +29,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'year',
             'phase',
             'faculty_registration_password',
+            'liability_release_text',
             'archival_video_release_text',
             'photo_release_text',
 
@@ -78,6 +79,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
 
         widgets = {
             'phase': widgets.RadioSelect,
+            'liability_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'archival_video_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'photo_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
 

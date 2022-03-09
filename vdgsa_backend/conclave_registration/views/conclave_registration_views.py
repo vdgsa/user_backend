@@ -286,9 +286,9 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'buddy_willingness',
             # 'willing_to_help_with_small_jobs',
             'wants_display_space',
+            'liability_release',
             'archival_video_release',
             'photo_release_auth',
-            # 'liability_release',
             'other_info',
         ]
 
@@ -310,6 +310,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     attended_conclave_before = YesNoRadioField(
         label='', no_label='No, this is my first Conclave!')
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
+    liability_release = BooleanField(required=True, label='I agree')
     archival_video_release = BooleanField(required=True, label='I agree')
     photo_release_auth = YesNoRadioField(
         yes_label='I allow',
@@ -414,8 +415,8 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
         model = InstrumentBringing
         fields = [
             'size',
-            'purpose',
             'name_if_other',
+            'purpose',
             'level',
             'clefs',
             'comments',
@@ -425,7 +426,8 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
             'purpose': 'Are you bringing this instrument for yourself, '
                        'willing to lend it, or needing to borrow it?',
             'level': 'My level on this instrument',
-            'comments': 'Comments (e.g., "I can lend this instrument during 1st period only")'
+            'comments': 'Comments (e.g., "I can lend this instrument during 1st period only")',
+            'name_if_other': 'Please specify instrument size/type'
         }
 
         widgets = {
@@ -1050,9 +1052,9 @@ class PaymentView(_RegistrationStepViewBase):
         missing_sections = []
 
         if self.registration_entry.class_selection_is_required:
-            if (self.registration_entry.program in BEGINNER_PROGRAMS
-                    and not hasattr(self.registration_entry, 'beginner_instruments')):
-                missing_sections.append('Instruments')
+            if self.registration_entry.program in BEGINNER_PROGRAMS:
+                if not hasattr(self.registration_entry, 'beginner_instruments'):
+                    missing_sections.append('Instruments')
             elif self.registration_entry.instruments_bringing.count() == 0:
                 missing_sections.append('Instruments')
 
