@@ -1187,6 +1187,7 @@ def _render_confirmation_email(registration_entry: RegistrationEntry) -> str:
         'registration/confirmation_email.tmpl',
         {
             'registration_entry': registration_entry,
+            'conclave_config': registration_entry.conclave_config,
             'class_selection_required': registration_entry.class_selection_is_required,
             'registration_summary': get_registration_summary(registration_entry),
             'charges_summary': get_charges_summary(registration_entry),
