@@ -813,7 +813,11 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
         Fourth period contains only freebie classes.
         """
         return self.registration_entry.program in [
-            Program.regular, Program.beginners, Program.seasoned_players, Program.part_time
+            Program.regular,
+            Program.beginners,
+            Program.seasoned_players,
+            Program.advanced_projects,
+            Program.part_time,
         ]
 
 

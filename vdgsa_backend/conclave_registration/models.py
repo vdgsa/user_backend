@@ -496,6 +496,9 @@ class RegularProgramClassChoices(models.Model):
 
     @cached_property
     def num_non_freebie_classes(self) -> int:
+        if self.registration_entry.program in FLEXIBLE_CLASS_SELECTION_PROGRAMS:
+            return 1 if self.flex_choice1 else 0
+
         count = 0
 
         choices_by_period = dict(self.by_period)
