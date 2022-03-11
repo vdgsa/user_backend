@@ -4,6 +4,7 @@ import itertools
 from abc import abstractmethod
 from itertools import chain
 from typing import Any, Dict, Final, List, Type, cast
+from django.conf import settings
 
 import stripe  # type: ignore
 from django import forms
@@ -1106,6 +1107,8 @@ class PaymentView(_RegistrationStepViewBase):
         context['class_selection_required'] = self.registration_entry.class_selection_is_required
         context['registration_summary'] = get_registration_summary(self.registration_entry)
         context['charges_summary'] = get_charges_summary(self.registration_entry)
+        if settings.DEBUG:
+            context['confirmation_email_debug'] = _render_confirmation_email(self.registration_entry)
         return context
 
     def _get_missing_sections(self) -> list[str]:
@@ -1171,21 +1174,22 @@ def send_confirmation_email(registration_entry: RegistrationEntry) -> None:
             'conclave.manager@vdgsa.org',
             'conclave.manager@gmail.com',
         ],
-        message=_postprocess_confirmation_email(
-            render_to_string(
-                'registration/confirmation_email.tmpl',
-                {
-                    'registration_entry': registration_entry,
-                    'class_selection_required': registration_entry.class_selection_is_required,
-                    'registration_summary': get_registration_summary(registration_entry),
-                    'charges_summary': get_charges_summary(registration_entry),
-                }
-            )
-        )
+        message=_render_confirmation_email(registration_entry)
     )
 
 
-def _postprocess_confirmation_email(message: str) -> str:
+def _render_confirmation_email(registration_entry: RegistrationEntry) -> str:
+    message = render_to_string(
+        'registration/confirmation_email.tmpl',
+        {
+            'registration_entry': registration_entry,
+            'class_selection_required': registration_entry.class_selection_is_required,
+            'registration_summary': get_registration_summary(registration_entry),
+            'charges_summary': get_charges_summary(registration_entry),
+        }
+    )
+
+    # Remove blank lines and strip leading and trailing whitespace.
     result = ''
     for line in message.splitlines():
         line = line.strip()
