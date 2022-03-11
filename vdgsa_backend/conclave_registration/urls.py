@@ -36,6 +36,8 @@ urlpatterns = [
     path('register/<int:conclave_reg_pk>/classes/',
          views.RegularProgramClassSelectionView.as_view(),
          name='conclave-class-selection'),
+    path('register/<int:conclave_reg_pk>/advanced_projects/',
+         views.AdvancedProjectsView.as_view(), name='conclave-advanced-projects'),
     path('register/<int:conclave_reg_pk>/housing/',
          views.HousingView.as_view(), name='conclave-housing'),
     path('register/<int:conclave_reg_pk>/tshirts/', views.TShirtsView.as_view(),

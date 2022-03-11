@@ -13,7 +13,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail
 from django.db.models.base import Model
 from django.forms import widgets
-from django.forms.fields import BooleanField, ChoiceField
+from django.forms.fields import BooleanField
 from django.forms.utils import ErrorDict
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -28,7 +28,7 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo, BeginnerInstrumentInfo,
+    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo, AdvancedProjectsInfo, AdvancedProjectsParticipationOptions, BeginnerInstrumentInfo,
     Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType,
     InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase,
     RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe,
@@ -751,7 +751,17 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
 class RegularProgramClassSelectionView(_RegistrationStepViewBase):
     template_name = 'registration/regular_class_selection.html'
     form_class = RegularProgramClassSelectionForm
-    next_step_url_name = 'conclave-basic-info'
+
+    def get_next_step_url(self) -> str:
+        if self.registration_entry.program == Program.advanced_projects:
+            url_name = 'conclave-advanced-projects'
+        else:
+            url_name = 'conclave-basic-info'
+
+        return reverse(
+            url_name,
+            kwargs={'conclave_reg_pk': self.registration_entry.pk}
+        )
 
     def get_step_instance(self) -> RegularProgramClassChoices | None:
         if hasattr(self.registration_entry, 'regular_class_choices'):
@@ -804,6 +814,56 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
         return self.registration_entry.program in [
             Program.regular, Program.beginners, Program.seasoned_players, Program.part_time
         ]
+
+
+class AdvancedProjectsForm(_RegistrationStepFormBase, forms.ModelForm):
+    class Meta:
+        fields = [
+            'participation',
+            'project_proposal',
+        ]
+        model = AdvancedProjectsInfo
+
+        labels = {
+            'participation': '',
+            'project_proposal': '',
+        }
+        widgets = {
+            'participation': widgets.RadioSelect(),
+            'project_proposal': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+        }
+
+    def full_clean(self) -> None:
+        super().full_clean()
+
+        # Running the validation logic below will cause an exception to
+        # be thrown if "self.cleaned_data" is not available. Validation
+        # gets triggered by our non-field-error display code near the top
+        # of the template, and self.cleaned_data
+        # is typically not available when rendering for a GET request
+        # This check will prevent us from running our extra validation
+        # if all we're doing is rendering for a GET request.
+        if not hasattr(self, 'cleaned_data'):
+            return
+
+        if self.registration_entry.program != Program.advanced_projects:
+            return
+
+        if (self.instance.participation == AdvancedProjectsParticipationOptions.propose_a_project
+                and not self.instance.project_proposal):
+            self.add_error(None, 'Please describe your proposed project.')
+
+
+class AdvancedProjectsView(_RegistrationStepViewBase):
+    template_name = 'registration/advanced_projects.html'
+    form_class = AdvancedProjectsForm
+    next_step_url_name = 'conclave-basic-info'
+
+    def get_step_instance(self) -> AdvancedProjectsInfo | None:
+        if hasattr(self.registration_entry, 'advanced_projects'):
+            return self.registration_entry.advanced_projects
+
+        return None
 
 
 class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
@@ -1060,6 +1120,10 @@ class PaymentView(_RegistrationStepViewBase):
 
             if not hasattr(self.registration_entry, 'regular_class_choices'):
                 missing_sections.append('Classes')
+
+        if (self.registration_entry.program == Program.advanced_projects
+                and not hasattr(self.registration_entry, 'advanced_projects')):
+            missing_sections.append('Advanced Projects')
 
         if not hasattr(self.registration_entry, 'additional_info'):
             missing_sections.append('Additional Info')

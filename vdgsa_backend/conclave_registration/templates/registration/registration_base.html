@@ -41,6 +41,23 @@
         </a>
         {% endif %}
 
+        {% if registration_entry.program == 'advanced_projects' %}
+        <a {% url 'conclave-advanced-projects' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Advanced Projects
+            {% if registration_entry.advanced_projects %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        {% endif %}
+
         <a {% url 'conclave-basic-info' conclave_reg_pk=registration_entry.pk as url %}
           href="{{url}}"
           class="

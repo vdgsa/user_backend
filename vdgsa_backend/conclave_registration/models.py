@@ -154,7 +154,8 @@ class Program(models.TextChoices):
     part_time = 'part_time', 'Part-Time Curriculum (1 class + optional freebie)'
     beginners = 'beginners', 'Introduction to the Viol (free)'
     consort_coop = 'consort_coop', 'Consort Cooperative'
-    seasoned_players = 'seasoned_players', 'Seasoned Players/Advanced Projects'
+    seasoned_players = 'seasoned_players', 'Seasoned Players'
+    advanced_projects = 'advanced_projects', 'Advanced Projects'
     faculty_guest_other = 'faculty_guest_other', 'Faculty'
     non_playing_attendee = 'non_playing_attendee', 'Non-Playing Attendee'
 
@@ -162,7 +163,8 @@ class Program(models.TextChoices):
 BEGINNER_PROGRAMS = [Program.beginners]
 FLEXIBLE_CLASS_SELECTION_PROGRAMS = [
     Program.part_time,
-    Program.seasoned_players
+    Program.seasoned_players,
+    Program.advanced_projects,
 ]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
@@ -505,22 +507,22 @@ class RegularProgramClassChoices(models.Model):
         return count
 
 
-TSHIRT_SIZES: Final = [
-    "Men's S",
-    "Men's M",
-    "Men's L",
-    "Men's XL",
-    "Men's XXL",
-    "Men's XXXL",
+class AdvancedProjectsParticipationOptions(models.TextChoices):
+    participate = 'participate', 'I would like to participate in other projects'
+    propose_a_project = 'propose_a_project', 'I would like to propose a project'
 
-    "Women's Fitted S",
-    "Women's Fitted M",
-    "Women's Fitted L",
-    "Women's V-neck S",
-    "Women's V-neck M",
-    "Women's V-neck L",
-    "Women's V-neck XL",
-]
+
+class AdvancedProjectsInfo(models.Model):
+    registration_entry = models.OneToOneField(
+        RegistrationEntry,
+        on_delete=models.CASCADE,
+        related_name='advanced_projects',
+    )
+
+    participation = models.TextField(
+        choices=AdvancedProjectsParticipationOptions.choices, blank=False, default=''
+    )
+    project_proposal = models.TextField(blank=True)
 
 
 class HousingRoomType(models.TextChoices):
@@ -587,6 +589,24 @@ class Housing(models.Model):
     banquet_guest_name = models.TextField(blank=True)
     banquet_guest_food_choice = models.TextField(
         choices=BanquetFoodChoices.choices[:-1], blank=True)
+
+
+TSHIRT_SIZES: Final = [
+    "Men's S",
+    "Men's M",
+    "Men's L",
+    "Men's XL",
+    "Men's XXL",
+    "Men's XXXL",
+
+    "Women's Fitted S",
+    "Women's Fitted M",
+    "Women's Fitted L",
+    "Women's V-neck S",
+    "Women's V-neck M",
+    "Women's V-neck L",
+    "Women's V-neck XL",
+]
 
 
 class TShirts(models.Model):

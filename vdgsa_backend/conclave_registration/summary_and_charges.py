@@ -279,7 +279,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
                 'display_name': display_name,
                 'amount': conclave_config.consort_coop_tuition
             }
-        case Program.seasoned_players:
+        case Program.seasoned_players | Program.advanced_projects:
             return {
                 'display_name': display_name,
                 'amount': conclave_config.seasoned_players_tuition
@@ -322,7 +322,8 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
                 'display_name': '2 Add-On Classes',
                 'amount': conclave_config.consort_coop_two_extra_classes_fee
             }
-        case Program.seasoned_players if class_choices.num_non_freebie_classes == 1:
+        case Program.seasoned_players | Program.advanced_projects \
+                if class_choices.num_non_freebie_classes == 1:
             return {
                 'display_name': '1 Add-On Class',
                 'amount': conclave_config.seasoned_players_extra_class_fee
