@@ -34,7 +34,7 @@ Classes
   {% endif %}
   {% if registration_summary.classes.flexible_class_preferences %}
     {% for pref in registration_summary.classes.flexible_class_preferences %}
-    - {{forloop.counter | ordinal}} Choice: {{pref}}</li>
+    - {{forloop.counter | ordinal}} Choice: {{pref}}
     {% endfor %}
   <br>
   {% endif %}
@@ -89,7 +89,7 @@ Summary of Charges So Far
 {% endfor %}
 
 {% if charges_summary.apply_work_study_scholarship %}
-Work-Study Scholarship (If Awarded*): -{{conclave_config.work_study_scholarship_amount}}</td>
+Work-Study Scholarship (If Awarded*): -{{conclave_config.work_study_scholarship_amount}}
 {% endif %}
 
 {% if charges_summary.apply_housing_subsidy %}
@@ -106,7 +106,6 @@ Canadian Exchange Rate Discount: -{{conclave_config.canadian_discount_percent}}%
 {% if charges_summary.apply_work_study_scholarship %}
   *Work-Study positions will be awarded by June 15. Work-Study applicants
   will not be charged until positions are finalized.
-</div>
 {% endif %}
 <br>
 Sincerely,
