@@ -494,10 +494,12 @@ class RegularProgramClassChoices(models.Model):
             ]
         }
 
+    # FIXME: Make this a separate function that takes in registration entry
+    # and class selection
     @cached_property
     def num_non_freebie_classes(self) -> int:
-        if self.registration_entry.program in FLEXIBLE_CLASS_SELECTION_PROGRAMS:
-            return 1 if self.flex_choice1 else 0
+        if self.flex_choice1:
+            return 1
 
         count = 0
 
