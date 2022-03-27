@@ -46,6 +46,7 @@ urlpatterns = [
     path('conclave/', include('vdgsa_backend.conclave_registration.urls')),
     path('schema/', include('vdgsa_backend.api_schema.urls')),
     path('rentals/', include('vdgsa_backend.rental_viols.urls')),
+    path('emails/', include('vdgsa_backend.emails.urls')),
     path('swp/', include('vdgsa_backend.stripe_wix_proxy.urls')),
     path('stripe_emails/', include('vdgsa_backend.stripe_email_webhook.urls')),
 

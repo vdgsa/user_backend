@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'vdgsa_backend.accounts',
     'vdgsa_backend.api_schema',
+    'vdgsa_backend.emails',
     'vdgsa_backend.rental_viols',
     'vdgsa_backend.stripe_wix_proxy',
     'vdgsa_backend.stripe_email_webhook',
