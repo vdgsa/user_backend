@@ -817,7 +817,6 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
             Program.beginners,
             Program.seasoned_players,
             Program.advanced_projects,
-            Program.part_time,
         ]
 
 
