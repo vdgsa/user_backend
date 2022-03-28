@@ -1,4 +1,5 @@
 from __future__ import annotations
+from random import choices
 
 from typing import Any, ClassVar, Final, TypedDict
 
@@ -273,45 +274,66 @@ class AdditionalRegistrationInfo(models.Model):
 
 
 class WorkStudyJob(models.TextChoices):
-    google_drive_file_organizing = (
-        'google_drive_file_organizing',
-        'Collecting and organizing files on DropBox and Google Drive (before Conclave)',
+    auction_prep = (
+        'auction_prep',
+        'Auction preparation: organize items; write descriptions; keep records',
     )
-    video_editing = (
-        'video_editing',
-        'Video editing (before Conclave)',
+    social_event_setup = (
+        'social_event_setup',
+        'Set up social events; serve refreshments'
     )
-    assist_music_director_before_conclave = (
-        'assist_music_director_before_conclave',
-        'Assisting the music director (before Conclave)',
+    assist_music_director = (
+        'assist_music_director',
+        'Assist the music director and/or Conclave coordinators '
+        '(may include computer-based help and/or fetch-and-carry type tasks)',
     )
-    auction_prep_before_conclave = (
-        'auction_prep_before_conclave',
-        'Auction preparation: collecting photos, writing descriptions of '
-        'items (mostly in the few days before Conclave)',
+    classroom_setup = (
+        'classroom_setup',
+        'Set up classrooms (includes moving furniture)'
     )
-    auction_prep_during_conclave = (
-        'auction_prep_during_conclave',
-        'Auction preparation: collecting photos, writing descriptions of '
-        'items (mostly Sun-Tues during Conclave)',
+    stage_crew = (
+        'stage_crew',
+        'Stage crew / stage management during concerts'
     )
-    social_event_helper = (
-        'social_event_helper',
-        'Social event helpers '
-        '(specific times, e.g. lunchtime, ice cream social, Conclave banquet)',
+    copy_crew = (
+        'copy_crew',
+        'Copy crew: Make and organize photocopies of music for teachers'
     )
-    tech_support = (
-        'tech_support',
-        'Answering tech-support type questions, like Zoom help, accessing YouTube, '
-        'downloading files, etc. (specific shifts during Conclave)',
+    rental_viols = (
+        'rental_viols',
+        'Assist with rental viols '
+        '(includes organization and also light lifting/carrying instruments)'
     )
-    auction_event_helper = (
-        'auction_event_helper',
-        'Auction event helpers (during the Conclave auction)',
+    vdgsa_store = (
+        'vdgsa_store',
+        'Run VdGSA store (no cash involved, but must be responsible & organized)'
     )
-    assist_music_director_during_conclave = (
-        'assist_music_director_during_conclave',
-        'Assisting the music director (during Conclave)',
+    sign_crew = (
+        'sign_crew',
+        'Sign crew: create, print, and hang signs and posters as needed'
+    )
+    run_errands = (
+        'run_errands',
+        'Run errands (around campus and/or off campus)'
+    )
+
+
+class EarlyArrivalChoices(models.TextChoices):
+    friday_evening = (
+        'friday_evening',
+        'Yes, I would like to come early, and can arrive on Friday before 6pm'
+    )
+    saturday_morning = (
+        'saturday_morning',
+        'Yes, I would like to come early, and can arrive on Saturday before noon'
+    )
+    saturday_evening = (
+        'saturday_evening',
+        'Yes, I would like to come early, and can arrive on Saturday before 6pm'
+    )
+    no = (
+        'no',
+        'No, I do not want to come early, and will plan to arrive on Sunday'
     )
 
 
@@ -324,19 +346,53 @@ class WorkStudyApplication(models.Model):
 
     wants_work_study = models.TextField(choices=YesNo.choices, blank=False, default='')
 
-    nickname_and_pronouns = models.CharField(max_length=255, blank=True)
+    nickname = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=50)
     can_receive_texts_at_phone_number = models.TextField(choices=YesNo.choices)
 
-    has_been_to_conclave = models.TextField(choices=YesNo.choices)
-    has_done_work_study = models.TextField(choices=YesNo.choices)
+    has_been_to_conclave = models.TextField(
+        blank=False,
+        default='',
+        choices=[
+            ('yes', 'Yes, in person'),
+            ('online', 'Yes, online only'),
+            ('both', 'Yes, in person and online'),
+            ('no', 'No'),
+        ]
+    )
+    has_done_work_study = models.TextField(
+        blank=False,
+        default='',
+        choices=[
+            ('yes', 'Yes, in person'),
+            ('online', 'Yes, online only'),
+            ('no', 'No'),
+        ]
+    )
 
     student_info = models.TextField(blank=True)
+
+    can_arrive_before_first_meeting = models.TextField(
+        blank=False,
+        default='',
+        choices=[
+            ('yes', 'Yes, I can arrive by 10am on Sunday morning'),
+            ('yes_if_early_arrival',
+             'In order to make the 10am meeting, I would need to '
+             'arrive early (on Friday or Saturday - specify below)'),
+            ('no', "No, I can't arrive on time on Sunday morning"),
+        ]
+    )
+    early_arrival = models.TextField(blank=False, default='', choices=EarlyArrivalChoices.choices)
+    can_stay_until_sunday_afternoon = models.TextField(choices=YesNo.choices)
+    other_travel_info = models.TextField(blank=True)
 
     job_preferences = ArrayField(
         models.CharField(max_length=100, choices=WorkStudyJob.choices),
         default=list
     )
+    other_jobs = models.TextField(blank=True)
+    has_car = models.TextField(choices=YesNoMaybe.choices)
     relevant_job_experience = models.TextField()
 
     other_skills = models.TextField(blank=True)

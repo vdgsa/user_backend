@@ -1,4 +1,5 @@
 from __future__ import annotations
+from cProfile import label
 
 import itertools
 from abc import abstractmethod
@@ -32,7 +33,7 @@ from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
     BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, AdvancedProjectsInfo,
     AdvancedProjectsParticipationOptions, BeginnerInstrumentInfo, Class, Clef,
-    ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType, InstrumentBringing,
+    ConclaveRegistrationConfig, DietaryNeeds, EarlyArrivalChoices, Housing, HousingRoomType, InstrumentBringing,
     PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
     TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
@@ -360,13 +361,19 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
         model = WorkStudyApplication
         fields = [
             'wants_work_study',
-            'nickname_and_pronouns',
+            'nickname',
             'phone_number',
             'can_receive_texts_at_phone_number',
             'has_been_to_conclave',
             'has_done_work_study',
             'student_info',
+            'can_arrive_before_first_meeting',
+            'early_arrival',
+            'can_stay_until_sunday_afternoon',
+            'other_travel_info',
             'job_preferences',
+            'other_jobs',
+            'has_car',
             'relevant_job_experience',
             'other_skills',
             'other_info',
@@ -374,9 +381,15 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
 
         widgets = {
             'student_info': widgets.Textarea(attrs={'rows': 3, 'cols': None}),
+            'early_arrival': widgets.RadioSelect(),
+            'other_jobs': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'relevant_job_experience': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'other_skills': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'other_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'has_been_to_conclave': widgets.RadioSelect(),
+            'has_done_work_study': widgets.RadioSelect(),
+            'can_arrive_before_first_meeting': widgets.RadioSelect(),
+            'other_travel_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
         labels = dict(zip(fields, itertools.repeat('')))
@@ -385,13 +398,13 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
 
     can_receive_texts_at_phone_number = YesNoRadioField(label='')
 
-    has_been_to_conclave = YesNoRadioField(label='')
-    has_done_work_study = YesNoRadioField(label='')
+    can_stay_until_sunday_afternoon = YesNoRadioField(label='')
 
     job_preferences = _PassThroughField(
         widget=widgets.CheckboxSelectMultiple(choices=WorkStudyJob.choices),
         label=''
     )
+    has_car = YesNoMaybeRadioField(label='')
 
     def full_clean(self) -> None:
         # If the user doesn't want to apply for work study, don't perform

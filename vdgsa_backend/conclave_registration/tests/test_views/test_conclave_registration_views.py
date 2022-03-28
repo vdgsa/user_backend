@@ -526,7 +526,7 @@ class ClassesViewTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
 
 
 _WORK_STUDY_DATA = {
-    'nickname_and_pronouns': '',
+    'nickname': '',
     'phone_number': '1111111111',
     'can_receive_texts_at_phone_number': YesNo.yes,
     'has_been_to_conclave': YesNo.yes,

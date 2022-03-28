@@ -26,13 +26,13 @@
       <div class="col-md-8">
         We'll use your full name and email address from the
         <a href="{% url 'current-user-account' %}">My Account</a> section of the website. <br>
-        If you would like to specify a nickname and/or pronouns for us to use,
+        If you would like to specify a nickname for us to use,
         here's a place for that. (Optional)
       </div>
     </div>
     <div class="row">
       <div class="col-md-8">
-        {% include 'utils/form_field.tmpl' with field=form.nickname_and_pronouns %}
+        {% include 'utils/form_field.tmpl' with field=form.nickname %}
       </div>
     </div>
 
@@ -50,14 +50,6 @@
     <div class="row">
       <div class="col-md-8">
         {% include 'utils/form_field.tmpl' with field=form.can_receive_texts_at_phone_number %}
-      </div>
-    </div>
-
-    <div class="row mt-3 mb-1">
-      <div class="col-md-8">
-        What is your home time zone? If you won't be in your home time zone during
-        Conclave, please specify both using the "other" field, so that we won't
-        accidentally contact you in the middle of your night!
       </div>
     </div>
 
@@ -96,19 +88,94 @@
       </div>
     </div>
 
+    <h4 class="mt-4">Time Committment and Travel Plans</h4>
+
+    <div class="row mt-4 mb-2">
+      <div class="col-md-8" style="border: 1px solid slategray; padding: .5rem .75rem">
+        All custodes are expected on site at Conclave at least from 10am on the opening Sunday to 1pm on the
+        closing Sunday. We will have our kickoff / custos orientation meeting at 10am on Sunday. Setting up
+        signage, setting up and running registration, helping people move in and out of the dorms, and cleaning up
+        after everyone else leaves are vital parts of the Custos contribution. Exceptions can be made, but we need
+        to know in advance so we can plan.
+        <br>
+        Please take a moment to explore the travel options available to you, and if you're flying, keep in mind that
+        you'll also need travel time to get from the airport to campus.
+        <br>
+        There are a few openings available for custodes to arrive a day or two early (on Friday or Saturday) before
+        Conclave, in exchange for helping with setup before everyone else arrives. This can be a great option if
+        time zones or other travel logistics make it difficult for you to arrive on time for the 10am kickoff on
+        Sunday.
+      </div>
+    </div>
+
     <div class="row mt-4 mb-2">
       <div class="col-md-8">
-        As you know, since Conclave is fully online this year,
-        the custodes' tasks will also be fully online.
-        Some preparatory jobs will be needed mostly in the weeks leading
-        up to Conclave; others will be done during the week of Conclave
-        and will be needed at specific times. Which tasks are you most
-        interested in? Please choose AT LEAST TWO.
+        Will you be able to arrive at Conclave before 10am on Sunday morning?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8">
+        {% include 'utils/form_field.tmpl' with field=form.can_arrive_before_first_meeting %}
+      </div>
+    </div>
+
+    <div class="row mt-4 mb-2">
+      <div class="col-md-8">
+        Early arrival on Friday or Saturday: please indicate here if you would *like* to
+        arrive early and help out (whether or not you indicated above that you would
+        *need* to arrive early in order to be on time on Sunday)
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8">
+        {% include 'utils/form_field.tmpl' with field=form.early_arrival %}
+      </div>
+    </div>
+
+    <div class="row mt-4 mb-2">
+      <div class="col-md-8">
+        Will you be able to stay on site at Conclave until 1pm on Sunday afternoon?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8">
+        {% include 'utils/form_field.tmpl' with field=form.can_stay_until_sunday_afternoon %}
+      </div>
+    </div>
+
+    <div class="row mt-4 mb-2">
+      <div class="col-md-8">
+        Anything else you'd like us to know now about your travel plans?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8">
+        {% include 'utils/form_field.tmpl' with field=form.other_travel_info %}
+      </div>
+    </div>
+
+    <h4 class="mt-4">Custos Duties</h4>
+
+    <div class="row mt-4 mb-2">
+      <div class="col-md-8">
+        Please indicate at least two or three Custos jobs that you would like to do and/or
+        think you'd be particularly good at
       </div>
     </div>
     <div class="row">
       <div class="col-md-8">
         {% include 'utils/form_field.tmpl' with field=form.job_preferences %}
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-md-8">
+        Are there any jobs not listed above that you think you'd be good at?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8">
+        {% include 'utils/form_field.tmpl' with field=form.other_jobs %}
       </div>
     </div>
 
@@ -124,10 +191,22 @@
       </div>
     </div>
 
+    <div class="row mt-4">
+      <div class="col-md-8">
+        Do you plan to have a car on campus that you
+        would be willing to use for Custosrelated errands?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8">
+        {% include 'utils/form_field.tmpl' with field=form.has_car %}
+      </div>
+    </div>
+
     <div class="row mt-3">
       <div class="col-md-8">
         Do you have any other particular skills or experiences that you
-        think would be helpful for online Conclave? (Optional)
+        think would be helpful for Conclave? (Optional)
       </div>
     </div>
     <div class="row">

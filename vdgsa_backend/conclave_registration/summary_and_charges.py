@@ -10,9 +10,10 @@ from __future__ import annotations
 from typing import TypedDict
 
 from vdgsa_backend.conclave_registration.models import (
-    NOT_ATTENDING_BANQUET_SENTINEL, BeginnerInstrumentInfo, ClassChoiceDict, ConclaveRegistrationConfig, DietaryNeeds, Housing,
-    HousingRoomType, InstrumentBringing, InstrumentChoices, Period, Program, RegistrationEntry,
-    RegularProgramClassChoices, TShirts, YesNo
+    NOT_ATTENDING_BANQUET_SENTINEL, BeginnerInstrumentInfo, ClassChoiceDict,
+    ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType, InstrumentBringing,
+    InstrumentChoices, Period, Program, RegistrationEntry, RegularProgramClassChoices, TShirts,
+    YesNo
 )
 
 

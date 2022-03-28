@@ -87,7 +87,7 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
         'photo_release_auth',
         'other_info',
         'WORK-STUDY',
-        'nickname_and_pronouns',
+        'nickname',
         'phone_number',
         'can_receive_texts_at_phone_number',
         'has_been_to_conclave',
@@ -232,8 +232,8 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             'other_info': entry.additional_info.other_info,
 
             'WORK-STUDY': '',
-            'nickname_and_pronouns': (
-                entry.work_study.nickname_and_pronouns if hasattr(entry, 'work_study') else ''),
+            'nickname': (
+                entry.work_study.nickname if hasattr(entry, 'work_study') else ''),
             'phone_number': (
                 entry.work_study.phone_number if hasattr(entry, 'work_study') else ''),
             'can_receive_texts_at_phone_number': (
