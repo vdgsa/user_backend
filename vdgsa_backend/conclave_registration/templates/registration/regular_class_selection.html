@@ -16,17 +16,17 @@
 
 <div>
   {% if registration_entry.program == 'regular' %}
-    Full time participants in the regular curriculum may choose classes for any
-    two or three periods (plus an optional fourth class from among the
-    "freebie" offerings). Please refer to the
+    Full-time participants in the Regular Curriculum may take two or
+    three classes 1st-3rd periods, and may also take an optional fourth class
+    from among the "freebie" offerings in 4th Period.
+    Please refer to the
     <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
        target="_blank">
       self-rating guide
     </a>
     for levels.
   {% elif registration_entry.program == 'part_time' %}
-    Part time participants may choose one class from any period
-    (plus an optional fourth period class from among the "freebie" offerings).
+    Part-time participants in the Regular Curriculum may take one class in 1st, 2nd, or 3rd period.
     Please refer to the
     <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
        target="_blank">
@@ -40,17 +40,25 @@
     class at no additional charge. To sign up for a 4th period freebie class,
     please select a 1st, 2nd, and 3rd choice for 4th period below.
   {% elif registration_entry.program == 'consort_coop' %}
-    Participants in the Consort Cooperative Program who want to add one
-    class may choose from 2nd period, while those who want to add two classes
-    may choose from 1st and 2nd Periods. Adding one class will increase your
-    registration fee by ${{registration_entry.conclave_config.consort_coop_one_extra_class_fee}}
-    and adding two classes will increase it by
-    ${{registration_entry.conclave_config.consort_coop_two_extra_classes_fee}}.
+    Participants in the Consort Cooperative Program may choose one of these two options:
+    <ol>
+      <li>
+        CC 3+1 (traditional schedule)– CC projects in 1st, 3rd and 4th Periods,
+        Regular Curriculum class 2nd Period.
+      </li>
+      <li>
+        CC 2+2 – CC projects 3rd and 4th Periods, Regular Curriculum classes 1st
+        Period and 2nd Periods. This option will increase your registration fee by
+        ${{registration_entry.conclave_config.consort_coop_two_extra_classes_fee}}.
+      </li>
+    </ol>
   {% elif registration_entry.program == 'seasoned_players' %}
-    Participants in the Seasoned Players Program who want to add one or
-    two classes may choose classes in any period other than 2nd Period,
-    when their program meets.
-    Adding any classes will increase your registration fee by
+    Participants in the Seasoned Players Program may add one class in any period.
+    Adding a class will increase your registration fee by
+    ${{registration_entry.conclave_config.seasoned_players_extra_class_fee}}.
+  {% elif registration_entry.program == 'advanced_projects' %}
+    Participants in the Advanced Projects Program may add one class in any period.
+    Adding a class will increase your registration fee by
     ${{registration_entry.conclave_config.seasoned_players_extra_class_fee}}.
   {% endif %}
 </div>
@@ -61,7 +69,7 @@
     {% if registration_entry.program == 'part_time' %}
     Class Preferences
     {% elif registration_entry.program == 'seasoned_players' or registration_entry.program == 'advanced_projects' %}
-    Extra Non-Freebie Class
+    Add one class
     {% endif %}
   </h3>
   <div class="period-choices">

@@ -748,7 +748,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if num_choices != len(extra_class_choices):
             self.add_error(
                 None,
-                'Extra non-freebie class: You must select a 1st, 2nd, and 3rd choice. '
+                'Add-on class: You must select a 1st, 2nd, and 3rd choice. '
                 'If you do not want to take an extra class, please '
                 'set all three choices to "No class."'
             )
