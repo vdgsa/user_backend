@@ -174,7 +174,7 @@ def get_tshirt_summary(registration_entry: RegistrationEntry) -> list[str]:
 
 class ChargesSummary(TypedDict):
     charges: list[ChargeInfo]
-    apply_work_study_scholarship: bool
+    work_study_scholarship_amount: int
     apply_housing_subsidy: bool
     apply_canadian_discount: bool
     subtotal: int
@@ -190,7 +190,8 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
     charges: list[ChargeInfo] = []
 
-    if (tuition_charge := get_tuition_charge(registration_entry)) is not None:
+    tuition_charge = get_tuition_charge(registration_entry)
+    if tuition_charge is not None:
         charges.append(tuition_charge)
 
     if (add_on_class_charge := get_add_on_class_charge(registration_entry)) is not None:
@@ -218,10 +219,12 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
             'amount': conclave_config.late_registration_fee
         })
 
-    apply_work_study_scholarship = (
-        hasattr(registration_entry, 'work_study')
-        and registration_entry.work_study.wants_work_study == YesNo.yes
-    )
+    work_study_scholarship_amount = 0
+    if (hasattr(registration_entry, 'work_study')
+            and registration_entry.work_study.wants_work_study == YesNo.yes
+            and tuition_charge is not None):
+        work_study_scholarship_amount = tuition_charge['amount']
+
     apply_housing_subsidy = (
         hasattr(registration_entry, 'housing')
         and registration_entry.housing.wants_housing_subsidy
@@ -231,9 +234,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
         and registration_entry.housing.wants_canadian_currency_exchange_discount
     )
 
-    subtotal = sum(charge['amount'] for charge in charges)
-    if apply_work_study_scholarship:
-        subtotal -= conclave_config.work_study_scholarship_amount
+    subtotal = sum(charge['amount'] for charge in charges) - work_study_scholarship_amount
     if apply_housing_subsidy:
         subtotal -= conclave_config.housing_subsidy_amount
 
@@ -243,7 +244,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
         total = int(total)  # round down
     return {
         'charges': charges,
-        'apply_work_study_scholarship': apply_work_study_scholarship,
+        'work_study_scholarship_amount': work_study_scholarship_amount,
         'apply_housing_subsidy': apply_housing_subsidy,
         'apply_canadian_discount': apply_canadian_discount,
         'subtotal': subtotal,

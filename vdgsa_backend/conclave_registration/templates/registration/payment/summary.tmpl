@@ -10,7 +10,7 @@
 <div class="fs-5 mt-2">Work-Study</div>
 <div id="work-study-summary" class="ps-3">
   Applying for a work-study position:
-  <b>{{registration_summary.work_study | yesno:'Yes,No'}}</b>
+  <b>{{registration_summary.applying_for_work_study | yesno:'Yes,No'}}</b>
 </div>
 {% endif %}
 
@@ -100,7 +100,7 @@
     </tr>
     {% endfor %}
 
-    {% if charges_summary.apply_work_study_scholarship %}
+    {% if charges_summary.work_study_scholarship_amount %}
     <tr>
       <td>Work-Study Scholarship (If Awarded*)</td>
       <td style="text-align: right">-{{conclave_config.work_study_scholarship_amount}}</td>
@@ -132,7 +132,7 @@
     </tr>
   </tbody>
 </table>
-{% if charges_summary.apply_work_study_scholarship %}
+{% if charges_summary.work_study_scholarship_amount %}
 <div id="work-study-charges-msg">
   *Work-Study positions will be awarded by June 15. Work-Study applicants
   will not be charged until positions are finalized.

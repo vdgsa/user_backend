@@ -60,7 +60,6 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'banquet_guest_fee',
             'tshirt_price',
             'late_registration_fee',
-            'work_study_scholarship_amount',
             'housing_subsidy_amount',
             'canadian_discount_percent',
         ]

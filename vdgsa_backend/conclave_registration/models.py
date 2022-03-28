@@ -70,7 +70,6 @@ class ConclaveRegistrationConfig(models.Model):
     tshirt_price = models.IntegerField(blank=True, default=25)
     late_registration_fee = models.IntegerField(blank=True, default=0)
 
-    work_study_scholarship_amount = models.IntegerField(blank=True, default=0)
     housing_subsidy_amount = models.IntegerField(blank=True, default=150)
     canadian_discount_percent = models.IntegerField(blank=True, default=5)
 

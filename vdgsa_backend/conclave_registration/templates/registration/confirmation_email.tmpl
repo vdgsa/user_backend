@@ -14,7 +14,7 @@ Program
 <br>
 Work-Study
 ==========
-Applying for a work-study position: {{registration_summary.work_study | yesno:'Yes,No'}}
+Applying for a work-study position: {{registration_summary.applying_for_work_study | yesno:'Yes,No'}}
 {% endif %}
 
 {% if registration_summary.instruments %}
@@ -85,7 +85,7 @@ Summary of Charges So Far
 {{charge.display_name}}: {{charge.amount}}
 {% endfor %}
 
-{% if charges_summary.apply_work_study_scholarship %}
+{% if charges_summary.work_study_scholarship_amount %}
 Work-Study Scholarship (If Awarded*): -{{conclave_config.work_study_scholarship_amount}}
 {% endif %}
 
@@ -100,7 +100,7 @@ Canadian Exchange Rate Discount: -{{conclave_config.canadian_discount_percent}}%
 {% endif %}
 *Total:* ${{charges_summary.total}}
 <br>
-{% if charges_summary.apply_work_study_scholarship %}
+{% if charges_summary.work_study_scholarship_amount %}
   *Work-Study positions will be awarded by June 15. Work-Study applicants
   will not be charged until positions are finalized.
 {% endif %}
