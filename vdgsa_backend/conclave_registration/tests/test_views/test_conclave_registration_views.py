@@ -562,7 +562,6 @@ class PaymentViewSummaryTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
             photo_release_auth=YesNo.yes,
-            archival_video_release=True,
             # liability_release=True,
             other_info=''
         )
@@ -677,7 +676,6 @@ class ChargesTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
             photo_release_auth=YesNo.yes,
-            archival_video_release=True,
             # liability_release=True,
             other_info=''
         )
@@ -968,7 +966,6 @@ class SubmitPaymentTestCase(_SetUpRegistrationEntry, SeleniumTestCaseBase):
             # willing_to_help_with_small_jobs=False,
             wants_display_space=YesNo.yes,
             photo_release_auth=YesNo.yes,
-            archival_video_release=True,
             # liability_release=True,
             other_info=''
         )

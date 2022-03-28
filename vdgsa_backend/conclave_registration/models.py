@@ -33,7 +33,6 @@ class ConclaveRegistrationConfig(models.Model):
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
     liability_release_text = models.TextField(blank=True)
-    archival_video_release_text = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
 
     first_period_time_label = models.CharField(max_length=255, blank=True)
@@ -262,7 +261,6 @@ class AdditionalRegistrationInfo(models.Model):
     wants_display_space = models.TextField(choices=YesNo.choices)
 
     liability_release = models.BooleanField()
-    archival_video_release = models.BooleanField()
     photo_release_auth = models.TextField(choices=YesNo.choices)
 
     other_info = models.TextField(blank=True)

@@ -295,7 +295,6 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             # 'willing_to_help_with_small_jobs',
             'wants_display_space',
             'liability_release',
-            'archival_video_release',
             'photo_release_auth',
             'other_info',
         ]
@@ -319,7 +318,6 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         label='', no_label='No, this is my first Conclave!')
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
     liability_release = BooleanField(required=True, label='I agree')
-    archival_video_release = BooleanField(required=True, label='I agree')
     photo_release_auth = YesNoRadioField(
         yes_label='I allow',
         no_label="I don't allow",

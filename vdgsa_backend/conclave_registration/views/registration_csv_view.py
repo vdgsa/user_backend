@@ -83,7 +83,6 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
         'attended_conclave_before',
         'buddy_willingness',
         'wants_display_space',
-        'archival_video_release',
         'photo_release_auth',
         'other_info',
         'WORK-STUDY',
@@ -227,7 +226,6 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             'attended_conclave_before': entry.additional_info.attended_conclave_before,
             'buddy_willingness': entry.additional_info.buddy_willingness,
             'wants_display_space': entry.additional_info.wants_display_space,
-            'archival_video_release': entry.additional_info.archival_video_release,
             'photo_release_auth': entry.additional_info.photo_release_auth,
             'other_info': entry.additional_info.other_info,
 
