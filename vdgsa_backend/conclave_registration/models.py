@@ -167,14 +167,14 @@ class YesNoMaybe(models.TextChoices):
 
 
 class Program(models.TextChoices):
-    regular = 'regular', 'Regular Curriculum'
-    part_time = 'part_time', 'Part-Time Curriculum (1 class + optional freebie)'
-    beginners = 'beginners', 'Introduction to the Viol (free)'
-    consort_coop = 'consort_coop', 'Consort Cooperative'
+    regular = 'regular', 'Regular Curriculum Full-time (2-3 classes + optional "Freebie")'
+    part_time = 'part_time', 'Regular Curriculum Part-time (1 class only)'
+    beginners = 'beginners', 'Beginning Viol (tuition free)'
+    consort_coop = 'consort_coop', 'Consort Co-op (CC 3+1 or CC 2+2)'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     advanced_projects = 'advanced_projects', 'Advanced Projects'
     faculty_guest_other = 'faculty_guest_other', 'Faculty'
-    non_playing_attendee = 'non_playing_attendee', 'Non-Playing Attendee'
+    non_playing_attendee = 'non_playing_attendee', 'Non-playing Attendee'
 
 
 BEGINNER_PROGRAMS = [Program.beginners]
