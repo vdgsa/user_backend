@@ -31,6 +31,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'faculty_registration_password',
             'landing_page_markdown',
             'liability_release_text',
+            'covid_policy_markdown',
             'photo_release_text',
 
             'first_period_time_label',
@@ -70,6 +71,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
                 'Text to display on the registration program selection page. '
                 'Rendered as markdown'),
             'liability_release_text': 'Liability release text. Rendered as markdown',
+            'covid_policy_markdown': 'Covid policy text. Rendered as markdown',
             'housing_form_top_markdown': (
                 'Text to display at the top of the housing form. Rendered as markdown'),
             'housing_form_pre_arrival_markdown': (

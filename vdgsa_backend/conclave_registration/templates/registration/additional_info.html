@@ -109,26 +109,50 @@
   </div>
 
   <div class="row mt-3">
-    <div class="col-md-8">
-      <b>Liability Waiver:</b>
-      {{registration_entry.conclave_config.liability_release_text | markdownify}}
-    </div>
-  </div>
-  <div class="row mt-1">
-    <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.liability_release %}
+    <div class="col-md-8" style="border: 1px solid slategray">
+      <div class="row mt-2">
+        <div class="col-auto">
+          <b>Release of Liability:</b>
+          {{registration_entry.conclave_config.liability_release_text | markdownify}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-auto">
+          {% include 'utils/form_field.tmpl' with field=form.liability_release %}
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="row mt-3">
-    <div class="col-md-8">
-      <b>Photo and Video Release:</b>
-      {{registration_entry.conclave_config.photo_release_text}}
+    <div class="col-md-8" style="border: 1px solid slategray">
+      <div class="row mt-2">
+        <div class="col-auto">
+          <b>Covid Policy:</b>
+          {{registration_entry.conclave_config.covid_policy_markdown | markdownify}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.covid_policy %}
+        </div>
+      </div>
     </div>
   </div>
-  <div class="row mt-1">
-    <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.photo_release_auth %}
+
+  <div class="row mt-3">
+    <div class="col-md-8" style="border: 1px solid slategray">
+      <div class="row mt-2">
+        <div class="col-auto">
+          <b>Photo and Video Release:</b>
+          {{registration_entry.conclave_config.photo_release_text}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.photo_release_auth %}
+        </div>
+      </div>
     </div>
   </div>
 

@@ -35,6 +35,7 @@ class ConclaveRegistrationConfig(models.Model):
     landing_page_markdown = models.TextField(blank=True)
 
     liability_release_text = models.TextField(blank=True)
+    covid_policy_markdown = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
 
     first_period_time_label = models.CharField(max_length=255, blank=True)
@@ -263,6 +264,7 @@ class AdditionalRegistrationInfo(models.Model):
     wants_display_space = models.TextField(choices=YesNo.choices)
 
     liability_release = models.BooleanField()
+    covid_policy = models.BooleanField()
     photo_release_auth = models.TextField(choices=YesNo.choices)
 
     other_info = models.TextField(blank=True)
