@@ -9,6 +9,24 @@
   {% csrf_token %}
 
   <div class="row mt-2">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.age %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.gender %}
+    </div>
+  </div>
+
+  <div class="row mt-1">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.pronouns label='Pronouns (Optional)'%}
+    </div>
+  </div>
+
+  <div class="row mt-2">
     <div class="col-md-6">
       Please provide a phone number we can reach you at during Conclave
     </div>

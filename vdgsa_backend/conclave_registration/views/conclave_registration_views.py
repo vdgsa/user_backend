@@ -282,6 +282,9 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         model = AdditionalRegistrationInfo
         fields = [
             'phone',
+            'age',
+            'gender',
+            'pronouns',
             'include_in_whos_coming_to_conclave_list',
             'attended_conclave_before',
             'buddy_willingness',

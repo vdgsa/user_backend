@@ -237,6 +237,21 @@ class AdditionalRegistrationInfo(models.Model):
     phone = models.CharField(max_length=30)
     include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
 
+    age = models.TextField(choices=[
+        ('18-35', '18-35'),
+        ('36-64', '36-64'),
+        ('65+', '65+'),
+        ('Under 18', 'Under 18 (Parent or Guardian must also register)'),
+    ])
+
+    gender = models.TextField(choices=[
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Non-binary', 'Non-binary'),
+        ('Other', 'Other'),
+    ])
+    pronouns = models.CharField(max_length=255, blank=True)
+
     attended_conclave_before = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
