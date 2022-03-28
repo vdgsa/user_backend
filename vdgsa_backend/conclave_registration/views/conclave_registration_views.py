@@ -625,9 +625,6 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             conclave_config=self.registration_entry.conclave_config
         ).exclude(period=Period.fourth)
 
-        if self.registration_entry.program == Program.seasoned_players:
-            class_options_queryset = class_options_queryset.exclude(period=Period.second)
-
         self.fields['flex_choice1'].queryset = class_options_queryset
         self.fields['flex_choice1'].label_from_instance = flex_choice_class_label
         self.fields['flex_choice1_instrument'].queryset = InstrumentBringing.objects.filter(
