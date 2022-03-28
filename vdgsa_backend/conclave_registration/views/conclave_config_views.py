@@ -29,6 +29,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'year',
             'phase',
             'faculty_registration_password',
+            'landing_page_markdown',
             'liability_release_text',
             'photo_release_text',
 
@@ -65,6 +66,9 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
 
         labels = {
             'phase': 'Registration Phase',
+            'landing_page_markdown': (
+                'Text to display on the registration program selection page. '
+                'Rendered as markdown'),
             'housing_form_top_markdown': (
                 'Text to display at the top of the housing form. Rendered as markdown'),
             'housing_form_pre_arrival_markdown': (
