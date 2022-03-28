@@ -167,9 +167,12 @@ class ConclaveClassForm(forms.ModelForm):
             'name',
             'instructor',
             'level',
+            'offer_to_beginners',
             'description',
             'notes',
         ]
+
+        labels = {'offer_to_beginners': 'Offer as Beginners+ Add-On Option'}
 
         widgets = {
             'description': widgets.Textarea(attrs={'rows': 5, 'cols': None}),

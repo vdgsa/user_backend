@@ -27,7 +27,6 @@ class RegistrationSummary(TypedDict):
 
 
 class ClassSummary(TypedDict):
-    wants_beginners_plus_class: bool
     flexible_class_preferences: list[str]
     per_period_class_preferences: dict[Period, list[str]]
     freebie_preferences: list[str]
@@ -76,7 +75,6 @@ def get_class_summary(registration_entry: RegistrationEntry) -> ClassSummary | N
     per_period_prefs = _get_per_period_class_preferences(class_choices)
     freebie_prefs = per_period_prefs.pop(Period.fourth)
     result = {
-        'wants_beginners_plus_class': class_choices.wants_extra_beginner_class == YesNo.yes,
         # Note: All three choices are required, so this filter should leave us with
         # three or zero choices in the list
         'flexible_class_preferences': [
@@ -89,8 +87,7 @@ def get_class_summary(registration_entry: RegistrationEntry) -> ClassSummary | N
     }
 
     selected_any_classes = (
-        result['wants_beginners_plus_class']
-        or result['flexible_class_preferences']
+        result['flexible_class_preferences']
         or any(result['per_period_class_preferences'].values())
         or result['freebie_preferences']
     )
@@ -307,7 +304,7 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
     class_choices: RegularProgramClassChoices = registration_entry.regular_class_choices
 
     match(registration_entry.program):
-        case Program.beginners if class_choices.wants_extra_beginner_class == YesNo.yes:
+        case Program.beginners if class_choices.num_non_freebie_classes == 1:
             return {
                 'display_name': 'Beginners+ Add-On Class',
                 'amount': conclave_config.beginners_extra_class_fee

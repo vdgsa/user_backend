@@ -587,7 +587,6 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             )
         ) + [
             'comments',
-            'wants_extra_beginner_class',
             'flex_choice1',
             'flex_choice1_instrument',
             'flex_choice2',
@@ -600,16 +599,16 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             'comments': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
-    wants_extra_beginner_class = YesNoRadioField(label='')
-
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
+        classes_by_period = get_classes_by_period(
+            self.registration_entry.conclave_config_id,
+            program=self.registration_entry.program
+        )
+
         for period, field_names in _CLASS_CHOICE_FIELD_NAMES_BY_PERIOD.items():
             for field_name in field_names:
-                self.fields[field_name].queryset = Class.objects.filter(
-                    conclave_config=self.registration_entry.conclave_config,
-                    period=period
-                )
+                self.fields[field_name].queryset = classes_by_period[period]
                 self.fields[field_name].empty_label = 'No class'
 
         for field_name in chain.from_iterable(_INSTRUMENT_FIELD_NAMES_BY_PERIOD.values()):
@@ -617,9 +616,6 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                 registration_entry=self.registration_entry
             )
             self.fields[field_name].empty_label = 'Any I listed'
-
-        self.fields['wants_extra_beginner_class'].required = (
-            self.registration_entry.program == Program.beginners)
 
         if self.registration_entry.uses_flexible_class_selection:
             self.flexible_class_selection_init()
@@ -698,7 +694,9 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if len(choices) == 0:
             return
 
-        if len(choices) != 3 and period != Period.fourth:  # Allow < 3 choices for freebies
+        # Allow < 3 choices for freebies and beginners
+        if (len(choices) != 3 and period != Period.fourth
+                and self.registration_entry.program != Program.beginners):
             self.add_error(
                 None,
                 f'{format_period_long(period)}: You must select a 1st, 2nd, and 3rd choice. '
@@ -774,7 +772,10 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
         self, form: _RegistrationStepFormBase
     ) -> dict[str, object]:
         context = super().get_render_context(form)
-        classes_offered = get_classes_by_period(self.registration_entry.conclave_config_id)
+        classes_offered = get_classes_by_period(
+            self.registration_entry.conclave_config_id,
+            program=self.registration_entry.program
+        )
         if not self.registration_entry.uses_flexible_class_selection:
             if not self._show_first_period:
                 classes_offered.pop(Period.first)
@@ -797,14 +798,23 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
 
     @property
     def _show_first_period(self) -> bool:
+        if self.registration_entry.program == Program.beginners:
+            return self._period_has_beginner_add_on_classes(Period.first)
+
         return self.registration_entry.program in [Program.regular, Program.consort_coop]
 
     @property
     def _show_second_period(self) -> bool:
+        if self.registration_entry.program == Program.beginners:
+            return self._period_has_beginner_add_on_classes(Period.second)
+
         return self.registration_entry.program in [Program.regular, Program.consort_coop]
 
     @property
     def _show_third_period(self) -> bool:
+        if self.registration_entry.program == Program.beginners:
+            return self._period_has_beginner_add_on_classes(Period.third)
+
         return self.registration_entry.program in [Program.regular]
 
     @property
@@ -818,6 +828,12 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
             Program.seasoned_players,
             Program.advanced_projects,
         ]
+
+    def _period_has_beginner_add_on_classes(self, period: Period) -> bool:
+        return self.registration_entry.conclave_config.classes.filter(
+            period=period,
+            offer_to_beginners=True
+        ).exists()
 
 
 class AdvancedProjectsForm(_RegistrationStepFormBase, forms.ModelForm):

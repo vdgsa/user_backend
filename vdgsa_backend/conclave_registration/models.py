@@ -5,6 +5,8 @@ from typing import Any, Final, TypedDict
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.utils.functional import cached_property
 
 from vdgsa_backend.accounts.models import User
@@ -116,22 +118,32 @@ class Class(models.Model):
     instructor = models.CharField(max_length=255)
     description = models.TextField()
     notes = models.TextField(blank=True)
+    # Set to true to display the class as an add-on option for beginner
+    # registrants.
+    offer_to_beginners = models.BooleanField(blank=True, default=False)
 
     def __str__(self) -> str:
         return f'{self.instructor} | {self.name} | {self.level}'
 
 
-def get_classes_by_period(conclave_config_pk: int) -> dict[int, list[Class]]:
-    classes_by_period: dict[int, list[Class]] = {
-        Period.first: [],
-        Period.second: [],
-        Period.third: [],
-        Period.fourth: []
-    }
-    for class_ in Class.objects.filter(conclave_config=conclave_config_pk):
-        classes_by_period[class_.period].append(class_)
+def get_classes_by_period(
+    conclave_config_pk: int,
+    *,
+    program: Program | None = None
+) -> dict[int, QuerySet[Class]]:
+    # classes_by_period: dict[int, list[Class]] = {
 
-    return classes_by_period
+    # }
+    queryset = Class.objects.filter(conclave_config=conclave_config_pk)
+    if program == Program.beginners:
+        queryset = queryset.filter(Q(offer_to_beginners=True) | Q(period=Period.fourth))
+
+    return {
+        Period.first: queryset.filter(period=Period.first),
+        Period.second: queryset.filter(period=Period.second),
+        Period.third: queryset.filter(period=Period.third),
+        Period.fourth: queryset.filter(period=Period.fourth)
+    }
 
 
 # =================================================================================================
@@ -420,11 +432,6 @@ class RegularProgramClassChoices(models.Model):
     )
 
     comments = models.TextField(blank=True)
-
-    # This field lets Beginner registrants sign up for an extra
-    # beginners+ class (costs money).
-    wants_extra_beginner_class = models.TextField(
-        choices=YesNo.choices, default=YesNo.no, blank=True)
 
     # These fields are for programs that choose courses in specific
     # periods (e.g. regular, consort coop)

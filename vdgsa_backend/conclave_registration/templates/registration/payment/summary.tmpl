@@ -28,14 +28,6 @@
 {% if registration_summary.classes %}
 <div class="fs-5 mt-2">Classes</div>
 <div id="classes-summary">
-  {% if registration_summary.classes.wants_beginners_plus_class %}
-  <ul>
-    <li>
-      Beginners+ Class
-    </li>
-  </ul>
-  {% endif %}
-
   {% if registration_summary.classes.flexible_class_preferences %}
   <ul>
     {% for pref in registration_summary.classes.flexible_class_preferences %}

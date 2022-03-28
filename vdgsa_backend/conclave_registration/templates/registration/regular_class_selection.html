@@ -56,21 +56,6 @@
 </div>
 
 <form method="post" class="mt-3">
-  {% if registration_entry.program == 'beginners' %}
-  <h3>Extra Beginners+ Class</h3>
-
-  <div class="row">
-    <div class="col-md-6">
-      Would you like to sign up for the extra Beginners+ class?
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.wants_extra_beginner_class %}
-    </div>
-  </div>
-  {% endif %}
-
   {% if registration_entry.uses_flexible_class_selection %}
   <h3>
     {% if registration_entry.program == 'part_time' %}
