@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import itertools
 from abc import abstractmethod
+from email.policy import default
 from itertools import chain
 from typing import Any, Dict, Final, List, Type, cast
-from django.conf import settings
 
 import stripe  # type: ignore
 from django import forms
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -29,13 +30,15 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, AdditionalRegistrationInfo, AdvancedProjectsInfo, AdvancedProjectsParticipationOptions, BeginnerInstrumentInfo,
-    Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType,
-    InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase,
-    RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe,
-    get_classes_by_period
+    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, AdvancedProjectsInfo,
+    AdvancedProjectsParticipationOptions, BeginnerInstrumentInfo, Class, Clef,
+    ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType, InstrumentBringing,
+    PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
+    TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
-from vdgsa_backend.conclave_registration.summary_and_charges import get_charges_summary, get_registration_summary
+from vdgsa_backend.conclave_registration.summary_and_charges import (
+    get_charges_summary, get_registration_summary
+)
 from vdgsa_backend.conclave_registration.templatetags.conclave_tags import (
     PERIOD_STRS, format_period_long, get_current_conclave
 )
@@ -896,8 +899,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             'normal_bed_time',
             'arrival_day',
             'departure_day',
-            'is_bringing_child',
-            'contact_others_bringing_children',
             'wants_housing_subsidy',
             'wants_canadian_currency_exchange_discount',
             'additional_housing_info',
@@ -936,12 +937,9 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             'additional_housing_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'dietary_needs': widgets.CheckboxSelectMultiple(choices=DietaryNeeds.choices),
             'other_dietary_needs': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
-            'banquet_food_choice': widgets.RadioSelect(),
             'banquet_guest_name': widgets.TextInput(),
         }
 
-    is_bringing_child = YesNoRadioField(label='', required=False)
-    contact_others_bringing_children = YesNoRadioField(label='', required=False)
     is_bringing_guest_to_banquet = YesNoRadioField(label='', required=True)
 
     # We don't want the field to process the "dietary_needs" data in any way,
@@ -958,13 +956,27 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             self.initial['dietary_needs'] = self.instance.dietary_needs
 
         arrival_dates: List[str] = (
-            self.registration_entry.conclave_config.arrival_date_options.split('\n'))
+            self.registration_entry.conclave_config.arrival_date_options.splitlines())
         departure_dates: List[str] = (
-            self.registration_entry.conclave_config.departure_date_options.split('\n'))
+            self.registration_entry.conclave_config.departure_date_options.splitlines())
         self.fields['arrival_day'].widget = widgets.Select(
             choices=list(zip(arrival_dates, arrival_dates)))
+        self.fields['arrival_day'].initial = arrival_dates[-1] if arrival_dates else ''
         self.fields['departure_day'].widget = widgets.Select(
             choices=list(zip(departure_dates, departure_dates)))
+        self.fields['departure_day'].initial = departure_dates[-1] if departure_dates else ''
+
+        banquet_options = (
+            self.registration_entry.conclave_config.banquet_food_options.splitlines())
+        self.fields['banquet_food_choice'].widget = widgets.RadioSelect(
+            choices=(
+                list(zip(banquet_options, banquet_options))
+                + [(NOT_ATTENDING_BANQUET_SENTINEL, 'Not Attending')]
+            )
+        )
+        self.fields['banquet_guest_food_choice'].widget = widgets.RadioSelect(
+            choices=list(zip(banquet_options, banquet_options))
+        )
 
         housing_subsidy_amount = registration_entry.conclave_config.housing_subsidy_amount
         self.fields['wants_housing_subsidy'].label = (

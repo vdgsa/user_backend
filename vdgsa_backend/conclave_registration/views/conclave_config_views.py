@@ -42,6 +42,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'housing_form_pre_arrival_markdown',
             'arrival_date_options',
             'departure_date_options',
+            'banquet_food_options',
 
             'tshirt_image_url',
 
@@ -74,7 +75,11 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'arrival_date_options': (
                 'A list of allowed conclave arrival dates, each separated by a newline'),
             'departure_date_options': (
-                'A list of allowed conclave arrival dates, each separated by a newline'),
+                'A list of allowed conclave arrival dates, each separated by a newline.'),
+            'banquet_food_options': (
+                'A list of banquet food options, each separated by a newline. '
+                'Note that "Not Attending" is automatically added as a choice.'
+            ),
         }
 
         widgets = {
@@ -86,6 +91,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'housing_form_top_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'departure_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'banquet_food_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'housing_form_pre_arrival_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
 

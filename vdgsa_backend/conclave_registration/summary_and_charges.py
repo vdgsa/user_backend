@@ -10,8 +10,8 @@ from __future__ import annotations
 from typing import TypedDict
 
 from vdgsa_backend.conclave_registration.models import (
-    BanquetFoodChoices, BeginnerInstrumentInfo, ClassChoiceDict, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType, InstrumentBringing,
-    InstrumentChoices, Period, Program, RegistrationEntry,
+    NOT_ATTENDING_BANQUET_SENTINEL, BeginnerInstrumentInfo, ClassChoiceDict, ConclaveRegistrationConfig, DietaryNeeds, Housing,
+    HousingRoomType, InstrumentBringing, InstrumentChoices, Period, Program, RegistrationEntry,
     RegularProgramClassChoices, TShirts, YesNo
 )
 
@@ -148,19 +148,18 @@ def get_housing_summary(registration_entry: RegistrationEntry) -> list[str]:
     if housing.other_dietary_needs:
         summary_items.append('Additional dietary needs: ' + housing.other_dietary_needs)
 
-    if housing.banquet_food_choice == BanquetFoodChoices.not_attending:
+    if housing.banquet_food_choice == NOT_ATTENDING_BANQUET_SENTINEL:
         summary_items.append('Attending Banquet: No')
     else:
         summary_items += [
             'Attending Banquet: Yes',
-            f'Banquet Food Choice: {BanquetFoodChoices(housing.banquet_food_choice).label}',
+            f'Banquet Food Choice: {housing.banquet_food_choice}',
         ]
 
         if housing.is_bringing_guest_to_banquet == YesNo.yes:
             summary_items += [
                 f'Banquet Guest: {housing.banquet_guest_name}',
-                ('Banquet Guest Food Choice: '
-                 f'{BanquetFoodChoices(housing.banquet_guest_food_choice).label}'),
+                f'Banquet Guest Food Choice: {housing.banquet_guest_food_choice}',
             ]
 
     return summary_items

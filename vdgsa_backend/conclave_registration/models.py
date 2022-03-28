@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Final, TypedDict
+from typing import Any, ClassVar, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
@@ -17,6 +17,9 @@ class RegistrationPhase(models.TextChoices):
     open = 'open'
     late = 'late', 'Late Registration'
     closed = 'closed'
+
+
+NOT_ATTENDING_BANQUET_SENTINEL: Final[str] = 'not_attending'
 
 
 class ConclaveRegistrationConfig(models.Model):
@@ -44,6 +47,7 @@ class ConclaveRegistrationConfig(models.Model):
     departure_date_options = models.TextField(blank=True)
     # Markdown text to go in the housing form just before the arrival/departure fields.
     housing_form_pre_arrival_markdown = models.TextField(blank=True)
+    banquet_food_options = models.TextField(blank=True)
 
     tshirt_image_url = models.URLField(blank=True)
 
@@ -573,13 +577,6 @@ class DietaryNeeds(models.TextChoices):
     shellfish_allergy = 'shellfish_allergy'
 
 
-class BanquetFoodChoices(models.TextChoices):
-    beef = 'beef'
-    salmon = 'salmon'
-    vegan = 'vegan'
-    not_attending = 'not_attending'
-
-
 class Housing(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,
@@ -598,9 +595,6 @@ class Housing(models.Model):
     arrival_day = models.TextField()
     departure_day = models.TextField()
 
-    is_bringing_child = models.TextField(choices=YesNo.choices, default=YesNo.no)
-    contact_others_bringing_children = models.TextField(choices=YesNo.choices, default=YesNo.no)
-
     wants_housing_subsidy = models.BooleanField(default=False)
     wants_canadian_currency_exchange_discount = models.BooleanField(default=False)
 
@@ -610,12 +604,11 @@ class Housing(models.Model):
         models.CharField(max_length=50, choices=DietaryNeeds.choices), blank=True, default=list)
     other_dietary_needs = models.TextField(blank=True)
 
-    banquet_food_choice = models.TextField(
-        choices=BanquetFoodChoices.choices, blank=False, default='')
+    # Empty string indicates "not attending"
+    banquet_food_choice = models.TextField(blank=False, default='')
     is_bringing_guest_to_banquet = models.TextField(choices=YesNo.choices)
     banquet_guest_name = models.TextField(blank=True)
-    banquet_guest_food_choice = models.TextField(
-        choices=BanquetFoodChoices.choices[:-1], blank=True)
+    banquet_guest_food_choice = models.TextField(blank=True)
 
 
 TSHIRT_SIZES: Final = [

@@ -44,6 +44,7 @@
     </div>
   </div>
 
+  {% comment %}
   <div id="suite-preference-wrapper">
     <div class="row mt-2">
       <div class="col-md-6">
@@ -56,6 +57,7 @@
       </div>
     </div>
   </div>
+  {% endcomment %}
 
   <div id="room-near-preference-wrapper">
     <div class="row mt-2">
@@ -79,30 +81,6 @@
     <div class="row">
       <div class="col-md-6">
         {% include 'utils/form_field.tmpl' with field=form.normal_bed_time %}
-      </div>
-    </div>
-  </div>
-
-  <div class="row mt-2">
-    <div class="col-md-6">
-      Are you planning to bring a child to Conclave?
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.is_bringing_child %}
-    </div>
-  </div>
-
-  <div id="child-folks-wrapper">
-    <div class="row mt-2">
-      <div class="col-md-6">
-        Would you like to be put in touch with other folks bringing children?
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6">
-        {% include 'utils/form_field.tmpl' with field=form.contact_others_bringing_children %}
       </div>
     </div>
   </div>
@@ -151,7 +129,6 @@
   <div class="row">
     <div class="col-md-6">
        Additional comments or questions related to housing.
-      (If you prefer to be housed in a single-gender suite, let us know here.)
     </div>
   </div>
   <div class="row">
@@ -239,10 +216,9 @@
 
 <script>
   radio_button_hide('room_type', '#roommate-preference-wrapper', {show_values: ['double']});
-  radio_button_hide('room_type', '#suite-preference-wrapper', {show_values: ['single', 'double']});
+  // radio_button_hide('room_type', '#suite-preference-wrapper', {show_values: ['single', 'double']});
   radio_button_hide('room_type', '#room-near-preference-wrapper', {show_values: ['single', 'double']});
   radio_button_hide('room_type', '#bedtime-wrapper', {show_values: ['single', 'double']});
-  radio_button_hide('is_bringing_child', '#child-folks-wrapper');
   radio_button_hide('is_bringing_guest_to_banquet', '#banquet-guest-wrapper');
 </script>
 {% endblock %}
