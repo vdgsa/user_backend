@@ -257,8 +257,9 @@ class ConclaveClassCSVView(LoginRequiredMixin, UserPassesTestMixin, View):
 
             reader = csv.DictReader(f)
             with transaction.atomic():
+                self.conclave_config.classes.all().delete()
                 for row in reader:
-                    Class.objects.update_or_create(
+                    Class.objects.create(
                         conclave_config=self.conclave_config,
                         name=row['Title'].strip(),
                         period=Period(int(row['Period'])),
