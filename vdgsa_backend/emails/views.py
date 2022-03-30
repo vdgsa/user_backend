@@ -69,7 +69,7 @@ class ExpiringEmails():
         link = f'''hume.vdgsa.org{reverse('current-user-account')}'''
 
         subject = 'VdGSA membership'
-        to_email = member.emails
+        to_email = member.username
         text_content = f'Dear {member.first_name.strip()},\n' + \
             message.format(member.subscription.valid_until.strftime("%m/%d/%Y")) + ' ' + link
 
