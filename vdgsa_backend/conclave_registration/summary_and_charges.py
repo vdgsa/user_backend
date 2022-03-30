@@ -307,8 +307,13 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
     match(registration_entry.program):
         case Program.beginners if class_choices.num_non_freebie_classes == 1:
             return {
-                'display_name': 'Beginners+ Add-On Class',
+                'display_name': '1 Add-On Class',
                 'amount': conclave_config.beginners_extra_class_fee
+            }
+        case Program.beginners if class_choices.num_non_freebie_classes == 2:
+            return {
+                'display_name': '2 Add-On Classes',
+                'amount': conclave_config.regular_tuition
             }
         case Program.consort_coop if class_choices.num_non_freebie_classes == 1:
             return {
