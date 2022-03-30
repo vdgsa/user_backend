@@ -55,13 +55,6 @@ class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self) -> bool:
         return is_rental_manager(self.request.user)
 
-    def reverse(*args, **kwargs):
-        get = kwargs.pop('get', {})
-        url = reverse(*args, **kwargs)
-        if get:
-            url += '?' + urlencode(get)
-        return url
-
 
 class NotesOnlyHistoryForm(forms.ModelForm):
     item = forms.HiddenInput()

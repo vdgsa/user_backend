@@ -44,14 +44,15 @@ class RentalViolLIstTestCase(SeleniumTestCaseBase):
 
 class _TestData(Protocol):
     viols: List[Viol]
+    num_viols: 10
     bows: List[Bow]
     cases: List[Case]
     num_viols: int
     rental_manager: User
+    num_users: 10
 
 
 def _test_data_init(test_obj: _TestData) -> None:
-    test_obj.num_viols = 10
     test_obj.viols = [
         Viol.objects.create(
             vdgsa_number=1234,
@@ -98,11 +99,9 @@ def _test_data_init(test_obj: _TestData) -> None:
         for i in range(5)
     ]
 
-    test_obj.num_users = 10
-    test_obj.num_active_users = 2
     test_obj.users = [
         User.objects.create_user(
-            username=f'user{i}@waa.com',
+            username=f'user{i}@dfsaf.com',
             first_name=f'Firsty {i}',
             last_name=f'Lasty {i}',
             password='password',

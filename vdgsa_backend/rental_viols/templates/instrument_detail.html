@@ -65,7 +65,7 @@
               {% if  item.storer %}
               <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
               {% endif %}
-              <a class="btn btn-sm btn-secondary float-end me-2" onClick="changeCustModal()"
+              <a class="btn btn-sm btn-secondary float-end me-2" onClick="show_custodian_modal()"
                 >Change</a>
             </td>
             </tr>
@@ -117,7 +117,7 @@
 </div>
 
 <script>
-  function changeCustModal() {
+  function show_custodian_modal() {
     $("#custodianModal").modal("show");
   }
 </script>

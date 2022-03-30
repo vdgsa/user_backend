@@ -52,7 +52,8 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
             membership_type=MembershipType.regular,
             valid_until=timezone.now() - timezone.timedelta(days=175)
         )
-        user = User.objects.create_user('expired-month-ago@user.user', password='noirestanoriesato')
+        user = User.objects.create_user('expired-month-ago@user.user',
+                                        password='noirestanoriesato')
         subscription = MembershipSubscription.objects.create(
             owner=user,
             membership_type=MembershipType.regular,

@@ -5,7 +5,7 @@ from . import legacyImport, views
 urlpatterns = [
     path('', views.RentalHomeView.as_view(), name='rentals'),
 
-    path('user/search', views.UserSearchView.as_view(), name='user-search'),
+    path('user/search', views.UserSearchViewAjax.as_view(), name='user-search'),
     path('viol/rentOut/', views.RentOutView.as_view(), name='viol-rentOut'),
     path('rentals/', views.ListRentersView.as_view(), name='list-renters'),
     path('rental/renew/<int:entry_num>/', views.RentalRenewView.as_view(), name='rental-renew'),

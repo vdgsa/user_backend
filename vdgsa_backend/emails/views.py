@@ -44,7 +44,7 @@ You can renew your membership online at ")
 
 class ExpiringEmails():
     """
-    This Job will query the databse and send emails. 
+    runJob will query the databse and send emails. 
     This is ususally run by a cron job.
     """
 
@@ -55,23 +55,21 @@ class ExpiringEmails():
 
         startdate = timezone.now() + timedelta(days=numdays)
         endate = timezone.now() + timedelta(days=(numdays + 7))
-        print('startdate', startdate, 'endate', endate)
         expiring_members = User.objects.filter(~Q(owned_subscription__membership_type=MembershipType.lifetime)
-                                            & ~Q(owned_subscription__membership_type=MembershipType.complementary)
-                                            & Q(owned_subscription__valid_until__gte=startdate)
-                                            & Q(owned_subscription__valid_until__lte=endate))
+                                               & ~Q(owned_subscription__membership_type=MembershipType.complementary)
+                                               & Q(owned_subscription__valid_until__gte=startdate)
+                                               & Q(owned_subscription__valid_until__lte=endate))
         # print(expiring_members.query)
         # print('expiring_members', expiring_members)
         return expiring_members
 
     def sendEmail(self, request: HttpRequest, member: User,
-                  message: string, send: boolean) -> EmailMultiAlternatives:
+                  message: string, send: bool) -> EmailMultiAlternatives:
         logo = "hume.vdgsa.org/static/vdgsa_logo.gif"
         link = f'''hume.vdgsa.org{reverse('current-user-account')}'''
 
         subject = 'VdGSA membership'
-        # to_email = member.emails
-        to_email = 'doug.poplin@gmail.com'
+        to_email = member.emails
         text_content = f'Dear {member.first_name.strip()},\n' + \
             message.format(member.subscription.valid_until.strftime("%m/%d/%Y")) + ' ' + link
 
@@ -104,13 +102,6 @@ class Viewemails(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def test_func(self) -> bool:
         return is_membership_secretary(self.request.user)
-
-    def reverse(*args, **kwargs):
-        get = kwargs.pop('get', {})
-        url = reverse(*args, **kwargs)
-        if get:
-            url += '?' + urlencode(get)
-        return url
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         context = {'emails': []}
