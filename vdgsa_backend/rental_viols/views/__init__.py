@@ -15,7 +15,7 @@ from .images import DeleteImageView as DeleteImageView
 from .images import ImageView as ImageView
 from .images import RentalContractView as RentalContractView
 from .user import MoveRentalUserReference as MoveRentalUserReference
-from .user import UserSearchView as UserSearchView
+from .user import UserSearchViewAjax as UserSearchViewAjax
 from .user import ViewUserInfo as ViewUserInfo
 from .views import AttachToRentalView as AttachToRentalView
 from .views import AttachToViolView as AttachToViolView

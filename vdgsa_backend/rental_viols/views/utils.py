@@ -54,14 +54,7 @@ def _createUserStamp(user):
 class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self) -> bool:
         return is_rental_viewer(self.request.user) or is_rental_manager(self.request.user)
-
-    def reverse(*args, **kwargs):
-        get = kwargs.pop('get', {})
-        url = reverse(*args, **kwargs)
-        if get:
-            url += '?' + urlencode(get)
-        return url
-
+        
 
 class RentalEditBase(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self) -> bool:

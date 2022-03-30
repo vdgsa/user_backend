@@ -401,15 +401,6 @@ class UploadRentalView(RentalEditBase, CreateView):
     success_url = reverse_lazy('list-renters')
     template_name = 'renters/upload_contract.html'
 
-    # def get_initial(self):
-    #     initial = super().get_initial()
-    #     initial['entry_num'] = self.kwargs['entry_num']
-    #     return initial
-
-    # def get_context_data(self, **kwargs):
-    #     kwargs.setdefault('entry_num', self.kwargs['entry_num'])
-    #     return kwargs
-
     def form_valid(self, form):
         rh = RentalHistory.objects.get(pk=self.kwargs['entry_num'])
         response = super().form_valid(form)

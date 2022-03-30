@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     path('', views.RentalHomeView.as_view(), name='rentals'),
 
-    path('user/search', views.UserSearchView.as_view(), name='user-search'),
+    path('user/search', views.UserSearchViewAjax.as_view(), name='user-search'),
     # path('user/move/<int:pk>/', views.MoveRentalUserReference.as_view(), name='user-move'),
 
     path('viol/rentOut/', views.RentOutView.as_view(), name='viol-rentOut'),
