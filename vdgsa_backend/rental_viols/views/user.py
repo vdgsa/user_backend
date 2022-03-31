@@ -95,11 +95,11 @@ class UserSearchViewAjax(RentalViewBase, View):
     """Filter list of users """
     @csrf_exempt
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
-        url_parameter = request.GET.get("q")
+        search_str = request.GET.get("q")
         context = {}
-        if url_parameter:
-            users = User.objects.filter(Q(first_name__icontains=url_parameter)
-                                        | Q(last_name__icontains=url_parameter))
+        if search_str:
+            users = User.objects.filter(Q(first_name__icontains=search_str)
+                                        | Q(last_name__icontains=search_str))
         else:
             users = User.objects.all()
 
