@@ -110,7 +110,7 @@ LEVEL_ORDERING: Final = dict((level, i) for i, level in enumerate(Level))
 
 class Class(models.Model):
     class Meta:
-        unique_together = ('name', 'period')
+        unique_together = ('conclave_config', 'name', 'period')
         order_with_respect_to = 'conclave_config'
 
     conclave_config = models.ForeignKey(

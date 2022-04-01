@@ -276,12 +276,12 @@ class ConclaveClassCSVView(LoginRequiredMixin, UserPassesTestMixin, View):
                         conclave_config=self.conclave_config,
                         name=row['Title'].strip(),
                         period=Period(int(row['Period'])),
-                        defaults={
-                            'level': row['Level'],
-                            'instructor': row['Teacher'],
-                            'description': row['Description'],
-                            'notes': row['Notes'],
-                        }
+
+                        level=row['Level'],
+                        instructor=row['Teacher'],
+                        description=row['Description'],
+                        notes=row['Notes'],
+                        offer_to_beginners=row['offer_to_beginners'].strip().lower() == 'true',
                     )
 
         return HttpResponseRedirect(
