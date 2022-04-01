@@ -1,7 +1,6 @@
 from __future__ import annotations
-from random import choices
 
-from typing import Any, ClassVar, Final, TypedDict
+from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError

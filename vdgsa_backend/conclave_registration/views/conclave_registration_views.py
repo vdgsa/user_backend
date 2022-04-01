@@ -1,9 +1,7 @@
 from __future__ import annotations
-from cProfile import label
 
 import itertools
 from abc import abstractmethod
-from email.policy import default
 from itertools import chain
 from typing import Any, Dict, Final, List, Type, cast
 
@@ -31,11 +29,12 @@ from django.views.generic.detail import SingleObjectMixin
 from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 from vdgsa_backend.conclave_registration.models import (
-    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, AdvancedProjectsInfo,
-    AdvancedProjectsParticipationOptions, BeginnerInstrumentInfo, Class, Clef,
-    ConclaveRegistrationConfig, DietaryNeeds, EarlyArrivalChoices, Housing, HousingRoomType, InstrumentBringing,
-    PaymentInfo, Period, Program, RegistrationEntry, RegistrationPhase, RegularProgramClassChoices,
-    TShirts, WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
+    BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, NOT_ATTENDING_BANQUET_SENTINEL,
+    AdditionalRegistrationInfo, AdvancedProjectsInfo, AdvancedProjectsParticipationOptions,
+    BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing,
+    HousingRoomType, InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry,
+    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob,
+    YesNo, YesNoMaybe, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.summary_and_charges import (
     get_charges_summary, get_registration_summary
@@ -1152,7 +1151,8 @@ class PaymentView(_RegistrationStepViewBase):
         context['registration_summary'] = get_registration_summary(self.registration_entry)
         context['charges_summary'] = get_charges_summary(self.registration_entry)
         if settings.DEBUG:
-            context['confirmation_email_debug'] = _render_confirmation_email(self.registration_entry)
+            context['confirmation_email_debug'] = (
+                _render_confirmation_email(self.registration_entry))
         return context
 
     def _get_missing_sections(self) -> list[str]:

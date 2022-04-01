@@ -117,7 +117,6 @@ def _instrument_to_str(instrument: InstrumentBringing | None) -> str:
     return 'Any' if instrument is None else str(instrument)
 
 
-
 def get_housing_summary(registration_entry: RegistrationEntry) -> list[str]:
     if not hasattr(registration_entry, 'housing'):
         return
