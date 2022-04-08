@@ -48,6 +48,9 @@ urlpatterns = [
          name='conclave-done'),
     path('register/<int:conclave_reg_pk>/start_over/', views.StartOverView.as_view(),
          name='start-over'),
+    path('<int:conclave_config_pk>/current_user_registration_summary/',
+         views.CurrentUserRegistrationSummaryView.as_view(),
+         name='conclave-registration-summary-current-user'),
 
     path('<int:conclave_config_pk>/register/', views.ConclaveRegistrationLandingPage.as_view(),
          name='conclave-reg-landing'),

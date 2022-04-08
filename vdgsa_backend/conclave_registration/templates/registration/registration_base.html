@@ -142,9 +142,15 @@
             Your registration has been finalized. If you need to change something,
             please contact the Conclave Team. Below is a summary of your registration.
           </div>
-          <div class="mt-3">
-            {% include 'registration/payment/summary.tmpl' %}
+          <div id="registration-summary" class="mt-3">
           </div>
+          <script>
+            $().ready(function() {
+              $.get("{% url 'conclave-registration-summary-current-user' conclave_config_pk=conclave_config.pk %}").then(function(data) {
+                $('#registration-summary').html(data);
+              });
+            });
+          </script>
         {% elif perms.conclave_registration.conclave_team or conclave_config.is_open %}
           {% if conclave_config.phase == 'late' %}
           {% endif %}

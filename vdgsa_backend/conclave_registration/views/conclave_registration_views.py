@@ -1208,6 +1208,26 @@ class RegistrationDoneView(View):
         return render(self.request, 'registration/done.html')
 
 
+class CurrentUserRegistrationSummaryView(LoginRequiredMixin, View):
+    def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        registration_entry = get_object_or_404(
+            RegistrationEntry.objects.filter(
+                conclave_config_id=(
+                    self.kwargs['conclave_config_pk']
+                ),
+                user=self.request.user,
+            )
+        )
+        return render(
+            self.request,
+            'registration/payment/summary.tmpl',
+            context={
+                'registration_summary': get_registration_summary(registration_entry),
+                'charges_summary': get_charges_summary(registration_entry)
+            }
+        )
+
+
 def send_confirmation_email(registration_entry: RegistrationEntry) -> None:
     send_mail(
         subject=f'VdGSA Conclave {registration_entry.conclave_config.year} '

@@ -18,6 +18,9 @@ from .conclave_registration_views import AdvancedProjectsView as AdvancedProject
 from .conclave_registration_views import (
     ConclaveRegistrationLandingPage as ConclaveRegistrationLandingPage
 )
+from .conclave_registration_views import (
+    CurrentUserRegistrationSummaryView as CurrentUserRegistrationSummaryView
+)
 from .conclave_registration_views import DeleteInstrumentView as DeleteInstrumentView
 from .conclave_registration_views import HousingView as HousingView
 from .conclave_registration_views import InstrumentsBringingView as InstrumentsBringingView
