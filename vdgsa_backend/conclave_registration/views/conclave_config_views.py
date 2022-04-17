@@ -64,6 +64,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'double_room_per_night_cost',
             'single_room_early_arrival_per_night_cost',
             'double_room_early_arrival_per_night_cost',
+            'dietary_needs_markdown',
             'banquet_guest_fee',
             'tshirt_price',
             'late_registration_fee',
@@ -92,6 +93,8 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'departure_date_options': (
                 'A list of allowed departure dates (format: Day of Week Month Date),'
                 ' each separated by a newline'),
+            'dietary_needs_markdown': (
+                'Text to display before the dietary needs fields. Rendered as markdown'),
             'banquet_food_options': (
                 'A list of banquet food options, each separated by a newline. '
                 'Note that "Not Attending" is automatically added as a choice.'

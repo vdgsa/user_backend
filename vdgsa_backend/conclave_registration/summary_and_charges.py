@@ -413,7 +413,7 @@ def _room_and_board_charge(
         })
     else:
         charges.append({
-            'display_name': f'{formatted_room_type}, {num_nights} nights',
+            'display_name': f'{formatted_room_type}, {num_nights} night(s)',
             'amount': per_night_room_rate * num_nights
         })
 

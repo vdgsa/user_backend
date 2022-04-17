@@ -65,6 +65,9 @@ class ConclaveRegistrationConfig(models.Model):
     )
     # Markdown text to go in the housing form just before the arrival/departure fields.
     housing_form_pre_arrival_markdown = models.TextField(blank=True)
+
+    # Markdown text to go in the housing form just before the dietary needs fields.
+    dietary_needs_markdown = models.TextField(blank=True)
     banquet_food_options = models.TextField(blank=True)
 
     tshirt_image_url = models.URLField(blank=True)
@@ -412,6 +415,7 @@ class WorkStudyApplication(models.Model):
         choices=[
             ('yes', 'Yes, in person'),
             ('online', 'Yes, online only'),
+            ('both', 'Yes, in person and online'),
             ('no', 'No'),
         ]
     )
