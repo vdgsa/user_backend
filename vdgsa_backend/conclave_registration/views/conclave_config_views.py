@@ -41,6 +41,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
 
             'housing_form_top_markdown',
             'housing_form_pre_arrival_markdown',
+            'early_arrival_date_options',
             'arrival_date_options',
             'departure_date_options',
             'banquet_food_options',
@@ -51,13 +52,18 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'part_time_tuition',
             'consort_coop_tuition',
             'seasoned_players_tuition',
-            'non_playing_attendee_fee',
+            'workshop_fee',
             'beginners_extra_class_fee',
+            'beginners_two_extra_classes_fee',
             'consort_coop_one_extra_class_fee',
             'consort_coop_two_extra_classes_fee',
             'seasoned_players_extra_class_fee',
-            'single_room_cost',
-            'double_room_cost',
+            'single_room_full_week_cost',
+            'double_room_full_week_cost',
+            'single_room_per_night_cost',
+            'double_room_per_night_cost',
+            'single_room_early_arrival_per_night_cost',
+            'double_room_early_arrival_per_night_cost',
             'banquet_guest_fee',
             'tshirt_price',
             'late_registration_fee',
@@ -77,14 +83,20 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'housing_form_pre_arrival_markdown': (
                 'Text to display before the arrival/departure section of the housing form. '
                 'Rendered as markdown'),
+            'early_arrival_date_options': (
+                'A list of allowed early arrival dates (format: Day of Week Month Date),'
+                ' each separated by a newline'),
             'arrival_date_options': (
-                'A list of allowed conclave arrival dates, each separated by a newline'),
+                'A list of allowed arrival dates (format: Day of Week Month Date),'
+                ' each separated by a newline'),
             'departure_date_options': (
-                'A list of allowed conclave arrival dates, each separated by a newline.'),
+                'A list of allowed departure dates (format: Day of Week Month Date),'
+                ' each separated by a newline'),
             'banquet_food_options': (
                 'A list of banquet food options, each separated by a newline. '
                 'Note that "Not Attending" is automatically added as a choice.'
             ),
+            'workshop_fee': 'Workshop fee (for non-playing attendees and on-campus beginners).'
         }
 
         widgets = {
@@ -93,6 +105,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'photo_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
 
             'housing_form_top_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'early_arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'departure_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'banquet_food_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),

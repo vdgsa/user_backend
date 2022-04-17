@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime, date
 
 from typing import Any, Final, TypedDict
 
@@ -20,6 +21,14 @@ class RegistrationPhase(models.TextChoices):
 
 
 NOT_ATTENDING_BANQUET_SENTINEL: Final[str] = 'not_attending'
+
+
+def _arrival_and_departure_date_options_validator(value: str) -> None:
+    for item in value.splitlines():
+        try:
+            datetime.strptime(item, ConclaveRegistrationConfig.arrival_date_format)
+        except ValueError:
+            raise ValidationError(f'Improperly-formatted date: {item}')
 
 
 class ConclaveRegistrationConfig(models.Model):
@@ -45,8 +54,15 @@ class ConclaveRegistrationConfig(models.Model):
     # Markdown text to go at the beginning of the housing form.
     housing_form_top_markdown = models.TextField(blank=True)
 
-    arrival_date_options = models.TextField(blank=True)
-    departure_date_options = models.TextField(blank=True)
+    early_arrival_date_options = models.TextField(
+        blank=True, validators=[_arrival_and_departure_date_options_validator]
+    )
+    arrival_date_options = models.TextField(
+        blank=True, validators=[_arrival_and_departure_date_options_validator]
+    )
+    departure_date_options = models.TextField(
+        blank=True, validators=[_arrival_and_departure_date_options_validator]
+    )
     # Markdown text to go in the housing form just before the arrival/departure fields.
     housing_form_pre_arrival_markdown = models.TextField(blank=True)
     banquet_food_options = models.TextField(blank=True)
@@ -58,15 +74,21 @@ class ConclaveRegistrationConfig(models.Model):
     part_time_tuition = models.IntegerField(blank=True, default=0)
     consort_coop_tuition = models.IntegerField(blank=True, default=0)
     seasoned_players_tuition = models.IntegerField(blank=True, default=0)
-    non_playing_attendee_fee = models.IntegerField(blank=True, default=0)
+    # For non-playing attendees/on-campus beginners.
+    workshop_fee = models.IntegerField(blank=True, default=0)
 
     beginners_extra_class_fee = models.IntegerField(blank=True, default=0)
+    beginners_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
     consort_coop_one_extra_class_fee = models.IntegerField(blank=True, default=0)
     consort_coop_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
     seasoned_players_extra_class_fee = models.IntegerField(blank=True, default=0)
 
-    single_room_cost = models.IntegerField(blank=True, default=0)
-    double_room_cost = models.IntegerField(blank=True, default=0)
+    single_room_full_week_cost = models.IntegerField(blank=True, default=0)
+    double_room_full_week_cost = models.IntegerField(blank=True, default=0)
+    single_room_per_night_cost = models.IntegerField(blank=True, default=0)
+    double_room_per_night_cost = models.IntegerField(blank=True, default=0)
+    single_room_early_arrival_per_night_cost = models.IntegerField(blank=True, default=0)
+    double_room_early_arrival_per_night_cost = models.IntegerField(blank=True, default=0)
     banquet_guest_fee = models.IntegerField(blank=True, default=0)
 
     tshirt_price = models.IntegerField(blank=True, default=25)
@@ -81,6 +103,29 @@ class ConclaveRegistrationConfig(models.Model):
 
     # classes is the reverse lookup of a foreign key defined in Class
     # registration_entries is the reverse lookup of a foreign key defined in RegistrationEntry
+
+    arrival_date_format: Final = '%A %B %d'
+
+    @cached_property
+    def early_arrival_dates(self) -> list[date]:
+        return [
+            datetime.strptime(item, self.arrival_date_format).date().replace(year=self.year)
+            for item in self.early_arrival_date_options.splitlines()
+        ]
+
+    @cached_property
+    def arrival_dates(self) -> list[date]:
+        return [
+            datetime.strptime(item, self.arrival_date_format).date().replace(year=self.year)
+            for item in self.arrival_date_options.splitlines()
+        ]
+
+    @cached_property
+    def departure_dates(self) -> list[date]:
+        return [
+            datetime.strptime(item, self.arrival_date_format).date().replace(year=self.year)
+            for item in self.departure_date_options.splitlines()
+        ]
 
 
 class Period(models.IntegerChoices):
@@ -169,7 +214,7 @@ class YesNoMaybe(models.TextChoices):
 class Program(models.TextChoices):
     regular = 'regular', 'Regular Curriculum Full-time (2-3 classes + optional "Freebie")'
     part_time = 'part_time', 'Regular Curriculum Part-time (1 class only)'
-    beginners = 'beginners', 'Beginning Viol (tuition free)'
+    beginners = 'beginners', 'Beginning Viol (free to local attendees)'
     consort_coop = 'consort_coop', 'Consort Co-op (CC 3+1 or CC 2+2)'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     advanced_projects = 'advanced_projects', 'Advanced Projects'

@@ -967,13 +967,19 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         if 'dietary_needs' not in self.initial and self.instance is not None:
             self.initial['dietary_needs'] = self.instance.dietary_needs
 
+        early_arrival_dates: List[str] = (
+            self.registration_entry.conclave_config.early_arrival_date_options.splitlines())
         arrival_dates: List[str] = (
             self.registration_entry.conclave_config.arrival_date_options.splitlines())
         departure_dates: List[str] = (
             self.registration_entry.conclave_config.departure_date_options.splitlines())
+
+        all_arrival_dates = early_arrival_dates + arrival_dates
         self.fields['arrival_day'].widget = widgets.Select(
-            choices=list(zip(arrival_dates, arrival_dates)))
-        self.fields['arrival_day'].initial = arrival_dates[-1] if arrival_dates else ''
+            choices=list(zip(all_arrival_dates, all_arrival_dates)))
+        # Select the first regular arrival date by default.
+        self.fields['arrival_day'].initial = arrival_dates[0] if arrival_dates else ''
+
         self.fields['departure_day'].widget = widgets.Select(
             choices=list(zip(departure_dates, departure_dates)))
         self.fields['departure_day'].initial = departure_dates[-1] if departure_dates else ''

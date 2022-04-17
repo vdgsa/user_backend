@@ -7,7 +7,9 @@ on the "Summary" page and in confirmation emails.
 
 from __future__ import annotations
 
-from typing import TypedDict
+from datetime import datetime
+from typing import Final, TypedDict
+from typing_extensions import reveal_type
 
 from vdgsa_backend.conclave_registration.models import (
     NOT_ATTENDING_BANQUET_SENTINEL, BeginnerInstrumentInfo, ClassChoiceDict,
@@ -194,18 +196,11 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if tuition_charge is not None:
         charges.append(tuition_charge)
 
-    if (add_on_class_charge := get_add_on_class_charge(registration_entry)) is not None:
+    add_on_class_charge = get_add_on_class_charge(registration_entry)
+    if add_on_class_charge is not None:
         charges.append(add_on_class_charge)
 
-    if (housing_charge := get_housing_charge(registration_entry)) is not None:
-        charges.append(housing_charge)
-
-    if (hasattr(registration_entry, 'housing')
-            and registration_entry.housing.is_bringing_guest_to_banquet == YesNo.yes):
-        charges.append({
-            'display_name': 'Banquet Guest Fee',
-            'amount': conclave_config.banquet_guest_fee
-        })
+    charges += get_housing_charges(registration_entry)
 
     if (tshirts_charge := get_tshirts_charge(registration_entry)) is not None:
         charges.append(tshirts_charge)
@@ -224,6 +219,8 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
             and registration_entry.work_study.wants_work_study == YesNo.yes
             and tuition_charge is not None):
         work_study_scholarship_amount = tuition_charge['amount']
+        if add_on_class_charge is not None:
+            work_study_scholarship_amount += add_on_class_charge['amount']
 
     apply_housing_subsidy = (
         hasattr(registration_entry, 'housing')
@@ -255,8 +252,8 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
 def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
     program = registration_entry.program
-    if program == Program.non_playing_attendee:
-        display_name = 'Attendance Fee'
+    if program in [Program.non_playing_attendee, Program.beginners]:
+        display_name = 'Workshop Fee'
     else:
         display_name = f'Tuition: {Program(program).label}'
 
@@ -282,16 +279,20 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
                 'amount': conclave_config.seasoned_players_tuition
             }
         case Program.beginners:
+            staying_off_campus = (
+                hasattr(registration_entry, 'housing')
+                and registration_entry.housing.room_type == HousingRoomType.off_campus
+            )
             return {
                 'display_name': display_name,
-                'amount': 0
+                'amount': 0 if staying_off_campus else conclave_config.workshop_fee
             }
         case Program.faculty_guest_other:
             return None
         case Program.non_playing_attendee:
             return {
                 'display_name': display_name,
-                'amount': conclave_config.non_playing_attendee_fee
+                'amount': conclave_config.workshop_fee
             }
         case _:
             assert False
@@ -312,7 +313,7 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
         case Program.beginners if class_choices.num_non_freebie_classes == 2:
             return {
                 'display_name': '2 Add-On Classes',
-                'amount': conclave_config.regular_tuition
+                'amount': conclave_config.beginners_two_extra_classes_fee
             }
         case Program.consort_coop if class_choices.num_non_freebie_classes == 1:
             return {
@@ -334,25 +335,89 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
     return None
 
 
-def get_housing_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
+def get_housing_charges(registration_entry: RegistrationEntry) -> list[ChargeInfo]:
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
     if not hasattr(registration_entry, 'housing'):
         return None
     housing: Housing = registration_entry.housing
 
+    charges: list[ChargeInfo] = []
+
     match(housing.room_type):
         case HousingRoomType.single:
-            return {
-                'display_name': 'Housing: Single Room',
-                'amount': conclave_config.single_room_cost
-            }
+            charges += _room_and_board_charge(
+                housing,
+                conclave_config,
+                formatted_room_type='Single Room',
+                early_arrival_room_rate=conclave_config.single_room_early_arrival_per_night_cost,
+                per_night_room_rate=conclave_config.single_room_per_night_cost,
+                full_week_room_rate=conclave_config.single_room_full_week_cost,
+            )
         case HousingRoomType.double:
-            return {
-                'display_name': 'Housing: Double Room',
-                'amount': conclave_config.double_room_cost
-            }
+            charges += _room_and_board_charge(
+                housing,
+                conclave_config,
+                formatted_room_type='Double Room',
+                early_arrival_room_rate=conclave_config.double_room_early_arrival_per_night_cost,
+                per_night_room_rate=conclave_config.double_room_per_night_cost,
+                full_week_room_rate=conclave_config.double_room_full_week_cost,
+            )
 
-    return None
+    if housing.is_bringing_guest_to_banquet == YesNo.yes:
+        charges.append({
+            'display_name': 'Banquet Guest Fee',
+            'amount': conclave_config.banquet_guest_fee
+        })
+
+    return charges
+
+
+def _room_and_board_charge(
+    housing: Housing,
+    conclave_config: ConclaveRegistrationConfig,
+    *,
+    formatted_room_type: str,
+    early_arrival_room_rate: int,
+    per_night_room_rate: int,
+    full_week_room_rate: int
+) -> list[ChargeInfo]:
+    arrival_date = datetime.strptime(
+        housing.arrival_day, conclave_config.arrival_date_format
+    ).date().replace(year=conclave_config.year)
+    departure_date = datetime.strptime(
+        housing.departure_day, conclave_config.arrival_date_format
+    ).date().replace(year=conclave_config.year)
+
+    num_nights = (departure_date - arrival_date).days
+    num_early_arrival_nights = (
+        (conclave_config.arrival_dates[0] - arrival_date).days
+        if arrival_date in conclave_config.early_arrival_dates
+        else 0
+    )
+    num_nights -= num_early_arrival_nights
+    full_week_num_nights: Final = 7
+
+    charges: list[ChargeInfo] = []
+    if num_early_arrival_nights != 0:
+        charges.append({
+            'display_name': (
+                f'Early Arrival: {formatted_room_type}, {num_early_arrival_nights} night(s)'
+            ),
+            'amount': early_arrival_room_rate * num_early_arrival_nights
+        })
+
+    if num_nights == full_week_num_nights:
+        charges.append({
+            'display_name': f'Full Week Room and Board: {formatted_room_type}',
+            'amount': full_week_room_rate
+        })
+    else:
+        charges.append({
+            'display_name': f'{formatted_room_type}, {num_nights} nights',
+            'amount': per_night_room_rate * num_nights
+        })
+
+    return charges
 
 
 def get_tshirts_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
