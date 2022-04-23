@@ -417,7 +417,11 @@ def _room_and_board_charge(
     full_week_num_nights: Final = 7
 
     charges: list[ChargeInfo] = []
-    if num_early_arrival_nights != 0:
+    # Note that this will also cause superusers to be considered board
+    # members, but there are only a couple of superusers, so this probably
+    # won't be an issue.
+    is_board_member = housing.registration_entry.user.has_perm('board_member')
+    if num_early_arrival_nights != 0 and not is_board_member:
         charges.append({
             'display_name': (
                 f'Early Arrival: {formatted_room_type}, {num_early_arrival_nights} night(s)'
