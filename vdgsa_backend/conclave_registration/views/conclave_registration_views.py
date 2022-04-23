@@ -284,6 +284,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = AdditionalRegistrationInfo
         fields = [
+            'nickname',
             'phone',
             'age',
             'gender',
@@ -305,6 +306,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         }
 
         labels = {
+            'nickname': '',
             'phone': '',
             'include_in_whos_coming_to_conclave_list': '',
             'attended_conclave_before': '',
@@ -362,7 +364,6 @@ class WorkStudyForm(_RegistrationStepFormBase, forms.ModelForm):
         model = WorkStudyApplication
         fields = [
             'wants_work_study',
-            'nickname',
             'phone_number',
             'can_receive_texts_at_phone_number',
             'has_been_to_conclave',

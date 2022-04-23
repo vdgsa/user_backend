@@ -22,19 +22,6 @@
 
   <div id="work-study-application-wrapper">
     <h4 class="mt-3">Work-Study Application</h4>
-    <div class="row mt-3">
-      <div class="col-md-8">
-        We'll use your full name and email address from the
-        <a href="{% url 'current-user-account' %}">My Account</a> section of the website. <br>
-        If you would like to specify a nickname for us to use,
-        here's a place for that. (Optional)
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-8">
-        {% include 'utils/form_field.tmpl' with field=form.nickname %}
-      </div>
-    </div>
 
     <div class="row mt-3">
       <div class="col-md-8">

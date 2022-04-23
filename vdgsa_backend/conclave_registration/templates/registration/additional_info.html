@@ -17,6 +17,19 @@
 <form method="post">
   {% csrf_token %}
 
+  <div class="row mt-3">
+    <div class="col-md-6">
+      If you would like to specify how your name appears on your name tag,
+      please let us know here. Otherwise, we'll use your name and address
+      from your My Account settings. (Optional)
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.nickname %}
+    </div>
+  </div>
+
   <div class="row mt-2">
     <div class="col-auto">
       {% include 'utils/form_field.tmpl' with field=form.age %}

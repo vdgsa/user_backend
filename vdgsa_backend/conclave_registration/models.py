@@ -289,6 +289,7 @@ class AdditionalRegistrationInfo(models.Model):
         related_name='additional_info'
     )
 
+    nickname = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=30)
     include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
 
@@ -398,7 +399,6 @@ class WorkStudyApplication(models.Model):
 
     wants_work_study = models.TextField(choices=YesNo.choices, blank=False, default='')
 
-    nickname = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=50)
     can_receive_texts_at_phone_number = models.TextField(choices=YesNo.choices)
 
