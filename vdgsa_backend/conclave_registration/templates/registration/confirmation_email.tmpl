@@ -97,6 +97,14 @@ T-Shirts
 No T-Shirts
 {% endif %}
 <br>
+{% if registration_summary.vendors %}
+Vendors' Emporium
+=================
+{% for item in registration_summary.vendors %}
+- {{item}}
+{% endfor %}
+<br>
+{% endif %}
 ________________________________________________________________________
 <br>
 <br>
