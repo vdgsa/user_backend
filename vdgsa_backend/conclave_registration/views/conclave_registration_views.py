@@ -293,6 +293,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'buddy_willingness',
             # 'willing_to_help_with_small_jobs',
             'wants_display_space',
+            'num_display_space_days',
             'liability_release',
             'covid_policy',
             'photo_release_auth',
@@ -309,6 +310,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'attended_conclave_before': '',
             'buddy_willingness': '',
             'wants_display_space': '',
+            'num_display_space_days': '',
             'photo_release_auth': '',
             'other_info': '',
         }

@@ -72,16 +72,24 @@
 {% endif %}
 
 <div class="fs-5 mt-2">T-Shirts</div>
-  {% if registration_summary.tshirts %}
-  <ol>
-    {% for item in registration_summary.tshirts %}
-    <li>{{item}}</li>
-    {% endfor %}
-  </ol>
-  {% else %}
-  <div class="ps-3">No T-Shirts</div>
-  {% endif %}
+{% if registration_summary.tshirts %}
+<ol>
+  {% for item in registration_summary.tshirts %}
+  <li>{{item}}</li>
+  {% endfor %}
+</ol>
+{% else %}
+<div class="ps-3">No T-Shirts</div>
+{% endif %}
+
+{% if registration_summary.vendors %}
+<div class="fs-5 mt-2">Vendors' Emporium</div>
+{% for item in registration_summary.vendors %}
+<div class="ps-3">
+  {{item}}
+{% endfor %}
 </div>
+{% endif %}
 
 <hr>
 

@@ -107,6 +107,18 @@
       {% include 'utils/form_field.tmpl' with field=form.wants_display_space %}
     </div>
   </div>
+  <div id="num-display-space-days-wrapper">
+    <div class="row">
+      <div class="col-md-6">
+        How many days do you need the table for?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.num_display_space_days %}
+      </div>
+    </div>
+  </div>
 
   <div class="row mt-3">
     <div class="col-md-8" style="border: 1px solid slategray">
@@ -186,5 +198,6 @@
 
 <script>
   radio_button_hide('attended_conclave_before', '#buddy-willingness-wrapper');
+  radio_button_hide('wants_display_space', '#num-display-space-days-wrapper');
 </script>
 {% endblock %}

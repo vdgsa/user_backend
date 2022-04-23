@@ -9,13 +9,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Final, TypedDict
-from typing_extensions import reveal_type
 
 from vdgsa_backend.conclave_registration.models import (
-    NOT_ATTENDING_BANQUET_SENTINEL, BeginnerInstrumentInfo, ClassChoiceDict,
-    ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType, InstrumentBringing,
-    InstrumentChoices, Period, Program, RegistrationEntry, RegularProgramClassChoices, TShirts,
-    YesNo
+    NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, BeginnerInstrumentInfo,
+    ClassChoiceDict, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType,
+    InstrumentBringing, InstrumentChoices, Period, Program, RegistrationEntry,
+    RegularProgramClassChoices, TShirts, YesNo
 )
 
 
@@ -42,7 +41,8 @@ def get_registration_summary(registration_entry: RegistrationEntry) -> Registrat
         'instruments': get_instruments_summary(registration_entry),
         'classes': get_class_summary(registration_entry),
         'housing': get_housing_summary(registration_entry),
-        'tshirts': get_tshirt_summary(registration_entry)
+        'tshirts': get_tshirt_summary(registration_entry),
+        'vendors': get_vendor_summary(registration_entry),
     }
 
 
@@ -174,6 +174,19 @@ def get_tshirt_summary(registration_entry: RegistrationEntry) -> list[str]:
     return [tshirt for tshirt in registration_entry.tshirts.as_list() if tshirt]
 
 
+def get_vendor_summary(registration_entry: RegistrationEntry) -> list[str]:
+    if not hasattr(registration_entry, 'additional_info'):
+        return []
+
+    additional_info: AdditionalRegistrationInfo = registration_entry.additional_info
+    if additional_info.wants_display_space != YesNo.yes:
+        return []
+
+    return [
+        f"Table in vendors' emporium: {additional_info.num_display_space_days} days"
+    ]
+
+
 class ChargesSummary(TypedDict):
     charges: list[ChargeInfo]
     work_study_scholarship_amount: int
@@ -201,6 +214,9 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
         charges.append(add_on_class_charge)
 
     charges += get_housing_charges(registration_entry)
+
+    if (vendor_table_charge := get_vendor_table_charge(registration_entry)) is not None:
+        charges.append(vendor_table_charge)
 
     if (tshirts_charge := get_tshirts_charge(registration_entry)) is not None:
         charges.append(tshirts_charge)
@@ -421,6 +437,21 @@ def _room_and_board_charge(
         })
 
     return charges
+
+
+def get_vendor_table_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
+    if not hasattr(registration_entry, 'additional_info'):
+        return None
+
+    additional_info: AdditionalRegistrationInfo = registration_entry.additional_info
+    conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
+
+    if additional_info.wants_display_space == YesNo.yes:
+        num_days = additional_info.num_display_space_days
+        return {
+            'display_name': f"Table in vendor's emporium, {num_days} days",
+            'amount': num_days * conclave_config.vendor_table_cost_per_day,
+        }
 
 
 def get_tshirts_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:

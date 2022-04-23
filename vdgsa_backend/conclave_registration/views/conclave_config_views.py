@@ -70,6 +70,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'late_registration_fee',
             'housing_subsidy_amount',
             'canadian_discount_percent',
+            'vendor_table_cost_per_day',
         ]
 
         labels = {

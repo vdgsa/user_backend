@@ -100,6 +100,8 @@ class ConclaveRegistrationConfig(models.Model):
     housing_subsidy_amount = models.IntegerField(blank=True, default=150)
     canadian_discount_percent = models.IntegerField(blank=True, default=5)
 
+    vendor_table_cost_per_day = models.IntegerField(blank=True, default=25)
+
     @property
     def is_open(self) -> bool:
         return self.phase in [RegistrationPhase.open, RegistrationPhase.late]
@@ -309,6 +311,7 @@ class AdditionalRegistrationInfo(models.Model):
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
+    num_display_space_days = models.IntegerField(default=6)
 
     liability_release = models.BooleanField()
     covid_policy = models.BooleanField()
