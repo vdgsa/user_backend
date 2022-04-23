@@ -338,30 +338,33 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
 def get_housing_charges(registration_entry: RegistrationEntry) -> list[ChargeInfo]:
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
     if not hasattr(registration_entry, 'housing'):
-        return None
+        return []
     housing: Housing = registration_entry.housing
 
     charges: list[ChargeInfo] = []
 
-    match(housing.room_type):
-        case HousingRoomType.single:
-            charges += _room_and_board_charge(
-                housing,
-                conclave_config,
-                formatted_room_type='Single Room',
-                early_arrival_room_rate=conclave_config.single_room_early_arrival_per_night_cost,
-                per_night_room_rate=conclave_config.single_room_per_night_cost,
-                full_week_room_rate=conclave_config.single_room_full_week_cost,
-            )
-        case HousingRoomType.double:
-            charges += _room_and_board_charge(
-                housing,
-                conclave_config,
-                formatted_room_type='Double Room',
-                early_arrival_room_rate=conclave_config.double_room_early_arrival_per_night_cost,
-                per_night_room_rate=conclave_config.double_room_per_night_cost,
-                full_week_room_rate=conclave_config.double_room_full_week_cost,
-            )
+    if registration_entry.program != Program.faculty_guest_other:
+        match(housing.room_type):
+            case HousingRoomType.single:
+                charges += _room_and_board_charge(
+                    housing,
+                    conclave_config,
+                    formatted_room_type='Single Room',
+                    early_arrival_room_rate=(
+                        conclave_config.single_room_early_arrival_per_night_cost),
+                    per_night_room_rate=conclave_config.single_room_per_night_cost,
+                    full_week_room_rate=conclave_config.single_room_full_week_cost,
+                )
+            case HousingRoomType.double:
+                charges += _room_and_board_charge(
+                    housing,
+                    conclave_config,
+                    formatted_room_type='Double Room',
+                    early_arrival_room_rate=(
+                        conclave_config.double_room_early_arrival_per_night_cost),
+                    per_night_room_rate=conclave_config.double_room_per_night_cost,
+                    full_week_room_rate=conclave_config.double_room_full_week_cost,
+                )
 
     if housing.is_bringing_guest_to_banquet == YesNo.yes:
         charges.append({
