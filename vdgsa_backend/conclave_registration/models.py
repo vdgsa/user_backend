@@ -41,6 +41,7 @@ class ConclaveRegistrationConfig(models.Model):
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
     landing_page_markdown = models.TextField(blank=True)
+    instruments_page_markdown = models.TextField(blank=True)
 
     liability_release_text = models.TextField(blank=True)
     covid_policy_markdown = models.TextField(blank=True)
