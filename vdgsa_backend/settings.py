@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List
 
 import stripe  # type: ignore
+from bleach.sanitizer import ALLOWED_ATTRIBUTES
 from django.urls.base import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -175,6 +176,13 @@ MARKDOWNIFY = {
             'strong',
             'ul',
             'br',
+        ],
+        "WHITELIST_ATTRS": {
+            **ALLOWED_ATTRIBUTES,
+            'a': ALLOWED_ATTRIBUTES.get('a') + ['target']
+        },
+        "MARKDOWN_EXTENSIONS": [
+            'markdown.extensions.attr_list',
         ]
     }
 }
