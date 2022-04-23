@@ -400,6 +400,8 @@ def _room_and_board_charge(
     per_night_room_rate: int,
     full_week_room_rate: int
 ) -> list[ChargeInfo]:
+    registration_entry: RegistrationEntry = housing.registration_entry
+
     arrival_date = datetime.strptime(
         housing.arrival_day, conclave_config.arrival_date_format
     ).date().replace(year=conclave_config.year)
@@ -420,8 +422,10 @@ def _room_and_board_charge(
     # Note that this will also cause superusers to be considered board
     # members, but there are only a couple of superusers, so this probably
     # won't be an issue.
-    is_board_member = housing.registration_entry.user.has_perm('board_member')
-    if num_early_arrival_nights != 0 and not is_board_member:
+    is_board_member = registration_entry.user.has_perm('accounts.board_member')
+    if (num_early_arrival_nights != 0
+            and not is_board_member
+            and not registration_entry.is_applying_for_work_study):
         charges.append({
             'display_name': (
                 f'Early Arrival: {formatted_room_type}, {num_early_arrival_nights} night(s)'
