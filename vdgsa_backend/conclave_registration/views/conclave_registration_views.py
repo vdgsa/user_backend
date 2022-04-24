@@ -1246,6 +1246,7 @@ def send_confirmation_email(registration_entry: RegistrationEntry) -> None:
             registration_entry.user.username,
             'conclave.manager@vdgsa.org',
             'conclave.manager@gmail.com',
+            'treasurer@vdgsa.org',
         ],
         message=_render_confirmation_email(registration_entry)
     )

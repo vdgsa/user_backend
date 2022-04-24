@@ -8,7 +8,13 @@
 
 <div>
   <a href="{% url 'download-registration-entries' conclave_config_pk=conclave_config.pk %}" download>
-    Download CSV
+    Download Registration Entries CSV
+  </a>
+</div>
+
+<div>
+  <a href="{% url 'download-class-first-choices' conclave_config_pk=conclave_config.pk %}" download>
+    Download Class First Choices CSV
   </a>
 </div>
 

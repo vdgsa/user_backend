@@ -187,9 +187,6 @@ def get_classes_by_period(
     *,
     program: Program | None = None
 ) -> dict[int, QuerySet[Class]]:
-    # classes_by_period: dict[int, list[Class]] = {
-
-    # }
     queryset = Class.objects.filter(conclave_config=conclave_config_pk)
     if program == Program.beginners:
         queryset = queryset.filter(Q(offer_to_beginners=True) | Q(period=Period.fourth))
@@ -280,7 +277,7 @@ class RegistrationEntry(models.Model):
 
     @property
     def is_finalized(self) -> bool:
-        return self.payment_info is not None and self.payment_info.stripe_payment_method_id != ''
+        return hasattr(self, 'payment_info') and self.payment_info.stripe_payment_method_id != ''
 
 
 class AdditionalRegistrationInfo(models.Model):
