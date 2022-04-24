@@ -458,7 +458,11 @@ def get_vendor_table_charge(registration_entry: RegistrationEntry) -> ChargeInfo
         num_days = additional_info.num_display_space_days
         return {
             'display_name': f"Table in vendor's emporium, {num_days} days",
-            'amount': num_days * conclave_config.vendor_table_cost_per_day,
+            'amount': (
+                num_days * conclave_config.vendor_table_cost_per_day
+                if registration_entry.program == Program.non_playing_attendee
+                else 0
+            ),
         }
 
 
