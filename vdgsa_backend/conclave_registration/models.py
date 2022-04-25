@@ -1,6 +1,6 @@
 from __future__ import annotations
-from datetime import datetime, date
 
+from datetime import date, datetime
 from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
