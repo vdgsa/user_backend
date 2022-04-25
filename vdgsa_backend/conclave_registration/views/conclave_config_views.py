@@ -7,7 +7,7 @@ from typing import Any, Counter
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.forms import widgets
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -201,6 +201,7 @@ class ListRegistrationEntriesView(LoginRequiredMixin, UserPassesTestMixin, ListV
             registration_entry__conclave_config=self.conclave_config)
         for item in tshirt_objs:
             tshirt_size_counts.update([item.tshirt1, item.tshirt2])
+        tshirt_size_counts.pop('', None)
 
         program_counts = Counter()
         for entry in self.conclave_config.registration_entries.all():
