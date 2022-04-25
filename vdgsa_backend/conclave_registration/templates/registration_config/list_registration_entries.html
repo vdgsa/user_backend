@@ -18,6 +18,23 @@
   </a>
 </div>
 
+<div class="mt-3"><b>Stats</b></div>
+<div># of Registrations: {{stats.num_registrations}}</div>
+<div>Program Counts:</div>
+<ul>
+  {% for program, count in stats.program_counts.items %}
+  <li>{{program}}: {{count}}</li>
+  {% endfor %}
+</ul>
+<div># of Single Rooms: {{stats.num_single_rooms}}</div>
+<div># of Double Rooms: {{stats.num_double_rooms}}</div>
+<div>T-Shirt Orders:</div>
+<ul>
+  {% for size, count in stats.tshirt_size_counts.items %}
+  <li>{{size}}: {{count}}</li>
+  {% endfor %}
+</ul>
+
 <table class="table">
   <thead>
     <tr>

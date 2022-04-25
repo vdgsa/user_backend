@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import csv
 import tempfile
-from typing import Any
+from typing import Any, Counter
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
+from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.forms import widgets
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -17,7 +18,8 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from django.views.generic.base import View
 
 from vdgsa_backend.conclave_registration.models import (
-    Class, ConclaveRegistrationConfig, Period, RegistrationEntry, get_classes_by_period
+    Class, ConclaveRegistrationConfig, Housing, HousingRoomType, Period, RegistrationEntry,
+    TShirts, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.views.permissions import is_conclave_team
 
@@ -181,7 +183,35 @@ class ListRegistrationEntriesView(LoginRequiredMixin, UserPassesTestMixin, ListV
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['conclave_config'] = self.conclave_config
+        context['stats'] = self.get_stats()
         return context
+
+    def get_stats(self) -> dict[str, object]:
+        num_single_rooms = Housing.objects.filter(
+            registration_entry__conclave_config=self.conclave_config,
+            room_type=HousingRoomType.single
+        ).count()
+        num_double_rooms = Housing.objects.filter(
+            registration_entry__conclave_config=self.conclave_config,
+            room_type=HousingRoomType.double
+        ).count()
+
+        tshirt_size_counts = Counter()
+        tshirt_objs = TShirts.objects.filter(
+            registration_entry__conclave_config=self.conclave_config)
+        for item in tshirt_objs:
+            tshirt_size_counts.update([item.tshirt1, item.tshirt2])
+
+        program_counts = Counter()
+        for entry in self.conclave_config.registration_entries.all():
+            program_counts.update([entry.program])
+        return {
+            'num_registrations': self.conclave_config.registration_entries.count(),
+            'num_single_rooms': num_single_rooms,
+            'num_double_rooms': num_double_rooms,
+            'tshirt_size_counts': dict(tshirt_size_counts),
+            'program_counts': dict(program_counts),
+        }
 
     def test_func(self) -> bool | None:
         return is_conclave_team(self.request.user)
