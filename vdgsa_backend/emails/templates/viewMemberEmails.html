@@ -2,12 +2,16 @@
     <head></head>
     <body>
     <h1>View Membership expiring emails.</h1>
-        <div class="">Number of Days: {{num_days}}</div>
-        {% for user in expiring_members %}
+        {% for result in results %}
+            <div class="">{{ result }}</div>
+        {% endfor %}
+
+
+        {% comment %} {% for user in expiring_members %}
             <div class="">{{ user.email }}</div>
         {% endfor %}
         {% for email in emails %}
            <div class="">{{ email.alternatives | safe }}</div>
-        {% endfor %}
+        {% endfor %} {% endcomment %}
     </body>
 </html>

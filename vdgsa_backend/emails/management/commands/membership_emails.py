@@ -9,4 +9,4 @@ class Command(BaseCommand):
 
         expemails = ExpiringEmails()
         expemails.runJob()
-        self.stdout.write(self.style.SUCCESS('Successfully sent email'))
+        self.stdout.write(self.style.SUCCESS('Successfully sent emails'))
