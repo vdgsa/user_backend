@@ -1,35 +1,3 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@ponticello 
-vdgsa
-/
-user_backend
-Public
-Code
-Issues
-2
-Pull requests
-1
-Actions
-Projects
-1
-Wiki
-Security
-Insights
-Settings
-user_backend/vdgsa_backend/rental_viols/tests/test_views/test_rental_viewer_view.py /
-@ponticello
-ponticello Custodian detail - Viol status fix
-Latest commit 7efa757 on Feb 5
- History
- 1 contributor
-119 lines (102 sloc)  3.53 KB
-   
 import csv
 import tempfile
 import time
@@ -149,16 +117,3 @@ def _test_data_init(test_obj: _TestData) -> None:
     test_obj.rental_viewer.user_permissions.add(
         Permission.objects.get(codename='rental_viewer')
     )
-© 2022 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
-Loading complete
