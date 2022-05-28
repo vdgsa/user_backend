@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import List
 
 import stripe  # type: ignore
-from bleach.sanitizer import ALLOWED_ATTRIBUTES
+from bleach.sanitizer import ALLOWED_ATTRIBUTES  # type: ignore
 from django.urls.base import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

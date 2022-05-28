@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import itertools
 import json
-from typing import Any, Dict
+from typing import Any, Dict, get_args
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http.response import HttpResponse
@@ -14,7 +14,9 @@ from vdgsa_backend.conclave_registration.models import (
     AdditionalRegistrationInfo, ConclaveRegistrationConfig, Housing, Period, RegistrationEntry,
     WorkStudyApplication, YesNo
 )
-from vdgsa_backend.conclave_registration.summary_and_charges import get_charges_summary
+from vdgsa_backend.conclave_registration.summary_and_charges import (
+    ChargeCSVLabel, get_charges_summary
+)
 
 from .permissions import is_conclave_team
 
@@ -54,7 +56,6 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             'program': entry.program,
             'is_late': entry.is_late,
             'stripe_payment_method_id': entry.payment_info.stripe_payment_method_id,
-            'charges': json.dumps(get_charges_summary(entry), indent=4),
 
             'INSTRUMENTS': '',
             **instruments_to_dict(entry),
@@ -73,13 +74,17 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
 
             'EXTRAS': '',
             **extras_to_dict(entry),
+
+            'CHARGES': '',
+            **charges_to_dict(entry),
+            'charges': json.dumps(get_charges_summary(entry), indent=4),
         })
 
     return response
 
 
-def user_info_to_dict(entry: RegistrationEntry) -> dict[str, str]:
-    result = {
+def user_info_to_dict(entry: RegistrationEntry) -> dict[str, object]:
+    result: dict[str, object] = {
         'email': entry.user.username,
         'first_name': entry.user.first_name,
         'last_name': entry.user.last_name,
@@ -202,7 +207,7 @@ def work_study_to_dict(entry: RegistrationEntry) -> Dict[str, str]:
     }
 
 
-def housing_to_dict(entry: RegistrationEntry) -> dict[str, str]:
+def housing_to_dict(entry: RegistrationEntry) -> dict[str, object]:
     if not hasattr(entry, 'housing'):
         return {}
 
@@ -230,7 +235,7 @@ def housing_to_dict(entry: RegistrationEntry) -> dict[str, str]:
     }
 
 
-def extras_to_dict(entry: RegistrationEntry) -> dict[str, str]:
+def extras_to_dict(entry: RegistrationEntry) -> dict[str, object]:
     if not hasattr(entry, 'tshirts'):
         return {}
 
@@ -238,6 +243,18 @@ def extras_to_dict(entry: RegistrationEntry) -> dict[str, str]:
         'tshirt1': entry.tshirts.tshirt1,
         'tshirt2': entry.tshirts.tshirt2,
         'donation': entry.tshirts.donation,
+    }
+
+
+def charges_to_dict(entry: RegistrationEntry) -> dict[str, float]:
+    charges_summary = get_charges_summary(entry)
+    return {
+        **{charge['csv_label']: charge['amount'] for charge in charges_summary['charges']},
+        'Work Study Scholarship': charges_summary['work_study_scholarship_amount'],
+        'Housing Subsidy?': charges_summary['apply_housing_subsidy'],
+        'Canadian Discount?': charges_summary['apply_canadian_discount'],
+        'Subtotal': charges_summary['subtotal'],
+        'Total': charges_summary['total'],
     }
 
 
@@ -275,7 +292,6 @@ CSV_HEADERS = [
     'program',
     'is_late',
     'stripe_payment_method_id',
-    'charges',
 
     'INSTRUMENTS',
     'instruments_bringing',
@@ -340,6 +356,15 @@ CSV_HEADERS = [
     'tshirt1',
     'tshirt2',
     'donation',
+
+    'CHARGES',
+    *get_args(ChargeCSVLabel),
+    'Work Study Scholarship',
+    'Housing Subsidy?',
+    'Canadian Discount?',
+    'Subtotal',
+    'Total',
+    'charges',
 ]
 
 # -----------------------------------------------------------------------------

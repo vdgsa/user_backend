@@ -8,7 +8,7 @@ on the "Summary" page and in confirmation emails.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Final, TypedDict
+from typing import Final, Literal, TypedDict
 
 from vdgsa_backend.conclave_registration.models import (
     NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, BeginnerInstrumentInfo,
@@ -26,6 +26,7 @@ class RegistrationSummary(TypedDict):
     classes: ClassSummary | None
     housing: list[str]  # Housing info summary lines to display verbatim
     tshirts: list[str]  # T-shirt sizes
+    vendors: list[str]
 
 
 class ClassSummary(TypedDict):
@@ -36,7 +37,7 @@ class ClassSummary(TypedDict):
 
 def get_registration_summary(registration_entry: RegistrationEntry) -> RegistrationSummary:
     return {
-        'program': registration_entry.program,
+        'program': Program(registration_entry.program),
         'applying_for_work_study': registration_entry.is_applying_for_work_study,
         'instruments': get_instruments_summary(registration_entry),
         'classes': get_class_summary(registration_entry),
@@ -59,6 +60,7 @@ def get_instruments_summary(registration_entry: RegistrationEntry) -> list[str]:
                 str(instrument)
                 for instrument in registration_entry.instruments_bringing.all()
             ]
+    assert False  # suppress mypy warning
 
 
 def get_class_summary(registration_entry: RegistrationEntry) -> ClassSummary | None:
@@ -77,7 +79,7 @@ def get_class_summary(registration_entry: RegistrationEntry) -> ClassSummary | N
     ]
     per_period_prefs = _get_per_period_class_preferences(class_choices)
     freebie_prefs = per_period_prefs.pop(Period.fourth)
-    result = {
+    result: ClassSummary = {
         # Note: All three choices are required, so this filter should leave us with
         # three or zero choices in the list
         'flexible_class_preferences': [
@@ -121,7 +123,7 @@ def _instrument_to_str(instrument: InstrumentBringing | None) -> str:
 
 def get_housing_summary(registration_entry: RegistrationEntry) -> list[str]:
     if not hasattr(registration_entry, 'housing'):
-        return
+        return []
 
     housing: Housing = registration_entry.housing
     summary_items = [f'Room type: {HousingRoomType(housing.room_type).label}']
@@ -193,11 +195,25 @@ class ChargesSummary(TypedDict):
     apply_housing_subsidy: bool
     apply_canadian_discount: bool
     subtotal: int
-    total: int
+    total: float
+
+
+ChargeCSVLabel = Literal[
+    'Tuition',
+    'Add-On Classes',
+    'Early Arrival',
+    'Room and Board',
+    'Banquet Guest Fee',
+    'Vendor Table',
+    'T-Shirts',
+    'Donation',
+    'Late Registration Fee',
+]
 
 
 class ChargeInfo(TypedDict):
     display_name: str
+    csv_label: ChargeCSVLabel
     amount: int
 
 
@@ -227,6 +243,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if registration_entry.is_late:
         charges.append({
             'display_name': 'Late Registration Fee',
+            'csv_label': 'Late Registration Fee',
             'amount': conclave_config.late_registration_fee
         })
 
@@ -251,7 +268,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if apply_housing_subsidy:
         subtotal -= conclave_config.housing_subsidy_amount
 
-    total = subtotal
+    total: float = subtotal
     if apply_canadian_discount:
         total *= 1 - conclave_config.canadian_discount_percent / 100
         total = int(total)  # round down
@@ -277,21 +294,25 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
         case Program.regular:
             return {
                 'display_name': display_name,
+                'csv_label': 'Tuition',
                 'amount': conclave_config.regular_tuition
             }
         case Program.part_time:
             return {
                 'display_name': display_name,
+                'csv_label': 'Tuition',
                 'amount': conclave_config.part_time_tuition
             }
         case Program.consort_coop:
             return {
                 'display_name': display_name,
+                'csv_label': 'Tuition',
                 'amount': conclave_config.consort_coop_tuition
             }
         case Program.seasoned_players | Program.advanced_projects:
             return {
                 'display_name': display_name,
+                'csv_label': 'Tuition',
                 'amount': conclave_config.seasoned_players_tuition
             }
         case Program.beginners:
@@ -301,6 +322,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
             )
             return {
                 'display_name': display_name,
+                'csv_label': 'Tuition',
                 'amount': 0 if staying_off_campus else conclave_config.workshop_fee
             }
         case Program.faculty_guest_other:
@@ -308,6 +330,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
         case Program.non_playing_attendee:
             return {
                 'display_name': display_name,
+                'csv_label': 'Tuition',
                 'amount': conclave_config.workshop_fee
             }
         case _:
@@ -324,27 +347,32 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
         case Program.beginners if class_choices.num_non_freebie_classes == 1:
             return {
                 'display_name': '1 Add-On Class',
+                'csv_label': 'Add-On Classes',
                 'amount': conclave_config.beginners_extra_class_fee
             }
         case Program.beginners if class_choices.num_non_freebie_classes == 2:
             return {
                 'display_name': '2 Add-On Classes',
+                'csv_label': 'Add-On Classes',
                 'amount': conclave_config.beginners_two_extra_classes_fee
             }
         case Program.consort_coop if class_choices.num_non_freebie_classes == 1:
             return {
                 'display_name': '1 Add-On Class',
+                'csv_label': 'Add-On Classes',
                 'amount': conclave_config.consort_coop_one_extra_class_fee
             }
         case Program.consort_coop if class_choices.num_non_freebie_classes == 2:
             return {
                 'display_name': '2 Add-On Classes',
+                'csv_label': 'Add-On Classes',
                 'amount': conclave_config.consort_coop_two_extra_classes_fee
             }
         case Program.seasoned_players | Program.advanced_projects \
                 if class_choices.num_non_freebie_classes == 1:
             return {
                 'display_name': '1 Add-On Class',
+                'csv_label': 'Add-On Classes',
                 'amount': conclave_config.seasoned_players_extra_class_fee
             }
 
@@ -385,6 +413,7 @@ def get_housing_charges(registration_entry: RegistrationEntry) -> list[ChargeInf
     if housing.is_bringing_guest_to_banquet == YesNo.yes:
         charges.append({
             'display_name': 'Banquet Guest Fee',
+            'csv_label': 'Banquet Guest Fee',
             'amount': conclave_config.banquet_guest_fee
         })
 
@@ -430,17 +459,20 @@ def _room_and_board_charge(
             'display_name': (
                 f'Early Arrival: {formatted_room_type}, {num_early_arrival_nights} night(s)'
             ),
+            'csv_label': 'Early Arrival',
             'amount': early_arrival_room_rate * num_early_arrival_nights
         })
 
     if num_nights == full_week_num_nights:
         charges.append({
             'display_name': f'Full Week Room and Board: {formatted_room_type}',
+            'csv_label': 'Room and Board',
             'amount': full_week_room_rate
         })
     else:
         charges.append({
             'display_name': f'{formatted_room_type}, {num_nights} night(s)',
+            'csv_label': 'Room and Board',
             'amount': per_night_room_rate * num_nights
         })
 
@@ -458,12 +490,15 @@ def get_vendor_table_charge(registration_entry: RegistrationEntry) -> ChargeInfo
         num_days = additional_info.num_display_space_days
         return {
             'display_name': f"Table in vendor's emporium, {num_days} days",
+            'csv_label': 'Vendor Table',
             'amount': (
                 num_days * conclave_config.vendor_table_cost_per_day
                 if registration_entry.program == Program.non_playing_attendee
                 else 0
             ),
         }
+    else:
+        return None
 
 
 def get_tshirts_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
@@ -478,6 +513,7 @@ def get_tshirts_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
 
     return {
         'display_name': f'T-Shirts: {num_tshirts}',
+        'csv_label': 'T-Shirts',
         'amount': num_tshirts * conclave_config.tshirt_price
     }
 
@@ -492,5 +528,6 @@ def get_donation_charge(registration_entry: RegistrationEntry) -> ChargeInfo | N
 
     return {
         'display_name': 'Donation',
+        'csv_label': 'Donation',
         'amount': donation
     }
