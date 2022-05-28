@@ -38,7 +38,7 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
 
     # IMPORTANT: Update CSV_HEADERS below if you
     # update the CSV dicts.
-    writer = csv.DictWriter(response, fieldnames=CSV_HEADERS)
+    writer = csv.DictWriter(response, fieldnames=CSV_HEADERS, extrasaction='ignore')
     writer.writeheader()
 
     entries = RegistrationEntry.objects.filter(
