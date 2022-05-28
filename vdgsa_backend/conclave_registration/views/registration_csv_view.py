@@ -15,7 +15,7 @@ from vdgsa_backend.conclave_registration.models import (
     WorkStudyApplication, YesNo
 )
 from vdgsa_backend.conclave_registration.summary_and_charges import (
-    ChargeCSVLabel, get_charges_summary
+    CHARGE_CSV_LABELS, get_charges_summary
 )
 
 from .permissions import is_conclave_team
@@ -248,14 +248,19 @@ def extras_to_dict(entry: RegistrationEntry) -> dict[str, object]:
 
 def charges_to_dict(entry: RegistrationEntry) -> dict[str, float]:
     charges_summary = get_charges_summary(entry)
-    return {
-        **{charge['csv_label']: charge['amount'] for charge in charges_summary['charges']},
+    result = {
+        **{label: '' for label in CHARGE_CSV_LABELS},
         'Work Study Scholarship': charges_summary['work_study_scholarship_amount'],
         'Housing Subsidy?': charges_summary['apply_housing_subsidy'],
         'Canadian Discount?': charges_summary['apply_canadian_discount'],
         'Subtotal': charges_summary['subtotal'],
         'Total': charges_summary['total'],
     }
+
+    for charge in charges_summary['charges']:
+        result[charge['csv_label']] = charge['amount']
+
+    return result
 
 
 # IMPORTANT: Update this list when you update the CSV dicts.
@@ -358,7 +363,7 @@ CSV_HEADERS = [
     'donation',
 
     'CHARGES',
-    *get_args(ChargeCSVLabel),
+    *CHARGE_CSV_LABELS,
     'Work Study Scholarship',
     'Housing Subsidy?',
     'Canadian Discount?',

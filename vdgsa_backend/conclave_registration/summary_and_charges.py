@@ -8,7 +8,7 @@ on the "Summary" page and in confirmation emails.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Final, Literal, TypedDict
+from typing import Final, Literal, TypedDict, get_args
 
 from vdgsa_backend.conclave_registration.models import (
     NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, BeginnerInstrumentInfo,
@@ -209,6 +209,7 @@ ChargeCSVLabel = Literal[
     'Donation',
     'Late Registration Fee',
 ]
+CHARGE_CSV_LABELS: Final = get_args(ChargeCSVLabel)
 
 
 class ChargeInfo(TypedDict):
