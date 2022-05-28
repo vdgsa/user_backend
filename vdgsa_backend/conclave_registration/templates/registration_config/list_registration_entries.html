@@ -19,13 +19,17 @@
 </div>
 
 <div class="mt-3"><b>Stats</b></div>
-<div># of Registrations: {{stats.num_registrations}}</div>
+<div>
+  # of Registrations: {{stats.num_registrations}} total,
+  {{stats.num_finalized_registrations}} finalized
+</div>
 <div>Program Counts:</div>
 <ul>
   {% for program, count in stats.program_counts.items %}
   <li>{{program}}: {{count}}</li>
   {% endfor %}
 </ul>
+<div># of Work-Study Applications: {{stats.num_work_study_applications}}</div>
 <div># of Single Rooms: {{stats.num_single_rooms}}</div>
 <div># of Double Rooms: {{stats.num_double_rooms}}</div>
 <div>T-Shirt Orders:</div>

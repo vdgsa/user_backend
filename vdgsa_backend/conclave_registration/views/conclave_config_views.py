@@ -19,7 +19,7 @@ from django.views.generic.base import View
 
 from vdgsa_backend.conclave_registration.models import (
     Class, ConclaveRegistrationConfig, Housing, HousingRoomType, Period, RegistrationEntry,
-    TShirts, get_classes_by_period
+    TShirts, WorkStudyApplication, YesNo, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.views.permissions import is_conclave_team
 
@@ -208,6 +208,14 @@ class ListRegistrationEntriesView(LoginRequiredMixin, UserPassesTestMixin, ListV
             program_counts.update([entry.program])
         return {
             'num_registrations': self.conclave_config.registration_entries.count(),
+            'num_finalized_registrations': len([
+                entry for entry in self.conclave_config.registration_entries.all()
+                if entry.is_finalized
+            ]),
+            'num_work_study_applications': WorkStudyApplication.objects.filter(
+                registration_entry__conclave_config=self.conclave_config,
+                wants_work_study=YesNo.yes
+            ).count(),
             'num_single_rooms': num_single_rooms,
             'num_double_rooms': num_double_rooms,
             'tshirt_size_counts': dict(tshirt_size_counts),
