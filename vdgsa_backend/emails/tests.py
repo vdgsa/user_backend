@@ -7,7 +7,8 @@ from django.test import TestCase
 from django.utils import timezone
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
-from vdgsa_backend.emails.views import (ExpiringEmails, EXPIRING_THIS_MONTH, EXPIRED_LAST_MONTH, EXPIRED_PAST)
+from vdgsa_backend.emails.views import (ExpiringEmails, subtract_months, EXPIRING_THIS_MONTH,
+                                        EXPIRED_LAST_MONTH, EXPIRED_PAST)
 
 
 class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
@@ -41,23 +42,24 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
 
     def test_expiring_emails(self) -> None:
         user = User.objects.create_user('expired-year-ago@user.user', password='fakefakefake')
+
         subscription = MembershipSubscription.objects.create(
             owner=user,
             membership_type=MembershipType.regular,
             valid_until=timezone.now() - timezone.timedelta(days=365)
         )
-        user = User.objects.create_user('6-month-ago@user.user', password='fakefakefake')
+        user = User.objects.create_user('expired-6 months-ago@user.user', password='fakefakefake')
         subscription = MembershipSubscription.objects.create(
             owner=user,
             membership_type=MembershipType.regular,
-            valid_until=timezone.now() - timezone.timedelta(days=180)
+            valid_until=subtract_months(timezone.now(), 6)
         )
         user = User.objects.create_user('expired-month-ago@user.user',
                                         password='fakefakefake')
         subscription = MembershipSubscription.objects.create(
             owner=user,
             membership_type=MembershipType.regular,
-            valid_until=timezone.now() - timezone.timedelta(days=28)
+            valid_until=subtract_months(timezone.now(), 1)
         )
         user = User.objects.create_user('10days-ago@user.user', password='fakefakefake')
         subscription = MembershipSubscription.objects.create(
@@ -83,11 +85,11 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
             membership_type=MembershipType.regular,
             valid_until=timezone.now() + timezone.timedelta(days=32)
         )
-        user = User.objects.create_user('expires35days@user.user', password='fakefakefake')
+        user = User.objects.create_user('expiresin35days@user.user', password='fakefakefake')
         subscription = MembershipSubscription.objects.create(
             owner=user,
             membership_type=MembershipType.regular,
-            valid_until=timezone.now() + timezone.timedelta(days=45)
+            valid_until=timezone.now() + timezone.timedelta(days=35)
         )
         user = User.objects.create_user('next0year@user.user', password='fakefakefake')
         subscription = MembershipSubscription.objects.create(
@@ -95,6 +97,11 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
             membership_type=MembershipType.regular,
             valid_until=timezone.now() + timezone.timedelta(days=365)
         )
+
+        allUsers = User.objects.all()
+        for member in allUsers:
+            print('all users: ', member.email,
+                  member.subscription.valid_until.strftime("%m/%d/%Y"))
 
         expemails = ExpiringEmails()
         emailcounter = 0
