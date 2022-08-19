@@ -1,14 +1,10 @@
-from datetime import date, timedelta
-
-from django.core.exceptions import ValidationError
-from django.db.models import Count, F, IntegerField, Max, Q
-from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
 
 from vdgsa_backend.accounts.models import MembershipSubscription, MembershipType, User
-from vdgsa_backend.emails.views import (ExpiringEmails, subtract_months, EXPIRING_THIS_MONTH,
-                                        EXPIRED_LAST_MONTH, EXPIRED_PAST)
+from vdgsa_backend.emails.views import (
+    EXPIRED_LAST_MONTH, EXPIRED_PAST, EXPIRING_THIS_MONTH, ExpiringEmails, subtract_months
+)
 
 
 class MembershipSubscriptionExpiredEmailsTestCase(TestCase):

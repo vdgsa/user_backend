@@ -1,19 +1,14 @@
 from __future__ import annotations
-import calendar
-from html.parser import HTMLParser
 
-import json
-import string
-from datetime import date, datetime, timedelta
-from tkinter import W
-from turtle import title
-from typing import Any, Dict, Final, Iterable, List
+import calendar
+from datetime import datetime
+from html.parser import HTMLParser
+from typing import Any, Final, Iterable
 from urllib import request
-from urllib.parse import urlencode
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.mail import EmailMultiAlternatives, send_mail
-from django.db.models import Count, F, IntegerField, Max, Q
+from django.core.mail import EmailMultiAlternatives
+from django.db.models import Q
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import render
@@ -21,13 +16,9 @@ from django.template.loader import get_template
 from django.urls.base import reverse
 from django.utils import timezone
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 
-from vdgsa_backend.accounts.models import (
-    MembershipSubscription, MembershipType, PendingMembershipSubscriptionPurchase, User
-)
+from vdgsa_backend.accounts.models import MembershipType, User
 from vdgsa_backend.accounts.views.permissions import is_membership_secretary
-
 
 FROM_EMAIL: Final = 'membership@vdgsa.org'
 BCC_TO_EMAIL: Final = 'membership@vdgsa.org'
@@ -74,10 +65,12 @@ class ExpiringEmails():
         # print('subtract_months ', months, subtract_months(timezone.now(), months))
 
         targetDate = subtract_months(timezone.now(), months)
-        expiring_members = User.objects.filter(~Q(owned_subscription__membership_type=MembershipType.lifetime)
-                                               & ~Q(owned_subscription__membership_type=MembershipType.complementary)
-                                               & Q(owned_subscription__valid_until__month=targetDate.month)
-                                               & Q(owned_subscription__valid_until__year=targetDate.year))
+        expiring_members = User.objects.filter(
+            ~Q(owned_subscription__membership_type=MembershipType.lifetime)
+            & ~Q(owned_subscription__membership_type=MembershipType.complementary)
+            & Q(owned_subscription__valid_until__month=targetDate.month)
+            & Q(owned_subscription__valid_until__year=targetDate.year)
+        )
         # print(expiring_members.query)
         # print('expiring_members', expiring_members)
         return expiring_members
