@@ -41,6 +41,23 @@
         </a>
         {% endif %}
 
+        {% if registration_entry.program == 'advanced_projects' %}
+        <a {% url 'conclave-advanced-projects' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Advanced Projects
+            {% if registration_entry.advanced_projects %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        {% endif %}
+
         <a {% url 'conclave-basic-info' conclave_reg_pk=registration_entry.pk as url %}
           href="{{url}}"
           class="
@@ -50,7 +67,7 @@
         >
           <div class="d-flex justify-content-between">
             Additional Info
-            {% if registration_entry.basic_info %}
+            {% if registration_entry.additional_info %}
             <i class="bi bi-check"></i>
             {% endif %}
           </div>
@@ -73,11 +90,18 @@
         </a>
         {% endif %}
 
-        <!-- We don't need room and board until 2022 -->
-        <!-- <a
+        <a
           href="{% url 'conclave-housing' conclave_reg_pk=registration_entry.pk %}"
           class="list-group-item list-group-item-action"
-        >Room and Board</a> -->
+        >
+          <div class="d-flex justify-content-between">
+            Housing
+            {% if registration_entry.housing %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+
         <a {% url 'conclave-tshirts' conclave_reg_pk=registration_entry.pk as url %}
           href="{{url}}"
           class="
@@ -116,8 +140,17 @@
         {% if registration_entry.is_finalized and not perms.conclave_registration.conclave_team %}
           <div data-testid="registration_finalized_message">
             Your registration has been finalized. If you need to change something,
-            please contact the Conclave Team.
+            please contact the Conclave Team. Below is a summary of your registration.
           </div>
+          <div id="registration-summary" class="mt-3">
+          </div>
+          <script>
+            $().ready(function() {
+              $.get("{% url 'conclave-registration-summary-current-user' conclave_config_pk=conclave_config.pk %}").then(function(data) {
+                $('#registration-summary').html(data);
+              });
+            });
+          </script>
         {% elif perms.conclave_registration.conclave_team or conclave_config.is_open %}
           {% if conclave_config.phase == 'late' %}
           {% endif %}

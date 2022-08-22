@@ -44,7 +44,7 @@ def add_classes(field: Union[BoundField, BoundWidget], classes: str) -> SafeText
     Example usage: {{form.some_field | add_classes:"form-control"}}
     """
     if isinstance(field, BoundField):
-        return field.as_widget(attrs={'class': field.css_classes(classes)})  # type: ignore
+        return field.as_widget(attrs={'class': field.css_classes(classes)})
 
     class_str = field.data['attrs'].get('class', '')
     class_str += classes

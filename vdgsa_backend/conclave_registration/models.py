@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from datetime import date, datetime
 from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.utils.functional import cached_property
 
 from vdgsa_backend.accounts.models import User
@@ -17,6 +20,17 @@ class RegistrationPhase(models.TextChoices):
     closed = 'closed'
 
 
+NOT_ATTENDING_BANQUET_SENTINEL: Final[str] = 'not_attending'
+
+
+def _arrival_and_departure_date_options_validator(value: str) -> None:
+    for item in value.splitlines():
+        try:
+            datetime.strptime(item, ConclaveRegistrationConfig.arrival_date_format)
+        except ValueError:
+            raise ValidationError(f'Improperly-formatted date: {item}')
+
+
 class ConclaveRegistrationConfig(models.Model):
     year = models.IntegerField(unique=True)
     phase = models.CharField(
@@ -26,7 +40,11 @@ class ConclaveRegistrationConfig(models.Model):
     )
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
-    archival_video_release_text = models.TextField(blank=True)
+    landing_page_markdown = models.TextField(blank=True)
+    instruments_page_markdown = models.TextField(blank=True)
+
+    liability_release_text = models.TextField(blank=True)
+    covid_policy_markdown = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
 
     first_period_time_label = models.CharField(max_length=255, blank=True)
@@ -34,7 +52,56 @@ class ConclaveRegistrationConfig(models.Model):
     third_period_time_label = models.CharField(max_length=255, blank=True)
     fourth_period_time_label = models.CharField(max_length=255, blank=True)
 
+    # Markdown text to go at the beginning of the housing form.
+    housing_form_top_markdown = models.TextField(blank=True)
+
+    early_arrival_date_options = models.TextField(
+        blank=True, validators=[_arrival_and_departure_date_options_validator]
+    )
+    arrival_date_options = models.TextField(
+        blank=True, validators=[_arrival_and_departure_date_options_validator]
+    )
+    departure_date_options = models.TextField(
+        blank=True, validators=[_arrival_and_departure_date_options_validator]
+    )
+    # Markdown text to go in the housing form just before the arrival/departure fields.
+    housing_form_pre_arrival_markdown = models.TextField(blank=True)
+
+    # Markdown text to go in the housing form just before the dietary needs fields.
+    dietary_needs_markdown = models.TextField(blank=True)
+    banquet_food_options = models.TextField(blank=True)
+
     tshirt_image_url = models.URLField(blank=True)
+
+    # Fees and such
+    regular_tuition = models.IntegerField(blank=True, default=0)
+    part_time_tuition = models.IntegerField(blank=True, default=0)
+    consort_coop_tuition = models.IntegerField(blank=True, default=0)
+    seasoned_players_tuition = models.IntegerField(blank=True, default=0)
+    # For non-playing attendees/on-campus beginners.
+    workshop_fee = models.IntegerField(blank=True, default=0)
+
+    beginners_extra_class_fee = models.IntegerField(blank=True, default=0)
+    beginners_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
+    consort_coop_one_extra_class_fee = models.IntegerField(blank=True, default=0)
+    consort_coop_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
+    seasoned_players_extra_class_fee = models.IntegerField(blank=True, default=0)
+
+    single_room_full_week_cost = models.IntegerField(blank=True, default=0)
+    double_room_full_week_cost = models.IntegerField(blank=True, default=0)
+    single_room_per_night_cost = models.IntegerField(blank=True, default=0)
+    double_room_per_night_cost = models.IntegerField(blank=True, default=0)
+    single_room_early_arrival_per_night_cost = models.IntegerField(blank=True, default=0)
+    double_room_early_arrival_per_night_cost = models.IntegerField(blank=True, default=0)
+    banquet_guest_fee = models.IntegerField(blank=True, default=0)
+
+    tshirt_price = models.IntegerField(blank=True, default=25)
+    late_registration_fee = models.IntegerField(blank=True, default=0)
+
+    housing_subsidy_amount = models.IntegerField(blank=True, default=150)
+    canadian_discount_percent = models.IntegerField(blank=True, default=5)
+
+    vendor_table_cost_per_day = models.IntegerField(blank=True, default=25)
 
     @property
     def is_open(self) -> bool:
@@ -42,6 +109,29 @@ class ConclaveRegistrationConfig(models.Model):
 
     # classes is the reverse lookup of a foreign key defined in Class
     # registration_entries is the reverse lookup of a foreign key defined in RegistrationEntry
+
+    arrival_date_format: Final = '%A %B %d'
+
+    @cached_property
+    def early_arrival_dates(self) -> list[date]:
+        return [
+            datetime.strptime(item, self.arrival_date_format).date().replace(year=self.year)
+            for item in self.early_arrival_date_options.splitlines()
+        ]
+
+    @cached_property
+    def arrival_dates(self) -> list[date]:
+        return [
+            datetime.strptime(item, self.arrival_date_format).date().replace(year=self.year)
+            for item in self.arrival_date_options.splitlines()
+        ]
+
+    @cached_property
+    def departure_dates(self) -> list[date]:
+        return [
+            datetime.strptime(item, self.arrival_date_format).date().replace(year=self.year)
+            for item in self.departure_date_options.splitlines()
+        ]
 
 
 class Period(models.IntegerChoices):
@@ -70,7 +160,7 @@ LEVEL_ORDERING: Final = dict((level, i) for i, level in enumerate(Level))
 
 class Class(models.Model):
     class Meta:
-        unique_together = ('name', 'period')
+        unique_together = ('conclave_config', 'name', 'period')
         order_with_respect_to = 'conclave_config'
 
     conclave_config = models.ForeignKey(
@@ -84,22 +174,29 @@ class Class(models.Model):
     instructor = models.CharField(max_length=255)
     description = models.TextField()
     notes = models.TextField(blank=True)
+    # Set to true to display the class as an add-on option for beginner
+    # registrants.
+    offer_to_beginners = models.BooleanField(blank=True, default=False)
 
     def __str__(self) -> str:
         return f'{self.instructor} | {self.name} | {self.level}'
 
 
-def get_classes_by_period(conclave_config_pk: int) -> dict[int, list[Class]]:
-    classes_by_period: dict[int, list[Class]] = {
-        Period.first: [],
-        Period.second: [],
-        Period.third: [],
-        Period.fourth: []
-    }
-    for class_ in Class.objects.filter(conclave_config=conclave_config_pk):
-        classes_by_period[class_.period].append(class_)
+def get_classes_by_period(
+    conclave_config_pk: int,
+    *,
+    program: Program | None = None
+) -> dict[int, QuerySet[Class]]:
+    queryset = Class.objects.filter(conclave_config=conclave_config_pk)
+    if program == Program.beginners:
+        queryset = queryset.filter(Q(offer_to_beginners=True) | Q(period=Period.fourth))
 
-    return classes_by_period
+    return {
+        Period.first: queryset.filter(period=Period.first),
+        Period.second: queryset.filter(period=Period.second),
+        Period.third: queryset.filter(period=Period.third),
+        Period.fourth: queryset.filter(period=Period.fourth)
+    }
 
 
 # =================================================================================================
@@ -118,23 +215,25 @@ class YesNoMaybe(models.TextChoices):
 
 
 class Program(models.TextChoices):
-    regular = 'regular', 'Regular Curriculum (part- and full-time)'
-    beginners = 'beginners', 'Introduction to the Viol (free)'
-    teen_beginners = 'teen_beginners', 'Teen Beginners (free)'
-    consort_coop = 'consort_coop', 'Consort Cooperative'
+    regular = 'regular', 'Regular Curriculum Full-time (2-3 classes + optional "Freebie")'
+    part_time = 'part_time', 'Regular Curriculum Part-time (1 class only)'
+    beginners = 'beginners', 'Beginning Viol (free to local attendees)'
+    consort_coop = 'consort_coop', 'Consort Co-op (CC 3+1 or CC 2+2)'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     advanced_projects = 'advanced_projects', 'Advanced Projects'
     faculty_guest_other = 'faculty_guest_other', 'Faculty'
-    # exhibitor = 'exhibitor', 'Vendors'
-    # non_playing_attendee = 'non_playing_attendee'
+    non_playing_attendee = 'non_playing_attendee', 'Non-playing Attendee'
 
 
-BEGINNER_PROGRAMS = [Program.beginners, Program.teen_beginners]
-ADVANCED_PROGRAMS = [Program.consort_coop, Program.seasoned_players, Program.advanced_projects]
+BEGINNER_PROGRAMS = [Program.beginners]
+FLEXIBLE_CLASS_SELECTION_PROGRAMS = [
+    Program.part_time,
+    Program.seasoned_players,
+    Program.advanced_projects,
+]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
-    # Program.exhibitor,
-    # Program.non_playing_attendee,
+    Program.non_playing_attendee,
 ]
 
 
@@ -160,132 +259,132 @@ class RegistrationEntry(models.Model):
         registrants must complete the class selection form even if
         they choose "No class" for all periods.
         Returns False for programs such as faculty/guest/other or
-        non-playing attendee that will never select classes.
+        non-playing attendee that will never select classes using
+        the regular class selection page.
         """
         return self.program not in NO_CLASS_PROGRAMS
 
     @property
-    def is_advanced_program(self) -> bool:
-        return self.program in ADVANCED_PROGRAMS
+    def uses_flexible_class_selection(self) -> bool:
+        return self.program in FLEXIBLE_CLASS_SELECTION_PROGRAMS
+
+    @property
+    def is_applying_for_work_study(self) -> bool:
+        return (
+            hasattr(self, 'work_study')
+            and self.work_study.wants_work_study == YesNo.yes
+        )
 
     @property
     def is_finalized(self) -> bool:
-        return self.payment_info is not None and self.payment_info.stripe_payment_method_id != ''
-
-    @property
-    def total_charges(self) -> int:
-        return self.tuition_charge + self.tshirts_charge + self.late_fee + self.donation
-
-    @property
-    def donation(self) -> int:
-        if not hasattr(self, 'tshirts'):
-            return 0
-
-        return self.tshirts.donation
-
-    @property
-    def total_minus_work_study(self) -> int:
-        return self.total_charges - self.tuition_charge
-
-    @property
-    def tuition_charge(self) -> int:
-        if self.program in NO_CLASS_PROGRAMS:
-            return 0
-
-        if self.program == Program.regular:
-            if self.regular_class_choices.num_classes_selected <= 1:
-                return 100
-            else:
-                return 200
-
-        if self.program in BEGINNER_PROGRAMS:
-            return 0 if self.regular_class_choices.num_classes_selected == 0 else 100
-
-        if self.program in ADVANCED_PROGRAMS:
-            return 100 if self.regular_class_choices.num_classes_selected == 0 else 200
-
-        return 100
-
-    @property
-    def late_fee(self) -> int:
-        return 25 if self.is_late else 0
-
-    @property
-    def num_tshirts(self) -> int:
-        if not hasattr(self, 'tshirts'):
-            return 0
-
-        return sum((1 for item in [self.tshirts.tshirt1, self.tshirts.tshirt2] if item))
-
-    @property
-    def tshirts_charge(self) -> int:
-        return self.num_tshirts * 25
+        return hasattr(self, 'payment_info') and self.payment_info.stripe_payment_method_id != ''
 
 
-class BasicRegistrationInfo(models.Model):
+class AdditionalRegistrationInfo(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
-        related_name='basic_info'
+        related_name='additional_info'
     )
 
-    attended_nonclave = models.TextField(choices=YesNo.choices)
+    nickname = models.CharField(max_length=255, blank=True)
+    phone = models.CharField(max_length=30)
+    include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
+
+    age = models.TextField(choices=[
+        ('18-35', '18-35'),
+        ('36-64', '36-64'),
+        ('65+', '65+'),
+        ('Under 18', 'Under 18 (Parent or Guardian must also register)'),
+    ])
+
+    gender = models.TextField(choices=[
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Non-binary', 'Non-binary'),
+        ('Other', 'Other'),
+    ])
+    pronouns = models.CharField(max_length=255, blank=True)
+
+    attended_conclave_before = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
+    num_display_space_days = models.IntegerField(default=6)
 
-    archival_video_release = models.BooleanField()
+    liability_release = models.BooleanField()
+    covid_policy = models.BooleanField()
     photo_release_auth = models.TextField(choices=YesNo.choices)
-    # liability_release = models.BooleanField()
 
     other_info = models.TextField(blank=True)
 
     def clean(self) -> None:
         super().clean()
-        if self.attended_nonclave == YesNo.yes and not self.buddy_willingness:
+        if self.attended_conclave_before == YesNo.yes and not self.buddy_willingness:
             raise ValidationError({'buddy_willingness': 'This field is required.'})
 
 
 class WorkStudyJob(models.TextChoices):
-    google_drive_file_organizing = (
-        'google_drive_file_organizing',
-        'Collecting and organizing files on DropBox and Google Drive (before Conclave)',
+    auction_prep = (
+        'auction_prep',
+        'Auction preparation: organize items; write descriptions; keep records',
     )
-    video_editing = (
-        'video_editing',
-        'Video editing (before Conclave)',
+    social_event_setup = (
+        'social_event_setup',
+        'Set up social events; serve refreshments'
     )
-    assist_music_director_before_conclave = (
-        'assist_music_director_before_conclave',
-        'Assisting the music director (before Conclave)',
+    assist_music_director = (
+        'assist_music_director',
+        'Assist the music director and/or Conclave coordinators '
+        '(may include computer-based help and/or fetch-and-carry type tasks)',
     )
-    auction_prep_before_conclave = (
-        'auction_prep_before_conclave',
-        'Auction preparation: collecting photos, writing descriptions of '
-        'items (mostly in the few days before Conclave)',
+    classroom_setup = (
+        'classroom_setup',
+        'Set up classrooms (includes moving furniture)'
     )
-    auction_prep_during_conclave = (
-        'auction_prep_during_conclave',
-        'Auction preparation: collecting photos, writing descriptions of '
-        'items (mostly Sun-Tues during Conclave)',
+    stage_crew = (
+        'stage_crew',
+        'Stage crew / stage management during concerts'
     )
-    social_event_helper = (
-        'social_event_helper',
-        'Social event helpers '
-        '(specific times, e.g. lunchtime, ice cream social, Conclave banquet)',
+    copy_crew = (
+        'copy_crew',
+        'Copy crew: Make and organize photocopies of music for teachers'
     )
-    tech_support = (
-        'tech_support',
-        'Answering tech-support type questions, like Zoom help, accessing YouTube, '
-        'downloading files, etc. (specific shifts during Conclave)',
+    rental_viols = (
+        'rental_viols',
+        'Assist with rental viols '
+        '(includes organization and also light lifting/carrying instruments)'
     )
-    auction_event_helper = (
-        'auction_event_helper',
-        'Auction event helpers (during the Conclave auction)',
+    vdgsa_store = (
+        'vdgsa_store',
+        'Run VdGSA store (no cash involved, but must be responsible & organized)'
     )
-    assist_music_director_during_conclave = (
-        'assist_music_director_during_conclave',
-        'Assisting the music director (during Conclave)',
+    sign_crew = (
+        'sign_crew',
+        'Sign crew: create, print, and hang signs and posters as needed'
+    )
+    run_errands = (
+        'run_errands',
+        'Run errands (around campus and/or off campus)'
+    )
+
+
+class EarlyArrivalChoices(models.TextChoices):
+    friday_evening = (
+        'friday_evening',
+        'Yes, I would like to come early, and can arrive on Friday before 6pm'
+    )
+    saturday_morning = (
+        'saturday_morning',
+        'Yes, I would like to come early, and can arrive on Saturday before noon'
+    )
+    saturday_evening = (
+        'saturday_evening',
+        'Yes, I would like to come early, and can arrive on Saturday before 6pm'
+    )
+    no = (
+        'no',
+        'No, I do not want to come early, and will plan to arrive on Sunday'
     )
 
 
@@ -296,24 +395,67 @@ class WorkStudyApplication(models.Model):
         related_name='work_study'
     )
 
-    nickname_and_pronouns = models.CharField(max_length=255, blank=True)
+    wants_work_study = models.TextField(choices=YesNo.choices, blank=False, default='')
+
     phone_number = models.CharField(max_length=50)
     can_receive_texts_at_phone_number = models.TextField(choices=YesNo.choices)
-    home_timezone = models.TextField()  # We'll specify choices in the form
-    other_timezone = models.CharField(max_length=255, blank=True)
 
-    # Do we need "which conclave program are you enrolling in?"
-
-    has_been_to_conclave = models.TextField(choices=YesNo.choices)
-    has_done_work_study = models.TextField(choices=YesNo.choices)
+    has_been_to_conclave = models.TextField(
+        blank=False,
+        default='',
+        choices=[
+            ('yes', 'Yes, in person'),
+            ('online', 'Yes, online only'),
+            ('both', 'Yes, in person and online'),
+            ('no', 'No'),
+        ]
+    )
+    has_done_work_study = models.TextField(
+        blank=False,
+        default='',
+        choices=[
+            ('yes', 'Yes, in person'),
+            ('online', 'Yes, online only'),
+            ('both', 'Yes, in person and online'),
+            ('no', 'No'),
+        ]
+    )
 
     student_info = models.TextField(blank=True)
 
-    job_preferences = ArrayField(models.CharField(max_length=100, choices=WorkStudyJob.choices))
+    can_arrive_before_first_meeting = models.TextField(
+        blank=False,
+        default='',
+        choices=[
+            ('yes', 'Yes, I can arrive by 10am on Sunday morning'),
+            ('yes_if_early_arrival',
+             'In order to make the 10am meeting, I would need to '
+             'arrive early (on Friday or Saturday - specify below)'),
+            ('no', "No, I can't arrive on time on Sunday morning"),
+        ]
+    )
+    early_arrival = models.TextField(blank=False, default='', choices=EarlyArrivalChoices.choices)
+    can_stay_until_sunday_afternoon = models.TextField(choices=YesNo.choices)
+    other_travel_info = models.TextField(blank=True)
+
+    job_preferences = ArrayField(
+        models.CharField(max_length=100, choices=WorkStudyJob.choices),
+        default=list
+    )
+    other_jobs = models.TextField(blank=True)
+    has_car = models.TextField(choices=YesNoMaybe.choices)
     relevant_job_experience = models.TextField()
 
     other_skills = models.TextField(blank=True)
     other_info = models.TextField(blank=True)
+
+    def full_clean(self, *args: Any, **kwargs: Any) -> None:
+        # If the user doesn't want to apply for work study, don't perform
+        # any other validation.
+        if self.wants_work_study == YesNo.no:
+            pass
+        else:
+            super().full_clean(*args, **kwargs)
 
     def clean(self) -> None:
         super().clean()
@@ -331,8 +473,15 @@ class Clef(models.TextChoices):
 class InstrumentChoices(models.TextChoices):
     treble = 'treble'
     tenor = 'tenor'
-    bass = 'bass'
-    other = 'other'
+    bass = 'bass', '6-string Bass'
+    bass_7_string = 'bass_7_string', '7-string Bass'
+    other = 'other', 'Other Instrument or Rennaissance Viol'
+
+
+class InstrumentPurpose(models.TextChoices):
+    bringing_for_self = 'bringing_for_self', "I'm bringing this instrument for myself"
+    willing_to_loan = 'willing_to_loan', "I'm willing to loan this instrument to someone else"
+    wants_to_borrow = 'wants_to_borrow', "I need to borrow this instrument"
 
 
 class InstrumentBringing(models.Model):
@@ -349,6 +498,9 @@ class InstrumentBringing(models.Model):
     name_if_other = models.CharField(max_length=100, blank=True)
     level = models.TextField(choices=Level.choices[1:])
     clefs = ArrayField(models.CharField(max_length=50, choices=Clef.choices))
+    purpose = models.CharField(max_length=100, choices=InstrumentPurpose.choices)
+
+    comments = models.TextField(blank=True)
 
     def clean(self) -> None:
         super().clean()
@@ -390,15 +542,13 @@ def _make_class_instrument_field() -> Any:
         InstrumentBringing, on_delete=models.SET_NULL, related_name='+', null=True, blank=True)
 
 
-class TuitionOption(models.TextChoices):
-    full_time = 'full_time', 'Full Time (2-3 Classes)'
-    part_time = 'part_time', 'Part Time (1 Class)'
+ClassChoiceDict = TypedDict(
+    'ClassChoiceDict', {'class': Class, 'instrument': InstrumentBringing})
 
 
-_ClassChoiceDict = TypedDict(
-    '_ClassChoiceDict', {'class': Class, 'instrument': InstrumentBringing})
-
-
+# Note: The name of this class (and related classes and files) is out of date.
+# It should be called "ClassSelection", and it functions as a fat interface for all
+# types of class selection.
 class RegularProgramClassChoices(models.Model):
     registration_entry = models.OneToOneField(
         RegistrationEntry,
@@ -408,6 +558,8 @@ class RegularProgramClassChoices(models.Model):
 
     comments = models.TextField(blank=True)
 
+    # These fields are for programs that choose courses in specific
+    # periods (e.g. regular, consort coop)
     period1_choice1 = _make_class_choice_field()
     period1_choice1_instrument = _make_class_instrument_field()
     period1_choice2 = _make_class_choice_field()
@@ -435,61 +587,134 @@ class RegularProgramClassChoices(models.Model):
     period4_choice2_instrument = _make_class_instrument_field()
     period4_choice3 = _make_class_choice_field()
     period4_choice3_instrument = _make_class_instrument_field()
+    # end period-specific fields
+
+    # These fields are for programs that can choose classes
+    # across periods because they can only take one class
+    # (e.g. part-time, seasoned players)
+    flex_choice1 = _make_class_choice_field()
+    flex_choice1_instrument = _make_class_instrument_field()
+
+    flex_choice2 = _make_class_choice_field()
+    flex_choice2_instrument = _make_class_instrument_field()
+
+    flex_choice3 = _make_class_choice_field()
+    flex_choice3_instrument = _make_class_instrument_field()
 
     @cached_property
-    def period1_choices(self) -> list[_ClassChoiceDict]:
-        return [
-            {'class': self.period1_choice1, 'instrument': self.period1_choice1_instrument},
-            {'class': self.period1_choice2, 'instrument': self.period1_choice2_instrument},
-            {'class': self.period1_choice3, 'instrument': self.period1_choice3_instrument},
-        ]
-
-    @cached_property
-    def period2_choices(self) -> list[_ClassChoiceDict]:
-        return [
-            {'class': self.period2_choice1, 'instrument': self.period2_choice1_instrument},
-            {'class': self.period2_choice2, 'instrument': self.period2_choice2_instrument},
-            {'class': self.period2_choice3, 'instrument': self.period2_choice3_instrument},
-        ]
-
-    @cached_property
-    def period3_choices(self) -> list[_ClassChoiceDict]:
-        return [
-            {'class': self.period3_choice1, 'instrument': self.period3_choice1_instrument},
-            {'class': self.period3_choice2, 'instrument': self.period3_choice2_instrument},
-            {'class': self.period3_choice3, 'instrument': self.period3_choice3_instrument},
-        ]
-
-    @cached_property
-    def period4_choices(self) -> list[_ClassChoiceDict]:
-        return [
-            {'class': self.period4_choice1, 'instrument': self.period4_choice1_instrument},
-            {'class': self.period4_choice2, 'instrument': self.period4_choice2_instrument},
-            {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
-        ]
-
-    @cached_property
-    def by_period(self) -> dict[Period, list[_ClassChoiceDict]]:
+    def by_period(self) -> dict[Period, list[ClassChoiceDict]]:
         return {
-            Period.first: self.period1_choices,
-            Period.second: self.period2_choices,
-            Period.third: self.period3_choices,
-            Period.fourth: self.period4_choices,
+            Period.first: [
+                {'class': self.period1_choice1, 'instrument': self.period1_choice1_instrument},
+                {'class': self.period1_choice2, 'instrument': self.period1_choice2_instrument},
+                {'class': self.period1_choice3, 'instrument': self.period1_choice3_instrument},
+            ],
+            Period.second: [
+                {'class': self.period2_choice1, 'instrument': self.period2_choice1_instrument},
+                {'class': self.period2_choice2, 'instrument': self.period2_choice2_instrument},
+                {'class': self.period2_choice3, 'instrument': self.period2_choice3_instrument},
+            ],
+            Period.third: [
+                {'class': self.period3_choice1, 'instrument': self.period3_choice1_instrument},
+                {'class': self.period3_choice2, 'instrument': self.period3_choice2_instrument},
+                {'class': self.period3_choice3, 'instrument': self.period3_choice3_instrument},
+            ],
+            Period.fourth: [
+                {'class': self.period4_choice1, 'instrument': self.period4_choice1_instrument},
+                {'class': self.period4_choice2, 'instrument': self.period4_choice2_instrument},
+                {'class': self.period4_choice3, 'instrument': self.period4_choice3_instrument},
+            ]
         }
 
-    @property
-    def num_classes_selected(self) -> int:
+    # FIXME: Make this a separate function that takes in registration entry
+    # and class selection
+    @cached_property
+    def num_non_freebie_classes(self) -> int:
+        if self.flex_choice1:
+            return 1
+
         count = 0
-        for choices in self.by_period.values():
+
+        choices_by_period = dict(self.by_period)
+        choices_by_period.pop(Period.fourth)
+        for choices in choices_by_period.values():
             if any(choice['class'] is not None for choice in choices):
                 count += 1
 
         return count
 
 
-# We won't need this until 2022
-# class RoomAndBoard(models.Model):
-#     pass
+class AdvancedProjectsParticipationOptions(models.TextChoices):
+    participate = 'participate', 'I would like to participate in other projects'
+    propose_a_project = 'propose_a_project', 'I would like to propose a project'
+
+
+class AdvancedProjectsInfo(models.Model):
+    registration_entry = models.OneToOneField(
+        RegistrationEntry,
+        on_delete=models.CASCADE,
+        related_name='advanced_projects',
+    )
+
+    participation = models.TextField(
+        choices=AdvancedProjectsParticipationOptions.choices, blank=False, default=''
+    )
+    project_proposal = models.TextField(blank=True)
+
+
+class HousingRoomType(models.TextChoices):
+    single = 'single'
+    double = 'double'
+    off_campus = 'off_campus'
+
+
+class NormalBedtime(models.TextChoices):
+    no_preference = 'no_preference'
+    early = 'early', 'Early to bed (11pm)'
+    late = 'late', 'Late night (could be 2am!)'
+
+
+class DietaryNeeds(models.TextChoices):
+    vegetarian = 'vegetarian'
+    vegan = 'vegan'
+    dairy_free = 'dairy_free'
+    gluten_free = 'gluten_free'
+    nut_allergy = 'nut_allergy'
+    shellfish_allergy = 'shellfish_allergy'
+
+
+class Housing(models.Model):
+    registration_entry = models.OneToOneField(
+        RegistrationEntry,
+        on_delete=models.CASCADE,
+        related_name='housing',
+    )
+
+    room_type = models.TextField(choices=HousingRoomType.choices, blank=False, default='')
+    roommate_request = models.TextField(blank=True)
+    share_suite_request = models.TextField(blank=True)
+    room_near_person_request = models.TextField(blank=True)
+
+    normal_bed_time = models.TextField(
+        choices=NormalBedtime.choices, blank=False, default=NormalBedtime.no_preference)
+
+    arrival_day = models.TextField()
+    departure_day = models.TextField()
+
+    wants_housing_subsidy = models.BooleanField(default=False)
+    wants_canadian_currency_exchange_discount = models.BooleanField(default=False)
+
+    additional_housing_info = models.TextField(blank=True)
+
+    dietary_needs = ArrayField(
+        models.CharField(max_length=50, choices=DietaryNeeds.choices), blank=True, default=list)
+    other_dietary_needs = models.TextField(blank=True)
+
+    # Empty string indicates "not attending"
+    banquet_food_choice = models.TextField(blank=False, default='')
+    is_bringing_guest_to_banquet = models.TextField(choices=YesNo.choices)
+    banquet_guest_name = models.TextField(blank=True)
+    banquet_guest_food_choice = models.TextField(blank=True)
 
 
 TSHIRT_SIZES: Final = [
@@ -529,6 +754,9 @@ class TShirts(models.Model):
     )
     donation = models.IntegerField(blank=True, default=0)
 
+    def as_list(self) -> list[str]:
+        return [self.tshirt1, self.tshirt2]
+
 
 class PaymentInfo(models.Model):
     registration_entry = models.OneToOneField(
@@ -540,7 +768,6 @@ class PaymentInfo(models.Model):
     # We'll consider registration to be finalized when
     # this field has a value.
     stripe_payment_method_id = models.TextField(blank=True)
-
 
 # =================================================================================================
 

@@ -2,27 +2,20 @@
 {% block content %}
 
 {% load vdgsa_tags %}
+{% load markdownify %}
 
 <h3 data-testid="registration_section_header">Instruments</h3>
 
 <div>
-  Please add the instruments you'll be playing at Conclave. <br>
-  The official Conclave tuning pitch is A=415. <br>
-  Don't know what level you are? Use our
-  <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
-     target="_blank">
-    self-rating guide
-  </a>. <br><br>
-  To add an instrument, select the size, your level, <br>
-  and the clefs you read,
-  and click the "Add" button. <br>
-  Repeat this process for each instrument you'll be playing.
+  {{conclave_config.instruments_page_markdown | markdownify}}
 </div>
+
+<hr>
 
 <div class="add-instrument-header mt-3">Add an instrument</div>
 <form method="post" id="add-instrument-form">
   <div class="row">
-    <div class="col-md-8">
+    <div class="col-md">
       {% include 'registration/instruments/add_instrument_form_body.tmpl' %}
     </div>
   </div>
@@ -94,9 +87,11 @@ $().ready(function() {
         );
         $('#instruments').append(new_elt);
         $('#id_clefs_wrapper input[type=checkbox]').prop('checked', false);
+        $('#id_purpose option:first').prop('selected', true);
         $('#id_level option:first').prop('selected', true);
         $('#id_size option:first').prop('selected', true);
         $('#id_name_if_other').val('');
+        $('#id_comments').val('');
         $('#id_name_if_other_wrapper').hide();
 
         add_delete_instrument_handler(new_elt.find('.delete-instrument'));

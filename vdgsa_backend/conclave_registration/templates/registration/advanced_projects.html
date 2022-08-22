@@ -1,0 +1,52 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+
+<h3 data-testid="registration_section_header">Advanced Projects</h3>
+
+{% if form.non_field_errors %}
+  <div class="non-field-errors">
+  {% for err in form.non_field_errors %}
+    <div class="form-error alert alert-danger" role="alert">{{err}}</div>
+  {% endfor %}
+  </div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      How would you like to participate in Advanced Projects?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.participation %}
+    </div>
+  </div>
+
+  <div id="project-proposal-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        Please supply details for your proposed project,
+        including how many sessions you'd like to work on it (up to 5).
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.project_proposal %}
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Save and continue</button>
+  </div>
+</form>
+
+<script>
+  radio_button_hide('participation', '#project-proposal-wrapper', {show_values: ['propose_a_project']});
+</script>
+{% endblock %}

@@ -2,6 +2,7 @@
 {% block content %}
 
 {% load vdgsa_tags %}
+{% load markdownify %}
 
 <h2 id="registration-landing-header">
   {{request.user | show_name}},
@@ -25,49 +26,7 @@
 
 <div class="row">
   <div class="col-md-8">
-    <p>
-      Before you begin your Conclave registration, make sure that you have
-      familiarized yourself with the options and decided whether you want to
-      be in the Regular Program (either full time or part time) or in one of
-      the special programs, such as Consort Cooperative, Seasoned Players, etc.,
-      or one of the free Beginners' Programs. You should also have an idea
-      about which classes you would like to request. Remember that you can
-      find more complete information in the
-      <a href="https://www.vdgsa.org/conclave-2021-programs">Conclave Brochure</a>.
-    </p>
-
-    <p>
-      The contact information from your membership account will be used for Conclave.
-      If you'd like to change it, please do so on the
-      <a href="{% url 'current-user-account' %}">My Account</a> section of the website.
-    </p>
-
-    <p>
-      Once you select your program, you'll go to a series of pages that will need
-      to be filled out and saved. Clicking the yellow "Save and Continue" button
-      on the bottom of each page will take you through them sequentially; you can
-      navigate to any page by clicking on the left-hand menu.
-    </p>
-
-    <p>
-      If you select a program other than Regular, please be aware that there may
-      be more requirements listed on the
-      <a href="https://www.vdgsa.org/conclave-2021-programs">Programs page</a>.
-      Vendors should register for the Regular Curriculum
-      (part-time for 0-1 class, full-time for 2-3 classes) unless they plan
-      to participate in one of the special programs.
-    </p>
-
-    <p>
-      If you have any questions while applying, please contact the
-      <a href="https://www.vdgsa.org/conclave-2021-contacts">
-        Conclave Management Team Spork or the Website Committee
-      </a>.
-      If you would like help by telephone, please call or send a text message
-      (saying "Conclave registration help needed") to Kathy Schenley or Becca Humphrey.
-      Their telephone numbers can be found
-      <a href="https://www.vdgsa.org/conclave-2021-contacts">here</a>.
-    </p>
+    {{conclave_config.landing_page_markdown | markdownify}}
   </div>
 </div>
 

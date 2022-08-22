@@ -6,9 +6,14 @@
   {% else %}
   {{instrument.size | format_instrument_size}}
   {% endif %}
+  ({{instrument.purpose | format_instrument_purpose}})
 </div>
 <div>Level: {{instrument.level}}</div>
 <div>Clefs: {{instrument.clefs | format_clef_list}}</div>
+<div>
+  <b>Comments:</b><br>
+  {{instrument.comments}}
+</div
 <div>
   <a href="#" class="delete-instrument" data-instrumentpk="{{instrument.pk}}">
     Delete

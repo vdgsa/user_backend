@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List
 
 import stripe  # type: ignore
+from bleach.sanitizer import ALLOWED_ATTRIBUTES  # type: ignore
 from django.urls.base import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'django_extensions',
     'vdgsa_backend.accounts',
     'vdgsa_backend.api_schema',
@@ -56,6 +58,8 @@ INSTALLED_APPS = [
     'vdgsa_backend.stripe_email_webhook',
     'vdgsa_backend.conclave_registration',
     'corsheaders',
+
+    'markdownify.apps.MarkdownifyConfig',
 ]
 
 CORS_ALLOWED_ORIGINS: List[str] = []
@@ -155,6 +159,33 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
+
+MARKDOWNIFY = {
+    "default": {
+        "WHITELIST_TAGS": [
+            'a',
+            'abbr',
+            'acronym',
+            'b',
+            'blockquote',
+            'em',
+            'i',
+            'li',
+            'ol',
+            'p',
+            'strong',
+            'ul',
+            'br',
+        ],
+        "WHITELIST_ATTRS": {
+            **ALLOWED_ATTRIBUTES,
+            'a': ALLOWED_ATTRIBUTES.get('a') + ['target']
+        },
+        "MARKDOWN_EXTENSIONS": [
+            'markdown.extensions.attr_list',
+        ]
+    }
+}
 
 # Misc custom settings --------------------------------------------------------
 MAX_NUM_FAMILY_MEMBERS = 3

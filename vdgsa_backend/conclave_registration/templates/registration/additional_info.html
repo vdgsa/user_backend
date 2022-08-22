@@ -1,0 +1,216 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load markdownify %}
+
+<h3 data-testid="registration_section_header">Additional Info</h3>
+
+<div>
+  <div class="col-md-8">
+    The VdGSA has a <a href="https://www.members.vdgsa.org/code-of-conduct">Code of Conduct</a>
+    for all our events. While not a legally binding contract, we do expect all event
+    attendees to abide by it. Please give it a read.
+  </div>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      If you would like to specify how your name appears on your name tag,
+      please let us know here. Otherwise, we'll use your name and address
+      from your My Account settings. (Optional)
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.nickname %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.age %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-auto">
+      {% include 'utils/form_field.tmpl' with field=form.gender %}
+    </div>
+  </div>
+
+  <div class="row mt-1">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.pronouns label='Pronouns (Optional)'%}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Please provide a phone number we can reach you at during Conclave
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.phone %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Would you like your name to be included in the "who's coming to Conclave" list,
+      visible on the Members' Area of our website?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.include_in_whos_coming_to_conclave_list %}
+    </div>
+  </div>
+
+  <div class="row mt-2">
+    <div class="col-md-6">
+      Have you attended an in-person Conclave before?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.attended_conclave_before %}
+    </div>
+  </div>
+
+  <div id="buddy-willingness-wrapper">
+    <div class="row mt-2">
+      <div class="col-md-6">
+        Would you be willing to be a buddy for someone who is coming to Conclave
+        for the first time?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-3">
+        {% include 'utils/form_field.tmpl' with field=form.buddy_willingness %}
+      </div>
+    </div>
+  </div>
+
+  {% comment %}
+  <!-- <div class="row mt-2">
+    <div class="col-md-6">
+      There are always many small jobs that need to be done at Conclave.
+      Would you be willing to help out?
+    </div>
+  </div> -->
+  <!-- <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.willing_to_help_with_small_jobs %}
+    </div>
+  </div> -->
+  {% endcomment %}
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      Do you need a table in the vendors' Emporium?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.wants_display_space %}
+    </div>
+  </div>
+  <div id="num-display-space-days-wrapper">
+    <div class="row">
+      <div class="col-md-6">
+        How many days do you need the table for?
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        {% include 'utils/form_field.tmpl' with field=form.num_display_space_days %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-8" style="border: 1px solid slategray">
+      <div class="row mt-2">
+        <div class="col-auto">
+          <b>Release of Liability:</b>
+          {{registration_entry.conclave_config.liability_release_text | markdownify}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-auto">
+          {% include 'utils/form_field.tmpl' with field=form.liability_release %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-8" style="border: 1px solid slategray">
+      <div class="row mt-2">
+        <div class="col-auto">
+          <b>Covid Policy:</b>
+          {{registration_entry.conclave_config.covid_policy_markdown | markdownify}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.covid_policy %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-8" style="border: 1px solid slategray">
+      <div class="row mt-2">
+        <div class="col-auto">
+          <b>Photo and Video Release:</b>
+          {{registration_entry.conclave_config.photo_release_text}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.photo_release_auth %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% comment %}
+  <!-- <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.liability_release %}
+    </div>
+  </div> -->
+  {% endcomment %}
+
+  <div class="row mt-3">
+    <div class="col-md-8">
+      Do you have a viol (or viols) you're not bringing to Conclave that you
+      would be willing to lend locally in your home area,
+      so that someone without their own viol could have the chance to take
+      the online teen beginner class? If so, please describe the instrument(s)
+      briefly below, including size (and number of strings for basses).
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.other_info %}
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Save and continue</button>
+  </div>
+</form>
+
+<script>
+  radio_button_hide('attended_conclave_before', '#buddy-willingness-wrapper');
+  radio_button_hide('wants_display_space', '#num-display-space-days-wrapper');
+</script>
+{% endblock %}

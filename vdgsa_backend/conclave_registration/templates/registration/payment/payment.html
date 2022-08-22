@@ -82,6 +82,14 @@
   {% endif %}
 </form>
 
+  {% if confirmation_email_debug %}
+  <div class="my-2">
+    Below is a copy of the confirmation email that the registrant will receive.
+    It is only for testing purposes and will not appear here when we go live.
+  </div>
+  <pre style="border: 1px solid slategray; padding: 1rem">{{confirmation_email_debug}}</pre>
+  {% endif %}
+
 {% endif %}
 
 <script>

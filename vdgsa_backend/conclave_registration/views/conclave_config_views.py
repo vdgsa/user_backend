@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import csv
 import tempfile
-from typing import Any
+from typing import Any, Counter
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.forms import widgets
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -17,7 +18,8 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from django.views.generic.base import View
 
 from vdgsa_backend.conclave_registration.models import (
-    Class, ConclaveRegistrationConfig, Period, RegistrationEntry, get_classes_by_period
+    Class, ConclaveRegistrationConfig, Housing, HousingRoomType, Period, RegistrationEntry,
+    TShirts, WorkStudyApplication, YesNo, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.views.permissions import is_conclave_team
 
@@ -29,7 +31,10 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'year',
             'phase',
             'faculty_registration_password',
-            'archival_video_release_text',
+            'landing_page_markdown',
+            'instruments_page_markdown',
+            'liability_release_text',
+            'covid_policy_markdown',
             'photo_release_text',
 
             'first_period_time_label',
@@ -37,17 +42,85 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'third_period_time_label',
             'fourth_period_time_label',
 
+            'housing_form_top_markdown',
+            'housing_form_pre_arrival_markdown',
+            'early_arrival_date_options',
+            'arrival_date_options',
+            'departure_date_options',
+            'banquet_food_options',
+
             'tshirt_image_url',
+
+            'regular_tuition',
+            'part_time_tuition',
+            'consort_coop_tuition',
+            'seasoned_players_tuition',
+            'workshop_fee',
+            'beginners_extra_class_fee',
+            'beginners_two_extra_classes_fee',
+            'consort_coop_one_extra_class_fee',
+            'consort_coop_two_extra_classes_fee',
+            'seasoned_players_extra_class_fee',
+            'single_room_full_week_cost',
+            'double_room_full_week_cost',
+            'single_room_per_night_cost',
+            'double_room_per_night_cost',
+            'single_room_early_arrival_per_night_cost',
+            'double_room_early_arrival_per_night_cost',
+            'dietary_needs_markdown',
+            'banquet_guest_fee',
+            'tshirt_price',
+            'late_registration_fee',
+            'housing_subsidy_amount',
+            'canadian_discount_percent',
+            'vendor_table_cost_per_day',
         ]
 
         labels = {
             'phase': 'Registration Phase',
+            'landing_page_markdown': (
+                'Text to display on the registration program selection page. '
+                'Rendered as markdown'),
+            'instruments_page_markdown': (
+                'Text to display on the regular program instruments page (not beginner). '
+                'Rendered as markdown'
+            ),
+            'liability_release_text': 'Liability release text. Rendered as markdown',
+            'covid_policy_markdown': 'Covid policy text. Rendered as markdown',
+            'housing_form_top_markdown': (
+                'Text to display at the top of the housing form. Rendered as markdown'),
+            'housing_form_pre_arrival_markdown': (
+                'Text to display before the arrival/departure section of the housing form. '
+                'Rendered as markdown'),
+            'early_arrival_date_options': (
+                'A list of allowed early arrival dates (format: Day of Week Month Date),'
+                ' each separated by a newline'),
+            'arrival_date_options': (
+                'A list of allowed arrival dates (format: Day of Week Month Date),'
+                ' each separated by a newline'),
+            'departure_date_options': (
+                'A list of allowed departure dates (format: Day of Week Month Date),'
+                ' each separated by a newline'),
+            'dietary_needs_markdown': (
+                'Text to display before the dietary needs fields. Rendered as markdown'),
+            'banquet_food_options': (
+                'A list of banquet food options, each separated by a newline. '
+                'Note that "Not Attending" is automatically added as a choice.'
+            ),
+            'workshop_fee': 'Workshop fee (for non-playing attendees and on-campus beginners).'
         }
 
         widgets = {
             'phase': widgets.RadioSelect,
-            'archival_video_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'liability_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'photo_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+
+            'housing_form_top_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'early_arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'departure_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'banquet_food_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'housing_form_pre_arrival_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
         }
 
 
@@ -110,7 +183,44 @@ class ListRegistrationEntriesView(LoginRequiredMixin, UserPassesTestMixin, ListV
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['conclave_config'] = self.conclave_config
+        context['stats'] = self.get_stats()
         return context
+
+    def get_stats(self) -> dict[str, object]:
+        num_single_rooms = Housing.objects.filter(
+            registration_entry__conclave_config=self.conclave_config,
+            room_type=HousingRoomType.single
+        ).count()
+        num_double_rooms = Housing.objects.filter(
+            registration_entry__conclave_config=self.conclave_config,
+            room_type=HousingRoomType.double
+        ).count()
+
+        tshirt_size_counts = Counter()
+        tshirt_objs = TShirts.objects.filter(
+            registration_entry__conclave_config=self.conclave_config)
+        for item in tshirt_objs:
+            tshirt_size_counts.update([item.tshirt1, item.tshirt2])
+        tshirt_size_counts.pop('', None)
+
+        program_counts = Counter()
+        for entry in self.conclave_config.registration_entries.all():
+            program_counts.update([entry.program])
+        return {
+            'num_registrations': self.conclave_config.registration_entries.count(),
+            'num_finalized_registrations': len([
+                entry for entry in self.conclave_config.registration_entries.all()
+                if entry.is_finalized
+            ]),
+            'num_work_study_applications': WorkStudyApplication.objects.filter(
+                registration_entry__conclave_config=self.conclave_config,
+                wants_work_study=YesNo.yes
+            ).count(),
+            'num_single_rooms': num_single_rooms,
+            'num_double_rooms': num_double_rooms,
+            'tshirt_size_counts': dict(tshirt_size_counts),
+            'program_counts': dict(program_counts),
+        }
 
     def test_func(self) -> bool | None:
         return is_conclave_team(self.request.user)
@@ -128,9 +238,12 @@ class ConclaveClassForm(forms.ModelForm):
             'name',
             'instructor',
             'level',
+            'offer_to_beginners',
             'description',
             'notes',
         ]
+
+        labels = {'offer_to_beginners': 'Offer as Beginners+ Add-On Option'}
 
         widgets = {
             'description': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
@@ -218,17 +331,18 @@ class ConclaveClassCSVView(LoginRequiredMixin, UserPassesTestMixin, View):
 
             reader = csv.DictReader(f)
             with transaction.atomic():
+                self.conclave_config.classes.all().delete()
                 for row in reader:
-                    Class.objects.update_or_create(
+                    Class.objects.create(
                         conclave_config=self.conclave_config,
                         name=row['Title'].strip(),
                         period=Period(int(row['Period'])),
-                        defaults={
-                            'level': row['Level'],
-                            'instructor': row['Teacher'],
-                            'description': row['Description'],
-                            'notes': row['Notes'],
-                        }
+
+                        level=row['Level'],
+                        instructor=row['Teacher'],
+                        description=row['Description'],
+                        notes=row['Notes'],
+                        offer_to_beginners=row['offer_to_beginners'].strip().lower() == 'true',
                     )
 
         return HttpResponseRedirect(
