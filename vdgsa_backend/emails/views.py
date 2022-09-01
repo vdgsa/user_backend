@@ -3,6 +3,7 @@ from __future__ import annotations
 import calendar
 from datetime import datetime
 from html.parser import HTMLParser
+from sqlite3 import Date
 from typing import Any, Final, Iterable
 from urllib import request
 
@@ -31,7 +32,7 @@ EXPIRED_LAST_MONTH: Final = dict(title='Expired last month', months=1, message="
 EXPIRED_PAST: Final = dict(title='Expired 6 months ago', months=6, message="expired 6 months ago ")
 
 
-def subtract_months(date, months):
+def subtract_months(date: Date, months: int) -> Date:
     months_count = date.month - months
 
     # Calculate the year
@@ -75,16 +76,13 @@ class ExpiringEmails():
         # print('expiring_members', expiring_members)
         return expiring_members
 
-    def sendEmail(self, request: HttpRequest, member: User,
-                  job: dict, send: bool) -> EmailMultiAlternatives:
+    def sendEmail(self, member: User,
+                  job: dict[str, object], send: bool) -> EmailMultiAlternatives:
         logo = "hume.vdgsa.org/static/vdgsa_logo.gif"
         link = f'''hume.vdgsa.org{reverse('current-user-account')}'''
 
         subject = 'VdGSA membership'
         to_email = member.username
-        # text_content = f'Dear {member.first_name.strip()},\n' + \
-        #     message.format(member.subscription.validç_until.strftime("%m/%d/%Y")) + ' ' + link
-
         data = {'message': job['message'],
                 'link': link, 'logo': logo, 'member': member}
         mail_template = get_template('member_expiring_email.html')
@@ -108,7 +106,7 @@ class ExpiringEmails():
         for job in jobs:
             expiring_members = self.list_expiring_members(job['months'])
             for member in expiring_members:
-                msg = self.sendEmail(request, member, job, send=True)
+                msg = self.sendEmail(member, job, send=True)
 
 
 class Viewemails(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -121,10 +119,11 @@ class Viewemails(LoginRequiredMixin, UserPassesTestMixin, View):
         return is_membership_secretary(self.request.user)
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        context = {'emails': []}
+        context: dict[str, Any] = {'emails': []}
 
         expemails = ExpiringEmails()
         context['results'] = []
+        context['html'] = []
         for job in self.jobs:
 
             context['expiring_members'] = ExpiringEmails.list_expiring_members(self, job['months'])
@@ -132,8 +131,10 @@ class Viewemails(LoginRequiredMixin, UserPassesTestMixin, View):
             for member in context['expiring_members']:
                 result = f'{title}: {member.email}, expired\
                            on {member.subscription.valid_until.strftime("%m/%d/%Y")} '
-
                 context['results'].append(result)
+
+                msg = ExpiringEmails.sendEmail(self, member, job, send=False)
+                context['html'].append(msg.alternatives[0][0])
 
                 print(job['title'], member.email,
                       member.subscription.valid_until.strftime("%m/%d/%Y"))
@@ -144,5 +145,5 @@ class Viewemails(LoginRequiredMixin, UserPassesTestMixin, View):
 class HTMLFilter(HTMLParser):
     text = ""
 
-    def handle_data(self, data):
+    def handle_data(self, data: str) -> None:
         self.text += data
