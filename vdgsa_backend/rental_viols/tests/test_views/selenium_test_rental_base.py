@@ -1,10 +1,11 @@
-from typing import Any, List, Union
+from typing import Any, List, Sequence, Union
 
 from django.contrib.auth.models import Permission
 from django.test import LiveServerTestCase
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
 from selenium.webdriver.common.action_chains import ActionChains  # type: ignore
 from selenium.webdriver.firefox.webdriver import WebDriver  # type: ignore
+from selenium.webdriver.remote.webelement import WebElement  # type: ignore
 from selenium.webdriver.support import expected_conditions as EC  # type: ignore
 from selenium.webdriver.support.wait import WebDriverWait  # type: ignore
 
@@ -51,6 +52,15 @@ class SeleniumTestCaseBase(LiveServerTestCase):
         )
         rental_manager.user_permissions.add(
             Permission.objects.get(codename='rental_manager')
+        )
+        return rental_manager
+
+    def make_rental_viewer(self) -> User:
+        rental_manager = User.objects.create_user(
+            username=f'rental_manager@wee.com', password='password'
+        )
+        rental_manager.user_permissions.add(
+            Permission.objects.get(codename='rental_viewer')
         )
         return rental_manager
 

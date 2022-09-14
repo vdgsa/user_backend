@@ -8,6 +8,7 @@ from django.test.testcases import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
 from selenium.common.exceptions import NoSuchElementException  # type: ignore
+from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement  # type: ignore
 from selenium.webdriver.support.ui import WebDriverWait  # type: ignore
 
@@ -22,33 +23,26 @@ from vdgsa_backend.templatetags.filters import format_datetime_impl
 from .selenium_test_rental_base import SeleniumTestCaseBase
 
 
-class RentalHomeTestCase(SeleniumTestCaseBase):
-    viols: List[Viol]
-    rental_manager: User
-
-    def setUp(self) -> None:
-        super().setUp()
-        _test_data_init(self)
-
-    def test_rental_manager_sees_link(self) -> None:
-        rental_manager = self.make_rental_manager()
-        self.login_as(rental_manager, dest_url='/rentals')
-        self.assertTrue(self.exists('#viols-home-link'))
-        self.selenium.get(f'{self.live_server_url}' + reverse('viol-update', kwargs={
-            'pk': self.viols[1].pk}))
-
-
 class RentalViolLIstTestCase(SeleniumTestCaseBase):
     viols: List[Viol]
-    rental_manager: User
+    rental_viewer: User
 
     def setUp(self) -> None:
         super().setUp()
         _test_data_init(self)
 
-    def test_access_to_edit_page(self) -> None:
-        self.login_as(self.rental_manager, dest_url='/rentals/viols')
+    def test_no_access_to_edit_page(self) -> None:
+        self.login_as(self.rental_viewer, dest_url='/rentals/viols')
         self.selenium.find_element_by_id('viol-table')
+
+        self.selenium.get(f'{self.live_server_url}' + reverse('viol-update', kwargs={
+            'pk': self.viols[1].pk}))
+        print('.current_url', self.selenium.current_url)
+
+        try:
+            self.selenium.find_element_by_id('viol-update-form')
+        except NoSuchElementException:
+            self.assertTrue(True)
 
 
 class _TestData(Protocol):
@@ -56,7 +50,7 @@ class _TestData(Protocol):
     bows: List[Bow]
     cases: List[Case]
     num_viols: int
-    rental_manager: User
+    rental_viewer: User
 
 
 def _test_data_init(test_obj: _TestData) -> None:
@@ -119,7 +113,7 @@ def _test_data_init(test_obj: _TestData) -> None:
         for i in range(test_obj.num_users)
     ]
 
-    test_obj.rental_manager = test_obj.users[-1]
-    test_obj.rental_manager.user_permissions.add(
-        Permission.objects.get(codename='rental_manager')
+    test_obj.rental_viewer = test_obj.users[-1]
+    test_obj.rental_viewer.user_permissions.add(
+        Permission.objects.get(codename='rental_viewer')
     )

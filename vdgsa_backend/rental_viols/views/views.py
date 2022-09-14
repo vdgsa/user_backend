@@ -562,24 +562,21 @@ class ViewUserInfo(RentalViewBase, DetailView):
         return context
 
 
-class UserSearchView(RentalViewBase, View):
+class UserSearchViewAjax(RentalViewBase, View):
     """Filter list of users """
     @csrf_exempt
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
-        url_parameter = request.GET.get("q")
+        search_str = request.GET.get("q")
         context = {}
-        if url_parameter:
-            users = User.objects.filter(Q(first_name__icontains=url_parameter)
-                                        | Q(last_name__icontains=url_parameter))
+        if search_str:
+            users = User.objects.filter(Q(first_name__icontains=search_str)
+                                        | Q(last_name__icontains=search_str))
         else:
             users = User.objects.all()
 
         context["users"] = users
-        if request.is_ajax():
-            html = render_to_string(
-                template_name="users/user-results-partial.html", context={"users": users}
-            )
-            data_dict = {"html_from_view": html}
-            return JsonResponse(data=data_dict, safe=False)
-
-        return render(request, "artists.html", context=context)
+        html = render_to_string(
+            template_name="users/user-results-partial.html", context={"users": users}
+        )
+        data_dict = {"html_from_view": html}
+        return JsonResponse(data=data_dict, safe=False)

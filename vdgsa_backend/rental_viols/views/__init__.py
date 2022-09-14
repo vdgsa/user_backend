@@ -32,7 +32,7 @@ from .views import RentOutView as RentOutView
 from .views import SoftDeleteView as SoftDeleteView
 from .views import UpdateRentalView as UpdateRentalView
 from .views import UploadRentalView as UploadRentalView
-from .views import UserSearchView as UserSearchView
+from .views import UserSearchViewAjax as UserSearchViewAjax
 from .views import ViewUserInfo as ViewUserInfo
 from .viols import AddViolView as AddViolView
 from .viols import AvailableViolView as AvailableViolView

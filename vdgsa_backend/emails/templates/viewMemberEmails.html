@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load markdownify %}
+    <h1>Membership expiring emails.</h1>
+    <p>Below is a list of members that will recieve an email if the job is run right now. No emails will be sent by this page. (Note: email job can be manually run by a django admin using "manage.py membership_emails") </p>
+    <div class="border m-4 p-2"">
+        {% for result in results %}
+            <div class="">{{ result }}</div>
+        {% endfor %}
+    </div>
+    <hr>
+        
+    <p class="mb-4">Below are copies of of the emails that would be sent if the job is run right now. (To edit this content, have a django administrator edit the template 'vdgsa_backend/emails/templates/member_expiring_email.html')</p>
+        {% for h in html %}
+            <div class="border m-4 p-2">{{ h }}</div>
+        {% endfor %}
+        {% comment %} {% for user in expiring_members %}
+            <div class="">{{ user.email }}</div>
+        {% endfor %}
+        {% for email in emails %}
+           <div class="">{{ email.alternatives | safe }}</div>
+        {% endfor %} {% endcomment %}
+
+        
+
+{% endblock %}
