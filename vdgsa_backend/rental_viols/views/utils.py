@@ -37,7 +37,7 @@ from vdgsa_backend.rental_viols.models import (
     Bow, Case, Image, ItemType, RentalContract, RentalHistory, RentalProgram, Viol, ViolSize,
     WaitingList
 )
-from vdgsa_backend.rental_viols.permissions import is_rental_manager
+from vdgsa_backend.rental_viols.permissions import is_rental_manager, is_rental_viewer
 
 
 def _createUserStamp(user):
@@ -53,7 +53,19 @@ def _createUserStamp(user):
 
 class RentalViewBase(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self) -> bool:
+        return is_rental_viewer(self.request.user) or is_rental_manager(self.request.user)
+
+
+class RentalEditBase(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self) -> bool:
         return is_rental_manager(self.request.user)
+
+    def reverse(*args, **kwargs):
+        get = kwargs.pop('get', {})
+        url = reverse(*args, **kwargs)
+        if get:
+            url += '?' + urlencode(get)
+        return url
 
 
 class NotesOnlyHistoryForm(forms.ModelForm):

@@ -21,6 +21,7 @@ from .views import ListCustodianView as ListCustodianView
 from .views import ListRentersView as ListRentersView
 from .views import NotesOnlyHistoryForm as NotesOnlyHistoryForm
 from .views import RentalCreateView as RentalCreateView
+from .views import RentalEditBase as RentalEditBase
 from .views import RentalHistoryForm as RentalHistoryForm
 from .views import RentalHomeView as RentalHomeView
 from .views import RentalRenewView as RentalRenewView

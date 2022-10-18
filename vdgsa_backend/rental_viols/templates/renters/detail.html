@@ -5,11 +5,13 @@
 <div class="card text-end">
   <div class="card-header">
   <div className="buttonbar-ctr d-flex justify-content-around ">
-    {% if object.state == RentalState.rented%}
-    <a href="{% url 'rental-renew' object.entry_num  %}" class="btn btn-primary" >Renew rental</a> 
-    <a href="{% url 'rental-return' object.entry_num %}" class="btn btn-primary" >Return from rental</a> 
+    {% if  perms.accounts.rental_manager %} 
+      {% if object.state == RentalState.rented%}
+      <a href="{% url 'rental-renew' object.entry_num  %}" class="btn btn-primary" >Renew rental</a> 
+      <a href="{% url 'rental-return' object.entry_num %}" class="btn btn-primary" >Return from rental</a> 
+      {% endif%}
+      <a href="{% url 'rental-update' object.entry_num  %}" class="btn btn-primary" >Edit</a> 
     {% endif%}
-    <a href="{% url 'rental-update' object.entry_num  %}" class="btn btn-primary" >Edit</a> 
   </div> 
   </div>
  </div>
@@ -22,7 +24,7 @@
       <p>Uploaded Contract:
         {% if object.contract_scan %}
           <a href="{% url 'show-contract' object.contract_scan.pk %}" target="_blank" title="Click for Rental Agreement"><i class="bi bi-file-earmark-text"></i></a>
-        {% else %}
+        {% elif  perms.accounts.rental_manager %}
           <a href="{% url 'rental-upload' object.entry_num %}" >Attach Rental Agreement</a>
         {% endif%}
       </p>
@@ -34,23 +36,23 @@
     <div class="col">
     {% if object.viol_num %}
       {{ object.viol_num }}
-    {% else %}
+    {% elif  perms.accounts.rental_manager %}
       <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=viol" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
     {% endif%}
     </div>
     <div class="col">
      {% if object.case_num %}
       {{ object.case_num }}
-      {% else %}
-      <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=case" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a> 
+      {% elif  perms.accounts.rental_manager %}
+          <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=case" class="btn btn-outline-success btn-sm float-end" >Attach a Case</a>
      {% endif%}
     </div>
 
     <div class="col">
       {% if object.bow_num %}
       {{ object.bow_num }}
-      {% else %}
-        <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=bow" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a> 
+      {% elif  perms.accounts.rental_manager %}
+          <a href="{% url 'rental-attach' %}?entry_num={{ object.entry_num }}&item=bow" class="btn btn-outline-success btn-sm float-end" >Attach a Bow</a>
       {% endif%}
 
     </div>

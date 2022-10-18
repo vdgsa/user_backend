@@ -2,7 +2,11 @@
 
 {% block content %}
 
-<p>Welcome Rental Manager!</p>
+{% if  perms.accounts.rental_manager %}
+    <p>Welcome Rental Viol Manager!</p>
+{% elif  perms.accounts.rental_viewer %}
+    <p>Welcome Rental Viol Viewer!</p>
+{% endif %}
 
 <p>
 {% comment %} 

@@ -36,7 +36,7 @@
       <tbody>
         {% for item in object_list %}
         <tr>
-          <td><a href="{% url 'wait-update' item.entry_num%}"><i class="bi bi-pencil"></i></a>
+          <td>{% if  perms.accounts.rental_manager %}<a href="{% url 'wait-update' item.entry_num%}"><i class="bi bi-pencil"></i></a>{% endif %}
           <td><a href="{% url 'wait-detail' item.entry_num%}"><i class="bi bi-eye"></i></a>
           </td>
           <td>
@@ -69,7 +69,9 @@
           <td>{{item.get_size_display|default_if_none:""}}</td>
           <td>{{item.date_req}}</td>
           <td class="text-nowrap">
+            {% if  perms.accounts.rental_manager %} 
             <a href="{% url 'soft-delete' 'WaitingList' item.entry_num %}" title="Remove"><i class="bi bi-trash"></i></a>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}

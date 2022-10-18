@@ -9,7 +9,10 @@
 </style>
 <div class="card text-end">
   <div class="card-header">
-    <a class="btn btn-primary" href="{% url 'add-bow' %}">Add Bow</a>
+
+    {% if  perms.accounts.rental_manager %}
+      <a class="btn btn-primary" href="{% url 'add-bow' %}">Add Bow</a>
+    {% endif %}
   </div>
 </div>
 
