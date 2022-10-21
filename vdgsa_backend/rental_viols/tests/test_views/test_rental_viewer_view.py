@@ -23,7 +23,7 @@ from vdgsa_backend.templatetags.filters import format_datetime_impl
 from .selenium_test_rental_base import SeleniumTestCaseBase
 
 
-class RentalViolLIstTestCase(SeleniumTestCaseBase):
+class RentalViolViewerTestCase(SeleniumTestCaseBase):
     viols: List[Viol]
     rental_viewer: User
 
@@ -32,6 +32,7 @@ class RentalViolLIstTestCase(SeleniumTestCaseBase):
         _test_data_init(self)
 
     def test_no_access_to_edit_page(self) -> None:
+        print('Rental viewer: test_no_access_to_edit_page')
         self.login_as(self.rental_viewer, dest_url='/rentals/viols')
         self.selenium.find_element_by_id('viol-table')
 
