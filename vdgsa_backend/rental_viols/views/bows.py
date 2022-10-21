@@ -73,9 +73,6 @@ class ListBowsView(RentalViewBase, ListView):
         else:
             queryset = Bow.objects.get_all()
 
-        # for bow in queryset:
-            # print(bow.__dict__)
-
         return queryset
 
 

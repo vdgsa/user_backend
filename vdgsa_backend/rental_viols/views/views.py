@@ -474,7 +474,6 @@ class ListRentersView(RentalViewBase, ListView):
                 (Q(rentalhistory__event=RentalEvent.rented) | Q(
                     rentalhistory__event=RentalEvent.renewed)))
 
-        print('sql', queryset.query)
         return queryset.annotate(num_rentals=Count('rentalhistory')).annotate(
             rental_end_date=Max('rentalhistory__rental_end', filter=Q(
                 pk=F('rentalhistory__viol_num__renter'))))

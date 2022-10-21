@@ -13,7 +13,9 @@
 </script>
 <div class="card text-end">
   <div class="card-header">
+    {% if  perms.accounts.rental_manager %} 
     <a class="btn btn-primary" href="{% url 'add-waiting' %}">Add New Person</a>
+    {% endif %}
   </div>
 </div>
 
