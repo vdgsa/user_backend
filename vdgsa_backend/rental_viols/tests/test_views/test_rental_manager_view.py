@@ -38,7 +38,7 @@ class RentalHomeTestCase(SeleniumTestCaseBase):
             'pk': self.viols[1].pk}))
 
 
-class RentalViolLIstTestCase(SeleniumTestCaseBase):
+class RentalViolManagerTestCase(SeleniumTestCaseBase):
     viols: List[Viol]
     rental_manager: User
 
@@ -47,6 +47,7 @@ class RentalViolLIstTestCase(SeleniumTestCaseBase):
         _test_data_init(self)
 
     def test_access_to_edit_page(self) -> None:
+        print('Rental Manager: test_access_to_edit_page')
         self.login_as(self.rental_manager, dest_url='/rentals/viols')
         self.selenium.find_element_by_id('viol-table')
 

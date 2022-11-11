@@ -35,7 +35,7 @@ from vdgsa_backend.rental_viols.models import (
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 from vdgsa_backend.rental_viols.views.utils import (
-    NotesOnlyHistoryForm, RentalViewBase, ReserveViolModelForm, _createUserStamp
+    NotesOnlyHistoryForm, RentalEditBase, RentalViewBase, ReserveViolModelForm, _createUserStamp
 )
 
 
@@ -52,7 +52,7 @@ class WaitingDetailView(RentalViewBase, DetailView):
     template_name = 'wait/detail.html'
 
 
-class UpdateWaitingView(RentalViewBase, SuccessMessageMixin, UpdateView):
+class UpdateWaitingView(RentalEditBase, SuccessMessageMixin, UpdateView):
     model = WaitingList
     template_name = 'wait/update.html'
     form_class = ReserveViolModelForm

@@ -25,9 +25,9 @@
             <td>{{item.strings}} </td>
             <th scope="row">Renter</th>
             <td>
-            {% if  item.renter %}
-              <a href="{% url 'renter-info' item.renter.pk %}" title="Go to Renter">{{item.renter.first_name}} {{item.renter.last_name}}</a>
-            {% endif %}
+              {% if  item.renter %}
+                <a href="{% url 'renter-info' item.renter.pk %}" title="Go to Renter">{{item.renter.first_name}} {{item.renter.last_name}}</a>
+              {% endif %}
             </td>
             </tr>
 
@@ -65,8 +65,10 @@
               {% if  item.storer %}
               <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
               {% endif %}
+              {% if  perms.accounts.rental_manager %}
               <a class="btn btn-sm btn-secondary float-end me-2" onClick="show_custodian_modal()"
                 >Change</a>
+              {% endif %}
             </td>
             </tr>
             

@@ -36,7 +36,7 @@ from vdgsa_backend.rental_viols.models import (
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 from vdgsa_backend.rental_viols.views.utils import (
-    NotesOnlyHistoryForm, RentalViewBase, ReserveViolModelForm, _createUserStamp
+    NotesOnlyHistoryForm, RentalEditBase, RentalViewBase, ReserveViolModelForm, _createUserStamp
 )
 
 
@@ -73,7 +73,7 @@ class RentalHistoryForm(forms.ModelForm):
         }
 
 
-class AttachToRentalView(RentalViewBase, View):
+class AttachToRentalView(RentalEditBase, View):
     """Attach a Viol or accessory to Rental Agreement"""
     template_name = 'renters/attatchToRental.html'
 
@@ -117,7 +117,7 @@ class AttachToRentalView(RentalViewBase, View):
         return redirect(reverse('rental-detail', args=[self.request.POST.get('entry_num')]))
 
 
-class AttachToViolView(RentalViewBase, View):
+class AttachToViolView(RentalEditBase, View):
     template_name = 'viols/attatchToViol.html'
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
@@ -187,7 +187,7 @@ class RentOutForm(forms.Form):
     user_id = forms.IntegerField()
 
 
-class RentOutView(RentalViewBase, FormView):
+class RentOutView(RentalEditBase, FormView):
     """get to select Rental User"""
     form_class = RentOutForm
 
@@ -249,7 +249,7 @@ class RentalAgreementForm(forms.ModelForm):
         }
 
 
-class RentalCreateView(RentalViewBase, View):
+class RentalCreateView(RentalEditBase, View):
     """Create Rental Agreement"""
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
@@ -259,7 +259,7 @@ class RentalCreateView(RentalViewBase, View):
         return render(request, 'renters/createAgreement.html', context)
 
 
-class RentalRenewView(RentalViewBase, FormView):
+class RentalRenewView(RentalEditBase, FormView):
     """Renew Rental Agreement"""
     template_name = 'renters/rentOut.html'
     form_class = RentalAgreementForm
@@ -307,7 +307,7 @@ class RentalReturnForm(forms.ModelForm):
         }
 
 
-class RentalReturnView(RentalViewBase, FormView):
+class RentalReturnView(RentalEditBase, FormView):
     """Return Rental """
     template_name = './return.html'
     form_class = RentalReturnForm
@@ -395,7 +395,7 @@ class RentalContractForm(forms.ModelForm):
         fields = ('document',)
 
 
-class UploadRentalView(RentalViewBase, CreateView):
+class UploadRentalView(RentalEditBase, CreateView):
     model = RentalContract
     form_class = RentalContractForm
     success_url = reverse_lazy('list-renters')
@@ -424,7 +424,7 @@ class UploadRentalView(RentalViewBase, CreateView):
         return super().get_context_data(**kwargs)
 
 
-class UpdateRentalView(RentalViewBase, SuccessMessageMixin, UpdateView):
+class UpdateRentalView(RentalEditBase, SuccessMessageMixin, UpdateView):
     model = RentalHistory
     form_class = RentalHistoryForm
     template_name = 'renters/updateRental.html'
@@ -474,7 +474,6 @@ class ListRentersView(RentalViewBase, ListView):
                 (Q(rentalhistory__event=RentalEvent.rented) | Q(
                     rentalhistory__event=RentalEvent.renewed)))
 
-        print('sql', queryset.query)
         return queryset.annotate(num_rentals=Count('rentalhistory')).annotate(
             rental_end_date=Max('rentalhistory__rental_end', filter=Q(
                 pk=F('rentalhistory__viol_num__renter'))))
@@ -521,7 +520,7 @@ class RentersDetailView(RentalViewBase, DetailView):
         return context
 
 
-class SoftDeleteView(RentalViewBase, View):
+class SoftDeleteView(RentalEditBase, View):
 
     def returnUrl(self, className):
         return {

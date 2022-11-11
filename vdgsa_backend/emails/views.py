@@ -67,7 +67,8 @@ class ExpiringEmails():
 
         targetDate = subtract_months(timezone.now(), months)
         expiring_members = User.objects.filter(
-            ~Q(owned_subscription__membership_type=MembershipType.lifetime)
+            Q(is_deceased=False)
+            & ~Q(owned_subscription__membership_type=MembershipType.lifetime)
             & ~Q(owned_subscription__membership_type=MembershipType.complementary)
             & Q(owned_subscription__valid_until__month=targetDate.month)
             & Q(owned_subscription__valid_until__year=targetDate.year)

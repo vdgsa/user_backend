@@ -109,5 +109,39 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
                       member.subscription.valid_until.strftime("%m/%d/%Y"))
                 emailcounter += 1
 
+        print('test_expiring_emails should be 5', emailcounter)
         # ONLY 3 TEST USERS SHOULD PRODUCE AN EMAIL.
         self.assertEqual(emailcounter, 5)
+
+    def test_is_deceased(self) -> None:
+        user = User.objects.create_user('expired-month-ago@user.user',
+                                        password='fakefakefake')
+        subscription = MembershipSubscription.objects.create(
+            owner=user,
+            membership_type=MembershipType.regular,
+            valid_until=subtract_months(timezone.now(), 1)
+        )
+        user.is_deceased = True
+        user.save()
+        deceased = User.objects.create_user('exp-in-an-hour@user.user', password='fakefakefake')
+        subscription = MembershipSubscription.objects.create(
+            owner=deceased,
+            membership_type=MembershipType.regular,
+            valid_until=timezone.now() + timezone.timedelta(hours=1)
+        )
+        deceased.is_deceased = True
+        deceased.save()
+
+        expemails = ExpiringEmails()
+        emailcounter = 0
+        jobs = [EXPIRING_THIS_MONTH, EXPIRED_LAST_MONTH, EXPIRED_PAST]
+        for job in jobs:
+            expiring_members = expemails.list_expiring_members(job['months'])
+            for member in expiring_members:
+                print(job['title'], member.email,
+                      member.subscription.valid_until.strftime("%m/%d/%Y"))
+                emailcounter += 1
+
+        print('test_is_deceased should be zero', emailcounter)
+        # ONLY 3 TEST USERS SHOULD PRODUCE AN EMAIL.
+        self.assertEqual(emailcounter, 0)

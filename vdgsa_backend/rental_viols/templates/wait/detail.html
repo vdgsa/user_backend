@@ -5,9 +5,11 @@
 
 <div class="card text-end">
   <div class="card-header">
+
+    {% if  perms.accounts.rental_manager %} 
     <a href="{% url 'wait-update' object.pk %}" class="btn btn-primary" >Edit</a>    
     <a href="{% url 'soft-delete' 'WaitingList' object.entry_num %}" class="btn btn-primary" title="Remove"><i class="bi bi-trash"></i> Remove</a>
-
+    {% endif %}
   </div>
 </div>
 

@@ -35,7 +35,7 @@ from vdgsa_backend.rental_viols.models import (
 )
 from vdgsa_backend.rental_viols.permissions import is_rental_manager
 from vdgsa_backend.rental_viols.views.utils import (
-    NotesOnlyHistoryForm, RentalViewBase, ReserveViolModelForm, _createUserStamp
+    NotesOnlyHistoryForm, RentalEditBase, RentalViewBase, ReserveViolModelForm, _createUserStamp
 )
 
 
@@ -105,7 +105,7 @@ class CaseForm(forms.ModelForm):
         }
 
 
-class AddCaseView(RentalViewBase, SuccessMessageMixin, CreateView):
+class AddCaseView(RentalEditBase, SuccessMessageMixin, CreateView):
     model = Case
     form_class = CaseForm
     initial = {
@@ -115,7 +115,7 @@ class AddCaseView(RentalViewBase, SuccessMessageMixin, CreateView):
     template_name = 'cases/add.html'
 
 
-class UpdateCaseView(RentalViewBase, SuccessMessageMixin, UpdateView):
+class UpdateCaseView(RentalEditBase, SuccessMessageMixin, UpdateView):
     model = Case
     form_class = CaseForm
     template_name = 'cases/update.html'
@@ -169,7 +169,7 @@ class AvailableCaseView(RentalViewBase, FormView):
         return reverse('case-detail', args=[self.request.POST.get('pk')])
 
 
-class RetireCaseView(RentalViewBase, FormView):
+class RetireCaseView(RentalEditBase, FormView):
     """Retire Case"""
     template_name = './retireMulti.html'
     form_class = NotesOnlyHistoryForm

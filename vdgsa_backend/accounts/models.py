@@ -177,5 +177,6 @@ class AccountPermissions(models.Model):
         permissions = (
             ('membership_secretary', 'Membership Secretary'),
             ('board_member', 'Board Member'),
-            ('rental_manager', 'Rental Manager')
+            ('rental_manager', 'Rental Manager'),
+            ('rental_viewer', 'Rental View Only')
         )

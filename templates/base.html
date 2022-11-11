@@ -135,7 +135,7 @@
           </li>
           {% endif %}
 
-          {% if perms.accounts.rental_manager %}
+          {% if  perms.accounts.rental_manager or perms.accounts.rental_viewer %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'rentals' %}">Rental Viols</a>
           </li>
