@@ -43,6 +43,7 @@ def stripe_officer_email_view(request: HttpRequest, *args: Any, **kwargs: Any) -
         for key, value in event.data.object.metadata.items():
             metadata_str += f'{key}: {value}\n'
 
+        customer = stripe.Customer.retrieve(event.data.object.customer)
         customer_email = event.data.object.customer_email
         for item in line_items.data:
             product = stripe.Product.retrieve(item.price.product)
@@ -51,7 +52,7 @@ def stripe_officer_email_view(request: HttpRequest, *args: Any, **kwargs: Any) -
                 recipients += LINE_ITEM_NAMES_TO_OFFICER_EMAILS[product.name]
 
             email = EmailMessage(
-                subject=f'{customer_email} has made a {product.name} payment',
+                subject=f'{customer["name"]} ({customer_email}) has made a {product.name} payment',
                 from_email=None,
                 reply_to=customer_email,
                 to=recipients,
