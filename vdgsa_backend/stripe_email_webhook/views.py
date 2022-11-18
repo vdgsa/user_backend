@@ -4,7 +4,7 @@ import json
 from typing import Any, Dict, Final, List
 
 import stripe  # type: ignore
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -50,16 +50,18 @@ def stripe_officer_email_view(request: HttpRequest, *args: Any, **kwargs: Any) -
             if product.name in LINE_ITEM_NAMES_TO_OFFICER_EMAILS:
                 recipients += LINE_ITEM_NAMES_TO_OFFICER_EMAILS[product.name]
 
-            send_mail(
+            email = EmailMessage(
                 subject=f'{customer_email} has made a {product.name} payment',
                 from_email=None,
-                recipient_list=recipients,
-                message=f'{customer_email} has made a '
+                reply_to=customer_email,
+                to=recipients,
+                body=f'{customer_email} has made a '
                         f'{item.price.unit_amount / 100:.2f}{item.price.currency} '
                         f'payment of type "{product.name}".\n\n'
                         f'Description: {product.description}\n\n'
                         + metadata_str
             )
+            email.send(fail_silently=True)
 
         return HttpResponse('Emails sent')
 
