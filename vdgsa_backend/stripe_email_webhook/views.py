@@ -54,7 +54,7 @@ def stripe_officer_email_view(request: HttpRequest, *args: Any, **kwargs: Any) -
             email = EmailMessage(
                 subject=f'{customer["name"]} ({customer_email}) has made a {product.name} payment',
                 from_email=None,
-                reply_to=customer_email,
+                reply_to=[customer_email],
                 to=recipients,
                 body=f'{customer_email} has made a '
                         f'{item.price.unit_amount / 100:.2f}{item.price.currency} '
