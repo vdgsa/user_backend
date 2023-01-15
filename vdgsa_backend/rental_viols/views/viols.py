@@ -108,6 +108,7 @@ class DetachFromViolView(RentalEditBase, View):
                 bow = Bow.objects.get(pk=self.request.GET['bow_num'])
                 bow.viol_num = None
                 bow.status = RentalState.detached
+                bow.storer = viol.storer
                 bow.save()
                 history = RentalHistory.objects.create(
                     viol_num=viol,
@@ -120,6 +121,7 @@ class DetachFromViolView(RentalEditBase, View):
                 case = Case.objects.get(pk=self.request.GET['case_num'])
                 case.viol_num = None
                 case.status = RentalState.detached
+                case.storer = viol.storer
                 case.save()
                 history = RentalHistory.objects.create(
                     viol_num=viol,
