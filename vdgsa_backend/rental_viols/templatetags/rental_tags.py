@@ -22,10 +22,11 @@ def history_table(history):
 
 
 @register.inclusion_tag("instrument_detail.html")
-def instrument_detail(rentalItemInstrument, request):
+def instrument_detail(rentalItemInstrument, request, perms):
     return {
         "item": rentalItemInstrument,
         "request": request,
+        "perms": perms,
 
     }
 
