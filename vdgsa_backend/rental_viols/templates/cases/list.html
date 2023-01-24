@@ -8,14 +8,22 @@
 }
 </style>
 
-<div class="card text-end">
+<div class="card ">
   <div class="card-header">
-
-    {% if  perms.accounts.rental_manager %} 
-      <a class="btn btn-primary" href="{% url 'add-case' %}">Add Case</a>
+    <div class="float-start">
+      <h3 >Cases</h3>
+    </div>
+    <div class="float-end">
+      {% if  perms.accounts.rental_manager %} 
+      <a class="btn btn-primary " href="{% url 'add-case' %}">Add Case</a>
     {% endif %}
-
+    </div>
   </div>
+ </div>
+
+
+
+
 </div>
 <div class="card">
   <div class="card-body">
@@ -24,9 +32,10 @@
         <div class="col">
           <label for="filter">Status:</label>
           <select class="form-control" name="state" id="filter" onchange="javascript:this.form.submit()">
-            <option value="available" {% ifequal 'available' filter.state  %}selected{% endifequal %}>Available</option>
+            <option value="attached" {% ifequal 'attached' filter.state  %}selected{% endifequal %}>Attached</option>
             <option value='rented' {% ifequal 'rented' filter.state  %}selected{% endifequal %}>Rented</option>
             <option value='retired' {% ifequal 'retired' filter.state  %}selected{% endifequal %}>Retired</option>
+            <option value='unattached' {% ifequal 'unattached' filter.state  %}selected{% endifequal %}>Unattached</option>
             <option value='all' {% ifequal 'all' filter.state  %}selected{% endifequal %}>All</option>
           </select>
         </div>
@@ -46,6 +55,7 @@
           <th>Size</th>
           <th>Maker</th>
           <th>Value</th>
+          <th>Attached to (viol)</th>
           <th>Program</th>
           <th>Custodian</th>
           <th>Status</th>
@@ -60,11 +70,21 @@
           <td>{{item.get_size_display}}</td>
           <td>{{item.maker}}</td>
           <td style="text-align: right;">{{item.value | dollars}}</td>
+          <td>
+            {% if item.viol_num %}
+            <a href="{% url 'viol-detail' pk=item.viol_num.pk %}">{{item.viol_num | default_if_none:""}}</a>
+            {% endif %}</td>
           <td>{{item.program}}</td>
           <td>
-              {% if  item.storer %}
-              <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
+
+            {% if item.viol_num %}
+              {% if item.viol_num.storer %}
+                <a href="{% url 'cust-detail' item.viol_num.storer.pk %}" >{{item.viol_num.storer.first_name}} {{item.viol_num.storer.last_name}}</a>
+              {% elif item.storer %}
+                <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
               {% endif %}
+            {% endif %}
+           </td>
           </td>
           <td>
               {% if item.viol_num %}
@@ -72,6 +92,7 @@
               {% else %}
               {{item.state}}
               {% endif %}</td>
+              
         </tr>
         {% endfor %}
       </tbody>

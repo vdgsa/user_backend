@@ -96,6 +96,7 @@ class Bow(RentalItemInstrument):
         related_name='bows'
     )
 
+    status = models.TextField(choices=RentalState.choices, default=RentalState.unattached)
     objects = AccessoryManager()
 
     def __str__(self) -> str:
@@ -114,6 +115,17 @@ class Bow(RentalItemInstrument):
     def get_absolute_url(self):
         return u'/rentals/bows/%d' % self.bow_num
 
+    @property
+    def calcStatus(self):
+        if(self.state == RentalState.retired):
+            return self.state
+        elif(self.viol_num):
+            if(self.viol_num.status == RentalState.available):
+                return RentalState.attached
+            return self.viol_num.status
+        else:
+            return RentalState.unattached
+
 
 class Case(RentalItemInstrument):
     case_num = models.AutoField(primary_key=True)
@@ -122,7 +134,7 @@ class Case(RentalItemInstrument):
         on_delete=models.SET_NULL, blank=True, null=True, default=None,
         related_name='cases'
     )
-
+    status = models.TextField(choices=RentalState.choices, default=RentalState.unattached)
     objects = AccessoryManager()
 
     def __str__(self) -> str:
@@ -140,6 +152,17 @@ class Case(RentalItemInstrument):
 
     def get_absolute_url(self):
         return u'/rentals/cases/%d' % self.case_num
+
+    @property
+    def calcStatus(self):
+        if(self.state == RentalState.retired):
+            return self.state
+        elif(self.viol_num):
+            if(self.viol_num.status == RentalState.available):
+                return RentalState.attached
+            return self.viol_num.status
+        else:
+            return RentalState.unattached
 
 
 class Image(models.Model):

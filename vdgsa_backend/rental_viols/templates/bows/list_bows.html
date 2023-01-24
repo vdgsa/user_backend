@@ -9,10 +9,14 @@
 </style>
 <div class="card text-end">
   <div class="card-header">
-
-    {% if  perms.accounts.rental_manager %}
-      <a class="btn btn-primary" href="{% url 'add-bow' %}">Add Bow</a>
-    {% endif %}
+    <div class="float-start">
+      <h3 >Bows</h3>
+    </div>
+    <div class="float-end">
+      {% if  perms.accounts.rental_manager %}
+        <a class="btn btn-primary" href="{% url 'add-bow' %}">Add Bow</a>
+      {% endif %}
+    </div>
   </div>
 </div>
 
@@ -23,9 +27,10 @@
         <div class="col">
           <label for="filter">Status:</label>
           <select class="form-control" name="state" id="filter" onchange="javascript:this.form.submit()">
-            <option value="available" {% ifequal 'available' filter.state  %}selected{% endifequal %}>Available</option>
+            <option value="attached" {% ifequal 'attached' filter.state  %}selected{% endifequal %}>Attached</option>
             <option value='rented' {% ifequal 'rented' filter.state  %}selected{% endifequal %}>Rented</option>
             <option value='retired' {% ifequal 'retired' filter.state  %}selected{% endifequal %}>Retired</option>
+            <option value='unattached' {% ifequal 'unattached' filter.state  %}selected{% endifequal %}>Unattached</option>
             <option value='all' {% ifequal 'all' filter.state  %}selected{% endifequal %}>All</option>
           </select>
         </div>
@@ -45,6 +50,7 @@
           <th>Value</th>
           <th>Attached to (viol)</th>
           <th>Program</th>
+          <th>Custodian</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -55,14 +61,23 @@
           <td>{{bow.get_size_display}}</td>
           <td>{{bow.maker}}</td>
           <td style="text-align: right;">{{bow.value | dollars}}</td>
-          <td>{{bow.viol_num | default_if_none:""}}</td>
+          <td>{% if bow.viol_num %}
+                <a href="{% url 'viol-detail' pk=bow.viol_num.pk %}">{{bow.viol_num | default_if_none:""}}</a>
+              {% endif %}</td>
           <td>{{bow.program | default_if_none:""}}</td>
           <td>
-              {% if bow.viol_num %}
-              {{bow.viol_num.status}}
-              {% else %}
-              {{bow.state}}
-              {% endif %}</td>
+
+            {% if bow.viol_num %}
+              {% if bow.viol_num.storer %}
+                <a href="{% url 'cust-detail' bow.viol_num.storer.pk %}" >{{bow.viol_num.storer.first_name}} {{bow.viol_num.storer.last_name}}</a>
+              {% elif bow.storer %}
+                <a href="{% url 'cust-detail' bow.storer.pk %}" >{{bow.storer.first_name}} {{bow.storer.last_name}}</a>
+              {% endif %}
+            {% endif %}
+           </td>
+          <td>
+              {{bow.calcStatus}}
+              </td>
         </tr>
         {% endfor %}
       </tbody>

@@ -65,8 +65,10 @@ class ListCasesView(RentalViewBase, ListView):
         filter = self.getFilter()
         self.request.session[self.filterSessionName] = filter
 
-        if filter['state'] == 'available':
-            queryset = Case.objects.get_available()
+        if filter['state'] == 'attached':
+            queryset = Case.objects.get_acc_attached()
+        elif filter['state'] == 'unattached':
+            queryset = Case.objects.get_acc_unattached()
         elif filter['state'] == 'retired':
             queryset = Case.objects.get_retired()
         elif filter['state'] == 'rented':
@@ -110,6 +112,7 @@ class AddCaseView(RentalEditBase, SuccessMessageMixin, CreateView):
     form_class = CaseForm
     initial = {
         'vdgsa_number': Case.objects.get_next_accessory_vdgsa_num,
+        'status': RentalState.unattached,
         'accession_date': datetime.date.today}
     success_message = "%(size)s case was created successfully"
     template_name = 'cases/add.html'
@@ -134,6 +137,7 @@ class CaseDetailView(RentalViewBase, DetailView):
     def get_context_data(self, **kwargs):
         context = super(CaseDetailView, self).get_context_data(**kwargs)
         context['images'] = Image.objects.get_images('case', context['case'].pk)
+        context['RentalState'] = RentalState
         return context
 
 
@@ -185,6 +189,7 @@ class RetireCaseView(RentalEditBase, FormView):
     def form_valid(self, form):
         item = Case.objects.get(pk=self.kwargs['pk'])
         item.status = RentalState.retired
+        item.state = RentalState.retired
         item.save()
         history = RentalHistory.objects.create(
             case_num=item,

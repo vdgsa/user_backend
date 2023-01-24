@@ -140,7 +140,8 @@ class ChangeCustView(RentalEditBase, SuccessMessageMixin, View):
             custodian = User.objects.get(pk=self.request.POST.get('user_id'))
         else:
             custodian = None
-
+        
+        print(self.request.POST)
         if self.request.POST.get('viol_num'):
             viol = Viol.objects.get(pk=self.request.POST.get('viol_num'))
             viol.storer = custodian
