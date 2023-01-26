@@ -33,7 +33,7 @@ class AccessoryQuerySet(models.QuerySet):
         return self.filter(viol_num__isnull=not attached)
 
     def get_acc_attached_status(self, attached):
-        return self.filter(viol_num__isnull=not attached)
+        return self.filter(Q(viol_num__isnull=not attached) & ~Q(state=RentalState.retired))
 
     def get_status(self, status, size):
         if size:
