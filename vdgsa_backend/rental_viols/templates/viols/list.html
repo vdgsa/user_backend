@@ -94,10 +94,13 @@
               {% endfor %}
             {% endif %}
           </td>
-          <td data-sort="{{item.rental_end_date | date:'Y-m-d' }}">
 
           {% if item.renter %}
+          <td data-sort="{{item.rental_end_date | date:'Y-m-d' }}">
               {{item.rental_end_date}}
+          </td>
+          {% else %}
+          <td data-sort=""></td>
           {% endif %}
           </td>
           <td>{{item.status}}</td>
