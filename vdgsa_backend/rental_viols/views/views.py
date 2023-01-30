@@ -123,9 +123,12 @@ class AttachToViolView(RentalEditBase, View):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         context = {}
         if self.request.method == 'GET' and 'viol_num' in self.request.GET:
-            context['viol'] = Viol.objects.get(pk=self.request.GET['viol_num'])
-            context['avail_cases'] = Case.objects.get_unattached(context['viol'].size)
-            context['avail_bows'] = Bow.objects.get_unattached(context['viol'].size)
+            context['viol'] = Viol.objects.get(
+                pk=self.request.GET['viol_num']).order_by('vdgsa_number')
+            context['avail_cases'] = Case.objects.get_unattached(
+                context['viol'].size).order_by('vdgsa_number')
+            context['avail_bows'] = Bow.objects.get_unattached(
+                context['viol'].size).order_by('vdgsa_number')
             # Get List of available bows and cases
         else:
             size = ''
@@ -141,7 +144,7 @@ class AttachToViolView(RentalEditBase, View):
                     size = context['bow'].size
 
             # Get List of bachelor viols
-            context['viols'] = Viol.objects.get_attachable(size)
+            context['viols'] = Viol.objects.get_attachable(size).order_by('vdgsa_number')
 
         return render(
             self.request,
@@ -490,6 +493,13 @@ class ListCustodianView(RentalViewBase, ListView):
 
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super(ListCustodianView, self).get_context_data(**kwargs)
+        context['bows'] = (Bow.objects.filter(Q(viol_num__isnull=True) & Q(storer__isnull=False)))
+        context['cases'] = (Case.objects.filter(Q(viol_num__isnull=True)
+                                                & Q(storer__isnull=False)))
+        return context
+
     template_name = 'custodians/list.html'
 
 
@@ -500,6 +510,10 @@ class CustodianDetailView(RentalViewBase, DetailView):
     def get_context_data(self, **kwargs):
         context = super(CustodianDetailView, self).get_context_data(**kwargs)
         context['viols'] = Viol.objects.filter(storer=self.kwargs['pk'])
+        context['bows'] = Bow.objects.filter(
+            Q(viol_num__isnull=True) & Q(storer=self.kwargs['pk']))
+        context['cases'] = Case.objects.filter(
+            Q(viol_num__isnull=True) & Q(storer=self.kwargs['pk']))
         return context
 
 

@@ -64,8 +64,10 @@ class ListBowsView(RentalViewBase, ListView):
         filter = self.getFilter()
         self.request.session[self.filterSessionName] = filter
 
-        if filter['state'] == 'available':
-            queryset = Bow.objects.get_available()
+        if filter['state'] == 'attached':
+            queryset = Bow.objects.get_acc_attached()
+        elif filter['state'] == 'unattached':
+            queryset = Bow.objects.get_acc_unattached()
         elif filter['state'] == 'retired':
             queryset = Bow.objects.get_retired()
         elif filter['state'] == 'rented':
@@ -110,6 +112,7 @@ class AddBowView(RentalEditBase, SuccessMessageMixin, CreateView):
     form_class = BowForm
     initial = {
         'vdgsa_number': Bow.objects.get_next_accessory_vdgsa_num,
+        'status': RentalState.unattached,
         'accession_date': datetime.date.today}
     success_message = "%(size)s bow was created successfully"
     template_name = 'bows/add_bow.html'
@@ -132,6 +135,7 @@ class BowDetailView(RentalViewBase, DetailView):
     def get_context_data(self, **kwargs):
         context = super(BowDetailView, self).get_context_data(**kwargs)
         context['images'] = Image.objects.get_images('bow', context['bow'].pk)
+        context['RentalState'] = RentalState
         return context
 
 

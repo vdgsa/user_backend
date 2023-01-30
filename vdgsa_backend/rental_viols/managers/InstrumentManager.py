@@ -32,6 +32,9 @@ class AccessoryQuerySet(models.QuerySet):
             return self.filter(size=size).filter(viol_num__isnull=not attached)
         return self.filter(viol_num__isnull=not attached)
 
+    def get_acc_attached_status(self, attached):
+        return self.filter(Q(viol_num__isnull=not attached) & ~Q(state=RentalState.retired))
+
     def get_status(self, status, size):
         if size:
             return self.filter(size=size).filter(state=status)
@@ -85,6 +88,12 @@ class AccessoryManager(models.Manager):
 
     def get_unattached(self, size):
         return self.get_queryset().get_attached_status(attached=False, size=self.sizeMatch(size))
+
+    def get_acc_attached(self):
+        return self.get_queryset().get_acc_attached_status(attached=True)
+
+    def get_acc_unattached(self):
+        return self.get_queryset().get_acc_attached_status(attached=False)
 
     def get_next_accessory_vdgsa_num(self):
         maxVal = self.get_queryset().aggregate(Max('vdgsa_number')).get('vdgsa_number__max')

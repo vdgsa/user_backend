@@ -11,9 +11,15 @@
 
 <div class="card text-end">
   <div class="card-header">
+    <div class="float-start">
+      <h3 >Renters</h3>
+    </div>
+    <div class="float-end">
+   
     {% if  perms.accounts.rental_manager %} 
     <button class="btn btn-primary " onclick="location.href='{% url 'viol-rentOut' %}'">New Rental</button>
-    {% endif %}
+    {% endif %} 
+    </div>
   </div>
 </div>
 

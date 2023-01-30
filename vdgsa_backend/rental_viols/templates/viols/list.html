@@ -5,10 +5,14 @@
 
 <div class="card text-end">
   <div class="card-header">
-
-    {% if  perms.accounts.rental_manager %}
-      <a class="btn btn-primary" href="{% url 'add-viol' %}">Add Viol</a>
-    {% endif %}
+    <div class="float-start">
+      <h3 >Viols</h3>
+    </div>
+    <div class="float-end">
+      {% if  perms.accounts.rental_manager %}
+        <a class="btn btn-primary" href="{% url 'add-viol' %}">Add Viol</a>
+      {% endif %}
+    </div>
     
   </div>
 </div>
@@ -90,10 +94,14 @@
               {% endfor %}
             {% endif %}
           </td>
-          <td>
-            {% if item.renter %}
+
+          {% if item.renter %}
+          <td data-sort="{{item.rental_end_date | date:'Y-m-d' }}">
               {{item.rental_end_date}}
-            {% endif %}
+          </td>
+          {% else %}
+          <td data-sort=""></td>
+          {% endif %}
           </td>
           <td>{{item.status}}</td>
         </tr>

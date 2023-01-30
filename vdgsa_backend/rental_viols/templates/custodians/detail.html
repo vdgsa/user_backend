@@ -44,7 +44,6 @@
             <th>Maker</th>
             <th>Value</th>
             <th>Program</th>
-            <th>Reserved for</th>
             <th>Status</th>
           
           </tr>
@@ -60,22 +59,55 @@
             <td>{{item.maker}}</td>
             <td style="text-align: right;">{{item.value | dollars}}</td>
             <td>{{item.program}}</td>
-            <td>
-            {% if item.waitingList.all %}
-
-                {% for wl in item.waitingList.all %}
-                <div>
-                  {{ wl }}
-                </div>
-                {% endfor %}
-            {% endif %}
-            </td>
-            <td>{{item.state}}</td>
+            <td>{{item.status}}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
    
+      <div class="h3">Unattached Bows</div>
+      <table id="custodian-bow-table" class="table table-striped">
+        <thead>
+          <tr>
+            <th>Custodian</th>
+            <th>Location</th>
+            <th>Bows</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in bows %}
+          {% if item.storer %}
+          <tr>
+            <td><a href="{% url 'cust-detail' item.storer.pk %}">{{item.storer.first_name}} {{item.storer.last_name}}</a></td>
+            <td>{{item.storer.address_city}}, {{item.storer.address_state}}</td>
+            <td><a href="{% url 'bow-detail' item.pk %}">{{item}}</a></td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+      
+      <div class="h3">Unattached Cases</div>
+      <table id="custodian-case-table" class="table table-striped">
+        <thead>
+          <tr>
+            <th>Custodian</th>
+            <th>Location</th>
+            <th>Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cases %}
+          {% if item.storer %}
+          <tr>
+            <td><a href="{% url 'cust-detail' item.storer.pk %}">{{item.storer.first_name}} {{item.storer.last_name}}</a></td>
+            <td>{{item.storer.address_city}}, {{item.storer.address_state}}</td>
+            <td><a href="{% url 'case-detail' item.pk %}">{{item}}</a></td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
     <p><a class="float-end" href="{{request.META.HTTP_REFERER}}">Go back</a></p>
   </div>

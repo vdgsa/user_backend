@@ -6,14 +6,17 @@
   <div class="card-header">
     {% if  perms.accounts.rental_manager %} 
       {% if object.viol_num %}
-      <a href="{% url 'viol-detach' %}?bow_num={{ object.bow_num }}&viol_num={{ object.viol_num.viol_num }}" class="btn btn-primary" >Detach from viol</a> 
+        <a href="{% url 'viol-detach' %}?bow_num={{ object.bow_num }}&viol_num={{ object.viol_num.viol_num }}" class="btn btn-primary" >Detach from viol</a> 
       {% else %}
-      <a href="{% url 'viol-attach' %}?bow_num={{ object.bow_num }}" class="btn btn-primary" >Attach to viol</a> 
+        <a href="{% url 'viol-attach' %}?bow_num={{ object.bow_num }}" class="btn btn-primary" >Attach to viol</a> 
       {% endif %}
-      <a href="{% url 'bow-retire' object.pk %}" class="btn btn-primary">Retire</a> 
-      {% if object.state == RentalState.retired %}
-      <a href="{% url 'bow-avail' object.pk %}" class="btn btn-primary">Unretire</a> 
+
+      {% if object.calcStatus == RentalState.retired %}
+        <a href="{% url 'bow-avail' object.pk %}" class="btn btn-primary">Unretire</a> 
+      {% else %}
+        <a href="{% url 'bow-retire' object.pk %}" class="btn btn-primary">Retire</a> 
       {% endif %}
+      
       <a href="{% url 'bow-update' object.bow_num %}" class="btn btn-primary" >Edit</a>
     {% endif %}
 </div>
@@ -23,18 +26,14 @@
     <div class="col">
       <p class="h3">{{object}}</p>
       <div class="text-end">
-        {% if object.viol_num %}
-        ({{object.viol_num.status}})
-        {% else %}
-        ({{object.state}})
-        {% endif %}
+        ({{object.calcStatus}})
         </div>
     </div>
   </div>
 
   
 
-  {% instrument_detail object request %}
+  {% instrument_detail object request perms%}
 </div>
 
     <div class="row p-3">

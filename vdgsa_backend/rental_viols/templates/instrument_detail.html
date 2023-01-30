@@ -63,8 +63,11 @@
             <td>
               
               {% if  item.storer %}
-              <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
+                <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
+              {% elif  item.viol_num.storer %}
+                <a href="{% url 'cust-detail' item.viol_num.storer.pk %}" >{{item.viol_num.storer.first_name}} {{item.viol_num.storer.last_name}}</a>
               {% endif %}
+
               {% if  perms.accounts.rental_manager %}
               <a class="btn btn-sm btn-secondary float-end me-2" onClick="show_custodian_modal()"
                 >Change</a>
@@ -183,8 +186,8 @@
           {% endif %}
 
         {% else %}
-          {% if item.viol_num %}
             <input type='hidden' name="case_num" value="{{ item.pk }}" />
+            {% if item.viol_num %}
             <input type='hidden' name="viol_num" value="{{ item.viol_num.pk }}" />
             {% for bow in item.viol_num.bows.all %}
               <input type='hidden' name="bow_num" value="{{ bow.bow_num }}" />
