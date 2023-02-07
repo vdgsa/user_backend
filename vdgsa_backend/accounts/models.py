@@ -67,6 +67,7 @@ class User(AbstractUser):
 
     # MEMBERSHIP SECRETARY ONLY
     is_deceased = models.BooleanField(default=False)
+    receives_expiration_reminder_emails = models.BooleanField(default=True)
     notes = models.TextField(blank=True)
     # \MEMBERSHIP SECRETARY ONLY
 

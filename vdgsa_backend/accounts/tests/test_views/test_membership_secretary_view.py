@@ -167,6 +167,7 @@ def _test_data_init(test_obj: _TestData) -> None:
         years_renewed=[2020]
     )
     test_obj.users[1].is_deceased = True
+    test_obj.users[1].receives_expiration_reminder_emails = True
     test_obj.users[1].save()
 
     test_obj.user0_expired_subscription = MembershipSubscription.objects.create(

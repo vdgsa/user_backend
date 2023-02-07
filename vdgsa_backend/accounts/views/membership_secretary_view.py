@@ -140,6 +140,7 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
             'Educational Institution Affiliation',
 
             'Is Deceased',
+            'Receives Expiration Reminder Emails',
             'Notes',
 
             'Do Not Email',
@@ -199,6 +200,7 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
                 'Educational Institution Affiliation': user.educational_institution_affiliation,
 
                 'Is Deceased': user.is_deceased,
+                'Receives Expiration Reminder Emails': user.receives_expiration_reminder_emails,
                 'Notes': user.notes,
 
                 'Do Not Email': user.do_not_email,

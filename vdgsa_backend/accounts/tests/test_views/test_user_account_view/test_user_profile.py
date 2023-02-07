@@ -241,6 +241,7 @@ class UserProfileFormPermissions(TestCase):
     def test_membership_secretary_only_fields_ignored_if_not_membership_secretary(self) -> None:
         user = User.objects.create_user(username='steve@stove.com', password='password')
         self.assertFalse(user.is_deceased)
+        self.assertTrue(user.receives_expiration_reminder_emails)
         self.assertEqual('', user.notes)
 
         self.client.force_login(user)
@@ -252,4 +253,5 @@ class UserProfileFormPermissions(TestCase):
 
         user.refresh_from_db()
         self.assertFalse(user.is_deceased)
+        self.assertTrue(user.receives_expiration_reminder_emails)
         self.assertEqual('', user.notes)
