@@ -310,12 +310,15 @@ class RetireViolView(RentalEditBase, FormView):
     def form_valid(self, form):
         viol = Viol.objects.get(pk=self.kwargs['viol_num'])
         viol.status = RentalState.retired
+        viol.state = RentalState.retired
         viol.save()
         if viol.cases.exists():
             viol.cases.first().status = RentalState.retired
+            viol.cases.first().state = RentalState.retired
             viol.cases.first().save()
         if viol.bows.exists():
             viol.bows.first().status = RentalState.retired
+            viol.bows.first().state = RentalState.retired
             viol.bows.first().save()
         history = RentalHistory.objects.create(
             viol_num=viol,

@@ -100,7 +100,6 @@ class AttachToRentalView(RentalEditBase, View):
             rental = RentalHistory.objects.get(pk=self.request.POST['entry_num'])
             if self.request.POST.get('bow_num'):
                 bow = Bow.objects.get(pk=self.request.POST['bow_num'])
-                bow.status = RentalState.attached
                 bow.save()
                 rental.bow_num = bow
                 rental.save()
@@ -108,7 +107,6 @@ class AttachToRentalView(RentalEditBase, View):
 
             if self.request.POST.get('case_num'):
                 case = Case.objects.get(pk=self.request.POST['case_num'])
-                case.status = RentalState.attached
                 case.save()
                 rental.case_num = case
                 rental.save()
@@ -124,7 +122,7 @@ class AttachToViolView(RentalEditBase, View):
         context = {}
         if self.request.method == 'GET' and 'viol_num' in self.request.GET:
             context['viol'] = Viol.objects.get(
-                pk=self.request.GET['viol_num']).order_by('vdgsa_number')
+                pk=self.request.GET['viol_num'])
             context['avail_cases'] = Case.objects.get_unattached(
                 context['viol'].size).order_by('vdgsa_number')
             context['avail_bows'] = Bow.objects.get_unattached(
@@ -156,7 +154,6 @@ class AttachToViolView(RentalEditBase, View):
             viol = Viol.objects.get(pk=self.request.POST.get('viol_num'))
             if self.request.POST.get('bow_num'):
                 bow = Bow.objects.get(pk=self.request.POST['bow_num'])
-                bow.status = RentalState.attached
                 bow.save()
                 viol.bows.add(bow)
                 history = RentalHistory.objects.create(
@@ -168,7 +165,6 @@ class AttachToViolView(RentalEditBase, View):
 
             if self.request.POST.get('case_num'):
                 case = Case.objects.get(pk=self.request.POST['case_num'])
-                case.status = RentalState.attached
                 case.save()
                 viol.cases.add(case)
                 history = RentalHistory.objects.create(
@@ -335,8 +331,8 @@ class RentalReturnView(RentalEditBase, FormView):
         history = RentalHistory.objects.create(
             renter_num=oldrental.renter_num,
             viol_num=oldrental.viol_num,
-            bow_num=oldrental.bow_num,
-            case_num=oldrental.case_num,
+            bow_num=viol.bows.first() if viol.bows.exists() else None,
+            case_num=viol.cases.first() if viol.cases.exists() else None,
             event=RentalEvent.returned,
             notes=form.cleaned_data['notes'])
         history.save()
@@ -509,11 +505,11 @@ class CustodianDetailView(RentalViewBase, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(CustodianDetailView, self).get_context_data(**kwargs)
-        context['viols'] = Viol.objects.filter(storer=self.kwargs['pk'])
+        context['viols'] = Viol.objects.filter(storer=self.kwargs['pk']).order_by('vdgsa_number')
         context['bows'] = Bow.objects.filter(
-            Q(viol_num__isnull=True) & Q(storer=self.kwargs['pk']))
+            Q(viol_num__isnull=True) & Q(storer=self.kwargs['pk'])).order_by('vdgsa_number')
         context['cases'] = Case.objects.filter(
-            Q(viol_num__isnull=True) & Q(storer=self.kwargs['pk']))
+            Q(viol_num__isnull=True) & Q(storer=self.kwargs['pk'])).order_by('vdgsa_number')
         return context
 
 
