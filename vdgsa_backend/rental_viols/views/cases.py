@@ -143,7 +143,7 @@ class CaseDetailView(RentalViewBase, DetailView):
 
 class AvailableCaseView(RentalViewBase, FormView):
     """Make Available"""
-    template_name = 'viols/available.html'
+    template_name = 'cases/available.html'
     form_class = NotesOnlyHistoryForm
     model = RentalHistory
 
@@ -153,12 +153,13 @@ class AvailableCaseView(RentalViewBase, FormView):
         context = self.get_context_data(**kwargs)
         context['form'] = form
 
-        context['viol'] = Case.objects.get(pk=self.kwargs['pk'])
-        return render(request, 'viols/available.html', context)
+        context['case'] = Case.objects.get(pk=self.kwargs['pk'])
+        return render(request, 'cases/available.html', context)
 
     def form_valid(self, form):
         case = Case.objects.get(pk=self.request.POST['pk'])
         case.status = RentalState.available
+        case.state = None
         case.save()
         history = RentalHistory.objects.create(
             case_num=case,

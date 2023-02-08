@@ -80,7 +80,9 @@
             {% if item.viol_num %}
               {% if item.viol_num.storer %}
                 <a href="{% url 'cust-detail' item.viol_num.storer.pk %}" >{{item.viol_num.storer.first_name}} {{item.viol_num.storer.last_name}}</a>
-              {% elif item.storer %}
+                {% endif %}
+            {% else %}
+                {% if item.storer %}
                 <a href="{% url 'cust-detail' item.storer.pk %}" >{{item.storer.first_name}} {{item.storer.last_name}}</a>
               {% endif %}
             {% endif %}
@@ -90,7 +92,7 @@
               {% if item.viol_num %}
               {{item.viol_num.status}}
               {% else %}
-              {{item.state}}
+              {{item.calcStatus}}
               {% endif %}</td>
               
         </tr>

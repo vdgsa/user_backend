@@ -141,7 +141,7 @@ class BowDetailView(RentalViewBase, DetailView):
 
 class AvailableBowView(RentalViewBase, FormView):
     """Make Available"""
-    template_name = 'viols/available.html'
+    template_name = 'bows/available.html'
     form_class = NotesOnlyHistoryForm
     model = RentalHistory
 
@@ -151,17 +151,13 @@ class AvailableBowView(RentalViewBase, FormView):
         context = self.get_context_data(**kwargs)
         context['form'] = form
 
-        context['viol'] = Bow.objects.get(pk=self.kwargs['pk'])
-        # context['form'] = RentalHistoryForm(
-        #     {"event": RentalEvent.retired, "pk": viol.pk,
-        #         "case_num": viol.cases.first().case_num if viol.cases.exists() else None,
-        #         "bow_num": viol.bows.first().bow_num if viol.bows.exists() else None})
-
-        return render(request, 'viols/available.html', context)
+        context['bow'] = Bow.objects.get(pk=self.kwargs['pk'])
+        return render(request, 'bows/available.html', context)
 
     def form_valid(self, form):
         bow = Bow.objects.get(pk=self.request.POST['pk'])
         bow.status = RentalState.available
+        bow.state = None
         bow.save()
         history = RentalHistory.objects.create(
             bow_num=bow,
@@ -192,6 +188,7 @@ class RetireBowView(RentalEditBase, FormView):
     def form_valid(self, form):
         item = Bow.objects.get(pk=self.kwargs['pk'])
         item.status = RentalState.retired
+        item.state = RentalState.retired
         item.save()
         history = RentalHistory.objects.create(
             bow_num=item,

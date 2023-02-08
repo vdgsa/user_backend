@@ -70,9 +70,11 @@
             {% if bow.viol_num %}
               {% if bow.viol_num.storer %}
                 <a href="{% url 'cust-detail' bow.viol_num.storer.pk %}" >{{bow.viol_num.storer.first_name}} {{bow.viol_num.storer.last_name}}</a>
-              {% elif bow.storer %}
-                <a href="{% url 'cust-detail' bow.storer.pk %}" >{{bow.storer.first_name}} {{bow.storer.last_name}}</a>
               {% endif %}
+            {% else %}
+                {% if bow.storer %}
+                <a href="{% url 'cust-detail' bow.storer.pk %}" >{{bow.storer.first_name}} {{bow.storer.last_name}}</a>
+                {% endif %}
             {% endif %}
            </td>
           <td>

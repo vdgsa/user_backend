@@ -1,0 +1,28 @@
+{% extends '../rentals.html' %}
+{% load rental_tags %}
+{% block content %}
+
+<div class="container border mt-3 mb-3 p-3">
+  <div class="row">
+    <div class="col">
+
+    {% if  perms.accounts.rental_manager %}
+     <p>Make Available {{case}} </p>
+    {% endif %}
+    
+    </div>
+  </div>
+</div>
+
+<form id="case-available-form" method="post" action="{% url 'case-avail' case.case_num %}">
+
+  {% include 'utils/form_body.tmpl' with form=form %}
+  <input type='hidden' name="pk" value="{{ case.pk }}"/>
+
+
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary">Make Available</button>
+  </div>
+</form>
+
+{% endblock %}
