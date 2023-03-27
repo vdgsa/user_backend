@@ -771,7 +771,7 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
     form_class = RegularProgramClassSelectionForm
 
     def get_next_step_url(self) -> str:
-        if self.registration_entry.program == Program.advanced_projects:
+        if self.registration_entry.program == Program.seasoned_players:
             url_name = 'conclave-advanced-projects'
         else:
             url_name = 'conclave-basic-info'
@@ -845,7 +845,6 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
             Program.regular,
             Program.beginners,
             Program.seasoned_players,
-            Program.advanced_projects,
         ]
 
     def _period_has_beginner_add_on_classes(self, period: Period) -> bool:
@@ -885,7 +884,7 @@ class AdvancedProjectsForm(_RegistrationStepFormBase, forms.ModelForm):
         if not hasattr(self, 'cleaned_data'):
             return
 
-        if self.registration_entry.program != Program.advanced_projects:
+        if self.registration_entry.program != Program.seasoned_players:
             return
 
         if (self.instance.participation == AdvancedProjectsParticipationOptions.propose_a_project
@@ -1198,7 +1197,7 @@ class PaymentView(_RegistrationStepViewBase):
             if not hasattr(self.registration_entry, 'regular_class_choices'):
                 missing_sections.append('Classes')
 
-        if (self.registration_entry.program == Program.advanced_projects
+        if (self.registration_entry.program == Program.seasoned_players
                 and not hasattr(self.registration_entry, 'advanced_projects')):
             missing_sections.append('Advanced Projects')
 

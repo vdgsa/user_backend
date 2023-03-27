@@ -220,7 +220,6 @@ class Program(models.TextChoices):
     beginners = 'beginners', 'Beginning Viol (free to local attendees)'
     consort_coop = 'consort_coop', 'Consort Co-op (CC 3+1 or CC 2+2)'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
-    advanced_projects = 'advanced_projects', 'Advanced Projects'
     faculty_guest_other = 'faculty_guest_other', 'Faculty'
     non_playing_attendee = 'non_playing_attendee', 'Non-playing Attendee'
 
@@ -229,7 +228,6 @@ BEGINNER_PROGRAMS = [Program.beginners]
 FLEXIBLE_CLASS_SELECTION_PROGRAMS = [
     Program.part_time,
     Program.seasoned_players,
-    Program.advanced_projects,
 ]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
