@@ -286,7 +286,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
 def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
     program = registration_entry.program
-    if program in [Program.non_playing_attendee, Program.beginners]:
+    if program in [Program.non_playing_attendee, Program.beginners, Program.vendor]:
         display_name = 'Workshop Fee'
     else:
         display_name = f'Tuition: {Program(program).label}'
@@ -328,7 +328,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
             }
         case Program.faculty_guest_other:
             return None
-        case Program.non_playing_attendee:
+        case Program.non_playing_attendee | Program.vendor:
             return {
                 'display_name': display_name,
                 'csv_label': 'Tuition',
@@ -493,7 +493,7 @@ def get_vendor_table_charge(registration_entry: RegistrationEntry) -> ChargeInfo
             'csv_label': 'Vendor Table',
             'amount': (
                 num_days * conclave_config.vendor_table_cost_per_day
-                if registration_entry.program == Program.non_playing_attendee
+                if registration_entry.program in [Program.non_playing_attendee, Program.vendor]
                 else 0
             ),
         }

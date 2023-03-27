@@ -222,6 +222,7 @@ class Program(models.TextChoices):
     seasoned_players = 'seasoned_players', 'Seasoned Players'
     faculty_guest_other = 'faculty_guest_other', 'Faculty'
     non_playing_attendee = 'non_playing_attendee', 'Non-playing Attendee'
+    vendor = 'vendor', 'Vendor (without classes)'
 
 
 BEGINNER_PROGRAMS = [Program.beginners]
@@ -232,6 +233,7 @@ FLEXIBLE_CLASS_SELECTION_PROGRAMS = [
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
     Program.non_playing_attendee,
+    Program.vendor,
 ]
 
 
