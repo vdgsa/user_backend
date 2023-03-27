@@ -39,7 +39,7 @@ from vdgsa_backend.conclave_registration.models import (
 from vdgsa_backend.conclave_registration.summary_and_charges import (
     get_charges_summary, get_registration_summary
 )
-from vdgsa_backend.conclave_registration.templatetags import show_name_and_email
+from vdgsa_backend.conclave_registration.templatetags import show_name, show_name_and_email
 from vdgsa_backend.conclave_registration.templatetags.conclave_tags import (
     PERIOD_STRS, format_period_long, get_current_conclave
 )
@@ -1139,6 +1139,25 @@ class PaymentView(_RegistrationStepViewBase):
                     'name': form.cleaned_data['name_on_card']  # type: ignore
                 }
             )
+
+            user = self.registration_entry.user
+            year = self.registration_entry.conclave_config.year
+            new_customer = stripe.Customer.create(
+                description=f"Conclave {year} registration",
+                email=user.email,
+                name=show_name(user),
+                phone=user.phone1,
+                address={
+                    'city': user.address_city,
+                    'country': user.address_country,
+                    'line1': user.address_line_1,
+                    'line2': user.address_line_2,
+                    'postal_code': user.address_postal_code,
+                    'state': user.address_state,
+                },
+            )
+
+            stripe.PaymentMethod.attach(payment_method.id, customer=new_customer.id)
         except stripe.error.CardError as e:
             return self.render_page(form, {'stripe_error': e.user_message})
 
