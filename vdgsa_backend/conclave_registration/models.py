@@ -401,22 +401,24 @@ class WorkStudyApplication(models.Model):
     has_been_to_conclave = models.TextField(
         blank=False,
         default='',
-        choices=[
-            ('yes', 'Yes, in person'),
-            ('online', 'Yes, online only'),
-            ('both', 'Yes, in person and online'),
-            ('no', 'No'),
-        ]
+        choices=YesNo.choices
+        # choices=[
+        #     ('yes', 'Yes, in person'),
+        #     ('online', 'Yes, online only'),
+        #     ('both', 'Yes, in person and online'),
+        #     ('no', 'No'),
+        # ]
     )
     has_done_work_study = models.TextField(
         blank=False,
         default='',
-        choices=[
-            ('yes', 'Yes, in person'),
-            ('online', 'Yes, online only'),
-            ('both', 'Yes, in person and online'),
-            ('no', 'No'),
-        ]
+        choices=YesNo.choices
+        # choices=[
+        #     ('yes', 'Yes, in person'),
+        #     ('online', 'Yes, online only'),
+        #     ('both', 'Yes, in person and online'),
+        #     ('no', 'No'),
+        # ]
     )
 
     student_info = models.TextField(blank=True)
@@ -655,7 +657,7 @@ class AdvancedProjectsInfo(models.Model):
     )
 
     participation = models.TextField(
-        choices=AdvancedProjectsParticipationOptions.choices, blank=False, default=''
+        choices=YesNo.choices, blank=False, default=''
     )
     project_proposal = models.TextField(blank=True)
 

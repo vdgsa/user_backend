@@ -39,10 +39,10 @@ from vdgsa_backend.conclave_registration.models import (
 from vdgsa_backend.conclave_registration.summary_and_charges import (
     get_charges_summary, get_registration_summary
 )
-from vdgsa_backend.conclave_registration.templatetags import show_name, show_name_and_email
 from vdgsa_backend.conclave_registration.templatetags.conclave_tags import (
     PERIOD_STRS, format_period_long, get_current_conclave
 )
+from vdgsa_backend.templatetags.filters import show_name, show_name_and_email
 
 from .permissions import is_conclave_team
 
