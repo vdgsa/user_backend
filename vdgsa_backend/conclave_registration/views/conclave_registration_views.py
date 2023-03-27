@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from abc import abstractmethod
 from itertools import chain
-from typing import Any, Dict, Final, List, Type, cast
+from typing import Any, Dict, Final, Iterable, List, Type, cast
 
 import stripe  # type: ignore
 from django import forms
@@ -32,13 +32,14 @@ from vdgsa_backend.conclave_registration.models import (
     BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, NOT_ATTENDING_BANQUET_SENTINEL,
     AdditionalRegistrationInfo, AdvancedProjectsInfo, AdvancedProjectsParticipationOptions,
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing,
-    HousingRoomType, InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry,
-    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob,
-    YesNo, YesNoMaybe, get_classes_by_period
+    HousingRoomType, InstrumentBringing, InstrumentPurpose, PaymentInfo, Period, Program,
+    RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
+    WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.summary_and_charges import (
     get_charges_summary, get_registration_summary
 )
+from vdgsa_backend.conclave_registration.templatetags import show_name_and_email
 from vdgsa_backend.conclave_registration.templatetags.conclave_tags import (
     PERIOD_STRS, format_period_long, get_current_conclave
 )
@@ -1144,6 +1145,7 @@ class PaymentView(_RegistrationStepViewBase):
         payment_info.stripe_payment_method_id = payment_method.id
         payment_info.save()
         send_confirmation_email(self.registration_entry)
+        send_instrument_loan_emails(self.registration_entry)
 
         return HttpResponseRedirect(self.get_next_step_url())
 
@@ -1275,3 +1277,46 @@ def _render_confirmation_email(registration_entry: RegistrationEntry) -> str:
             result += '\n'  # Add back a newline since we stripped whitespace
 
     return result
+
+
+def send_instrument_loan_emails(registration_entry: RegistrationEntry) -> None:
+    _send_instrument_loan_email_impl(
+        registration_entry.user,
+        registration_entry.instruments_bringing.filter(purpose=InstrumentPurpose.willing_to_loan),
+        subject=f'Conclave {registration_entry.conclave_config.year} Instrument Loan Offer',
+        purpose_text='is offering to loan the instrument(s) below\n'
+    )
+
+    _send_instrument_loan_email_impl(
+        registration_entry.user,
+        registration_entry.instruments_bringing.filter(purpose=InstrumentPurpose.wants_to_borrow),
+        subject=f'Conclave {registration_entry.conclave_config.year} Instrument Borrow Request',
+        purpose_text='wants to borrow the instrument(s) below\n'
+    )
+
+    if (hasattr(registration_entry, 'beginner_instruments')
+            and registration_entry.beginner_instuments.needs_instrument == YesNo.yes):
+        send_mail(
+            f'Conclave {registration_entry.conclave_config.year} '
+            'Beginner Instrument Borrow Request',
+            from_email=None,
+            recipient_list=['rentalviol@vdgsa.org'],
+            message=f'{show_name_and_email(registration_entry.user)} wants to borrow an instument '
+                    'for the beginner program.'
+        )
+
+
+def _send_instrument_loan_email_impl(
+    user: User, instruments: Iterable[InstrumentBringing], *, subject: str, purpose_text: str
+):
+    if instruments:
+        message = f'{show_name_and_email(user)} ' + purpose_text
+        for i, instrument in enumerate(instruments):
+            message += f'{i}. {instrument}\n'
+            message += instrument.comments
+        send_mail(
+            subject,
+            from_email=None,
+            recipient_list=['rentalviol@vdgsa.org'],
+            message=message
+        )
