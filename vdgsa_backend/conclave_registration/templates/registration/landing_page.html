@@ -18,6 +18,12 @@
   <a data-testid="accounts_link" href="{% url 'current-user-account' %}">My Account</a> page,
   renew your membership, and then return here to register.
 </div>
+{% elif not membership_valid_through_conclave %}
+<div data-testid="membership_renewal_message">
+  Your membership is not up to date through this year's Conclave dates. Please visit the
+  <a data-testid="accounts_link" href="{% url 'current-user-account' %}">My Account</a> page,
+  renew your membership, and then return here to register.
+</div>
 {% elif conclave_config.phase == 'closed' and not perms.conclave_registration.conclave_team %}
 <div data-testid="registration_closed_message">
   Registration for this year's conclave has closed.

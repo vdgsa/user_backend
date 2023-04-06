@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 from abc import abstractmethod
+from datetime import datetime
 from itertools import chain
 from typing import Any, Dict, Final, Iterable, List, Type, cast
 
@@ -142,9 +143,19 @@ class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, V
             self.template_name,
             {
                 'choose_program_form': form,
-                'conclave_config': self.conclave_config
+                'conclave_config': self.conclave_config,
+                'membership_valid_through_conclave': self.membership_valid_through_conclave,
             }
         )
+
+    @property
+    def membership_valid_through_conclave(self) -> bool:
+        last_day = datetime.combine(
+            self.conclave_config.departure_dates[-1].replace(year=self.conclave_config.year),
+            timezone.now().time(),
+            timezone.now().tzinfo
+        )
+        return self.request.user.subscription_is_valid_until(last_day)
 
 
 def get_first_step_url_name(registration_entry: RegistrationEntry) -> str:
