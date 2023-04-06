@@ -99,7 +99,12 @@ class ConclaveRegistrationConfig(models.Model):
     late_registration_fee = models.IntegerField(blank=True, default=0)
 
     housing_subsidy_amount = models.IntegerField(blank=True, default=150)
+    supplemental_2023_housing_subsidy_amount = models.IntegerField(blank=True, default=225)
+    # "Trust discount"
     canadian_discount_percent = models.IntegerField(blank=True, default=5)
+
+    # Markdown text to go before the trust discount field.
+    trust_discount_markdown = models.TextField(blank=True)
 
     vendor_table_cost_per_day = models.IntegerField(blank=True, default=25)
 
@@ -666,7 +671,7 @@ class AdvancedProjectsInfo(models.Model):
 
 class HousingRoomType(models.TextChoices):
     single = 'single'
-    double = 'double'
+    double = 'double', 'Double (sharing a bed)'
     off_campus = 'off_campus'
 
 
@@ -703,7 +708,12 @@ class Housing(models.Model):
     arrival_day = models.TextField()
     departure_day = models.TextField()
 
+    # For students and limited income
     wants_housing_subsidy = models.BooleanField(default=False)
+    # 2023, for limited income who would have chosen a double room
+    # to afford coming to conclave
+    wants_2023_supplemental_discount = models.BooleanField(default=False)
+    # "Trust discount", percentage discount available to anyone with limited income
     wants_canadian_currency_exchange_discount = models.BooleanField(default=False)
 
     additional_housing_info = models.TextField(blank=True)
