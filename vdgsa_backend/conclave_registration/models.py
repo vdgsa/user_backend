@@ -103,8 +103,8 @@ class ConclaveRegistrationConfig(models.Model):
     # "Trust discount"
     canadian_discount_percent = models.IntegerField(blank=True, default=5)
 
-    # Markdown text to go before the trust discount field.
-    trust_discount_markdown = models.TextField(blank=True)
+    # Markdown text to go before the discount fields.
+    discount_markdown = models.TextField(blank=True)
 
     vendor_table_cost_per_day = models.IntegerField(blank=True, default=25)
 

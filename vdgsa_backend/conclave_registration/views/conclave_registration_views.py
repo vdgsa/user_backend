@@ -915,6 +915,7 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             'arrival_day',
             'departure_day',
             'wants_housing_subsidy',
+            'wants_2023_supplemental_discount',
             'wants_canadian_currency_exchange_discount',
             'additional_housing_info',
             'dietary_needs',
@@ -1004,10 +1005,16 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             f'I am requesting the ${housing_subsidy_amount} student/limited income housing subsidy'
         )
 
+        supplemental_2023_housing_subsidy_amount = (
+            registration_entry.conclave_config.supplemental_2023_housing_subsidy_amount)
+        self.fields['wants_2023_supplemental_discount'].label = (
+            f'I am requesting the ${supplemental_2023_housing_subsidy_amount} '
+            'limited income single room housing subsidy'
+        )
+
         canadian_discount = registration_entry.conclave_config.canadian_discount_percent
         self.fields['wants_canadian_currency_exchange_discount'].label = (
-            f'I am a Canadian resident requesting a {canadian_discount}% '
-            'currency exchange rate discount'
+            f'I am requesting the {canadian_discount}% trust discount'
         )
 
     def full_clean(self) -> None:

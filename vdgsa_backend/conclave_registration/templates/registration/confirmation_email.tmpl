@@ -1,4 +1,9 @@
+{% comment %}
+IMPORTANT: DO NOT RENDER THIS FILE AS HTML. It is intended to be used as plaintext
+for confirmation emails.
+{% endcomment %}
 {% load conclave_tags %}{% load vdgsa_tags %}{% load humanize %}
+{% autoescape off %}
 Dear {{registration_entry.user | show_name}},
 {% comment %}
 HACK: We will postprocess the rendered template to strip out blank lines and
@@ -121,11 +126,14 @@ Work-Study Scholarship (If Awarded*): -{{conclave_config.work_study_scholarship_
 {% if charges_summary.apply_housing_subsidy %}
 Limited-Income Housing Subsidy (If Available): -{{conclave_config.housing_subsidy_amount}}
 {% endif %}
+{% if charges_summary.apply_housing_subsidy %}
+Limited-Income Single Room Housing Subsidy (If Available): -{{conclave_config.supplemental_2023_housing_subsidy_amount}}
+{% endif %}
 <br>
 *Subtotal:* {{charges_summary.subtotal}}
 
 {% if charges_summary.apply_canadian_discount %}
-Canadian Exchange Rate Discount: -{{conclave_config.canadian_discount_percent}}%
+Trust Discount: -{{conclave_config.canadian_discount_percent}}%
 {% endif %}
 *Total:* ${{charges_summary.total}}
 <br>
@@ -133,3 +141,4 @@ Canadian Exchange Rate Discount: -{{conclave_config.canadian_discount_percent}}%
   *Work-Study positions will be awarded by June 15. Work-Study applicants
   will not be charged until positions are finalized.
 {% endif %}
+{% endautoescape %}

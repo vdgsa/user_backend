@@ -122,6 +122,13 @@
     </tr>
     {% endif %}
 
+    {% if charges_summary.apply_2023_housing_subsidy %}
+    <tr>
+      <td>Limited-Income Single Room Housing Subsidy (If Available)</td>
+      <td style="text-align: right">-{{conclave_config.supplemental_2023_housing_subsidy_amount}}</td>
+    </tr>
+    {% endif %}
+
     <tr>
       <td><b>Subtotal</b></td>
       <td style="text-align: right">{{charges_summary.subtotal}}</td>
@@ -129,7 +136,7 @@
 
     {% if charges_summary.apply_canadian_discount %}
     <tr>
-      <td>Canadian Exchange Rate Discount</td>
+      <td>Trust Discount</td>
       <td style="text-align: right">-{{conclave_config.canadian_discount_percent}}%</td>
     </tr>
     {% endif %}

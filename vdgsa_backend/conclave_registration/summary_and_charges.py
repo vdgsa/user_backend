@@ -193,6 +193,7 @@ class ChargesSummary(TypedDict):
     charges: list[ChargeInfo]
     work_study_scholarship_amount: int
     apply_housing_subsidy: bool
+    apply_2023_housing_subsidy: bool
     apply_canadian_discount: bool
     subtotal: int
     total: float
@@ -260,6 +261,10 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
         hasattr(registration_entry, 'housing')
         and registration_entry.housing.wants_housing_subsidy
     )
+    apply_2023_housing_subsidy = (
+        hasattr(registration_entry, 'housing')
+        and registration_entry.housing.wants_2023_supplemental_discount
+    )
     apply_canadian_discount = (
         hasattr(registration_entry, 'housing')
         and registration_entry.housing.wants_canadian_currency_exchange_discount
@@ -269,6 +274,9 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if apply_housing_subsidy:
         subtotal -= conclave_config.housing_subsidy_amount
 
+    if apply_2023_housing_subsidy:
+        subtotal -= conclave_config.supplemental_2023_housing_subsidy_amount
+
     total: float = subtotal
     if apply_canadian_discount:
         total *= 1 - conclave_config.canadian_discount_percent / 100
@@ -277,6 +285,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
         'charges': charges,
         'work_study_scholarship_amount': work_study_scholarship_amount,
         'apply_housing_subsidy': apply_housing_subsidy,
+        'apply_2023_housing_subsidy': apply_2023_housing_subsidy,
         'apply_canadian_discount': apply_canadian_discount,
         'subtotal': subtotal,
         'total': total,

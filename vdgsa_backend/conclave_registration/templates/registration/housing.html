@@ -123,8 +123,18 @@
   {% if registration_entry.program != 'faculty_guest_other' %}
   <h4 class="mt-2">Adjustments to Housing Costs</h4>
   <div class="row">
+    {{conclave_config.discount_markdown | markdownify}}
+  </div>
+  
+  <div class="row">
     <div class="col-md-6">
       {% include 'utils/form_field.tmpl' with field=form.wants_housing_subsidy %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.wants_2023_supplemental_discount %}
     </div>
   </div>
 

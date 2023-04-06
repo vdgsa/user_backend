@@ -74,7 +74,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'housing_subsidy_amount',
             'supplemental_2023_housing_subsidy_amount',
             'canadian_discount_percent',
-            'trust_discount_markdown',
+            'discount_markdown',
             'vendor_table_cost_per_day',
         ]
 
