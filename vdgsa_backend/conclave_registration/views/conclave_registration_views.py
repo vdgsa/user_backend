@@ -887,7 +887,7 @@ class AdvancedProjectsForm(_RegistrationStepFormBase, forms.ModelForm):
         if self.registration_entry.program != Program.seasoned_players:
             return
 
-        if (self.instance.participation == AdvancedProjectsParticipationOptions.propose_a_project
+        if (self.instance.participation == YesNo.yes
                 and not self.instance.project_proposal):
             self.add_error(None, 'Please describe your proposed project.')
 
