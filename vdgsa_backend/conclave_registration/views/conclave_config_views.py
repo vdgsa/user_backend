@@ -81,6 +81,8 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'canadian_discount_percent',
             'discount_markdown',
             'vendor_table_cost_per_day',
+
+            'confirmation_email_intro_text',
         ]
 
         labels = {

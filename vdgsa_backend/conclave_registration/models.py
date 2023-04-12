@@ -5,6 +5,7 @@ from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
@@ -115,6 +116,13 @@ class ConclaveRegistrationConfig(models.Model):
     discount_markdown = models.TextField(blank=True)
 
     vendor_table_cost_per_day = models.IntegerField(blank=True, default=25)
+
+    # NOT markdown. Use <br> on each separate line where you want a blank line
+    confirmation_email_intro_text = models.TextField(
+        blank=True,
+        default='This text is customizable. If you want a blank line, put only <br> on that line. '
+                'Other blank lines will be removed.'
+    )
 
     @property
     def is_open(self) -> bool:
@@ -323,7 +331,8 @@ class AdditionalRegistrationInfo(models.Model):
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
-    num_display_space_days = models.IntegerField(default=6)
+    num_display_space_days = models.IntegerField(
+        default=6, validators=[MinValueValidator(1), MaxValueValidator(6)])
 
     liability_release = models.BooleanField()
     covid_policy = models.BooleanField()
@@ -707,7 +716,7 @@ class Housing(models.Model):
 
     room_type = models.TextField(choices=HousingRoomType.choices, blank=False, default='')
     roommate_request = models.TextField(blank=True)
-    share_suite_request = models.TextField(blank=True)
+    share_suite_request = models.TextField(blank=True)  # UNUSED
     room_near_person_request = models.TextField(blank=True)
 
     normal_bed_time = models.TextField(

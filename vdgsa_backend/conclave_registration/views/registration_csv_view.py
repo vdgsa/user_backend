@@ -218,7 +218,6 @@ def housing_to_dict(entry: RegistrationEntry) -> dict[str, object]:
     return {
         'room_type': housing.room_type,
         'roommate_request': housing.roommate_request,
-        'share_suite_request': housing.share_suite_request,
         'room_near_person_request': housing.room_near_person_request,
         'normal_bed_time': housing.normal_bed_time,
         'arrival_day': housing.arrival_day,
@@ -346,7 +345,6 @@ CSV_HEADERS = [
     'HOUSING',
     'room_type',
     'roommate_request',
-    'share_suite_request',
     'room_near_person_request',
     'normal_bed_time',
     'arrival_day',

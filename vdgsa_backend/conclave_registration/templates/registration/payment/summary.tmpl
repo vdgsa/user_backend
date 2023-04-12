@@ -104,34 +104,34 @@
     {% for charge in charges_summary.charges %}
     <tr>
       <td>{{charge.display_name}}</td>
-      <td style="text-align: right">{{charge.amount}}</td>
+      <td style="text-align: right">${{charge.amount | intcomma}}</td>
     </tr>
     {% endfor %}
 
     {% if charges_summary.work_study_scholarship_amount %}
     <tr>
       <td>Work-Study Scholarship (If Awarded*)</td>
-      <td style="text-align: right">-{{charges_summary.work_study_scholarship_amount}}</td>
+      <td style="text-align: right">-${{charges_summary.work_study_scholarship_amount | intcomma}}</td>
     </tr>
     {% endif %}
 
     {% if charges_summary.apply_housing_subsidy %}
     <tr>
       <td>Limited-Income Housing Subsidy (If Available)</td>
-      <td style="text-align: right">-{{conclave_config.housing_subsidy_amount}}</td>
+      <td style="text-align: right">-${{conclave_config.housing_subsidy_amount | intcomma}}</td>
     </tr>
     {% endif %}
 
     {% if charges_summary.apply_2023_housing_subsidy %}
     <tr>
       <td>Limited-Income Single Room Housing Subsidy (If Available)</td>
-      <td style="text-align: right">-{{conclave_config.supplemental_2023_housing_subsidy_amount}}</td>
+      <td style="text-align: right">-${{conclave_config.supplemental_2023_housing_subsidy_amount | intcomma}}</td>
     </tr>
     {% endif %}
 
     <tr>
       <td><b>Subtotal</b></td>
-      <td style="text-align: right">{{charges_summary.subtotal}}</td>
+      <td style="text-align: right">${{charges_summary.subtotal | intcomma}}</td>
     </tr>
 
     {% if charges_summary.apply_canadian_discount %}
@@ -143,7 +143,7 @@
 
     <tr>
       <td><b>Total</b></td>
-      <td style="text-align: right">${{charges_summary.total}}</td>
+      <td style="text-align: right">${{charges_summary.total | intcomma}}</td>
     </tr>
   </tbody>
 </table>

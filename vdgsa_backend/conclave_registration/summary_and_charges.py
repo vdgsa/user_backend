@@ -13,7 +13,7 @@ from typing import Final, Literal, TypedDict, get_args
 from vdgsa_backend.conclave_registration.models import (
     NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, BeginnerInstrumentInfo,
     ClassChoiceDict, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType,
-    InstrumentBringing, InstrumentChoices, Period, Program, RegistrationEntry,
+    InstrumentBringing, InstrumentChoices, InstrumentPurpose, Period, Program, RegistrationEntry,
     RegularProgramClassChoices, TShirts, YesNo
 )
 
@@ -57,7 +57,7 @@ def get_instruments_summary(registration_entry: RegistrationEntry) -> list[str]:
                 return [InstrumentChoices(beginner_instruments.instrument_bringing).label]
         case _:
             return [
-                str(instrument)
+                str(instrument) + f' ({InstrumentPurpose(instrument.purpose).label})'
                 for instrument in registration_entry.instruments_bringing.all()
             ]
     assert False  # suppress mypy warning
@@ -133,9 +133,6 @@ def get_housing_summary(registration_entry: RegistrationEntry) -> list[str]:
         summary_items.append(f'Requested roommate: {roommate_pref}')
 
     if housing.room_type != HousingRoomType.off_campus:
-        suitemate_pref = req if (req := housing.share_suite_request) else 'No preference'
-        summary_items.append(f'Requesting a suite with: {suitemate_pref}')
-
         room_near_pref = req if (req := housing.room_near_person_request) else 'No preference'
         summary_items.append(f'Requesting a room near: {room_near_pref}')
 
@@ -276,6 +273,8 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
 
     if apply_2023_housing_subsidy:
         subtotal -= conclave_config.supplemental_2023_housing_subsidy_amount
+
+    subtotal = max(subtotal, 0)
 
     total: float = subtotal
     if apply_canadian_discount:

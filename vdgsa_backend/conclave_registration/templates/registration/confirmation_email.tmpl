@@ -10,27 +10,7 @@ HACK: We will postprocess the rendered template to strip out blank lines and
 leading whitespace. To keep a blank line, put a <br> tag and nothing else on that line.
 {% endcomment %}
 <br>
-Thank you for registering for Conclave! Below is a summary of your registration.
-Please retain it for future reference. Look it over. If you find any problems,
-wish to make any changes to your Conclave registration, or have questions about it,
-please get in touch with us right away.
-<br>
-You will need to provide proof of COVID vaccination when you check in at
-Miami University, either by showing your physical card or a photograph of it.
-<br>
-Miami University requests that you use the links below to inform them of special
-dietary needs and to register for a parking permit:
-<br>
-SPECIAL DIET DISCLOSURE FORM:
-Self-Disclosure Dietary Needs Form: https://miamioh.formstack.com/forms/self_disclosure_dietary_needs_form_
-<br>
-ELECTRONIC PARKING PERMIT:
-Viola da Gamba: https://miamioh.nupark.com/v2/portal/eventregister/58480047-803c-45f9-8f16-ec15b89f41ac
-<br>
-We're looking forward to seeing you at Miami University for the VdGSA’s 60th annual Conclave!
-<br>
-Sincerely,
-VdGSA Conclave and Web Teams
+{{registration_entry.conclave_config.confirmation_email_intro_text}}
 <br>
 <br>
 Program
@@ -116,26 +96,26 @@ ________________________________________________________________________
 Summary of Charges So Far
 =========================
 {% for charge in charges_summary.charges %}
-{{charge.display_name}}: {{charge.amount}}
+{{charge.display_name}}: ${{charge.amount | intcomma}}
 {% endfor %}
 
 {% if charges_summary.work_study_scholarship_amount %}
-Work-Study Scholarship (If Awarded*): -{{conclave_config.work_study_scholarship_amount}}
+Work-Study Scholarship (If Awarded*): -${{conclave_config.work_study_scholarship_amount | intcomma}}
 {% endif %}
 
 {% if charges_summary.apply_housing_subsidy %}
-Limited-Income Housing Subsidy (If Available): -{{conclave_config.housing_subsidy_amount}}
+Limited-Income Housing Subsidy (If Available): -${{conclave_config.housing_subsidy_amount | intcomma}}
 {% endif %}
 {% if charges_summary.apply_housing_subsidy %}
-Limited-Income Single Room Housing Subsidy (If Available): -{{conclave_config.supplemental_2023_housing_subsidy_amount}}
+Limited-Income Single Room Housing Subsidy (If Available): -${{conclave_config.supplemental_2023_housing_subsidy_amount | intcomma}}
 {% endif %}
 <br>
-*Subtotal:* {{charges_summary.subtotal}}
+*Subtotal:* ${{charges_summary.subtotal | intcomma}}
 
 {% if charges_summary.apply_canadian_discount %}
 Trust Discount: -{{conclave_config.canadian_discount_percent}}%
 {% endif %}
-*Total:* ${{charges_summary.total}}
+*Total:* ${{charges_summary.total | intcomma}}
 <br>
 {% if charges_summary.work_study_scholarship_amount %}
   *Work-Study positions will be awarded by June 15. Work-Study applicants

@@ -920,7 +920,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         fields = [
             'room_type',
             'roommate_request',
-            'share_suite_request',
             'room_near_person_request',
             'normal_bed_time',
             'arrival_day',
@@ -941,7 +940,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         labels = {
             'room_type': '',
             'roommate_request': '',
-            'share_suite_request': '',
             'room_near_person_request': '',
             'normal_bed_time': '',
             'arrival_day': '',
@@ -958,7 +956,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         widgets = {
             'room_type': widgets.RadioSelect(),
             'roommate_request': widgets.TextInput(),
-            'share_suite_request': widgets.TextInput(),
             'room_near_person_request': widgets.TextInput(),
             'normal_bed_time': widgets.RadioSelect(),
             'additional_housing_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
