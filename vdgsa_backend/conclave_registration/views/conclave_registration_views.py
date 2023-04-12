@@ -1011,23 +1011,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             choices=list(zip(banquet_options, banquet_options))
         )
 
-        housing_subsidy_amount = registration_entry.conclave_config.housing_subsidy_amount
-        self.fields['wants_housing_subsidy'].label = (
-            f'I am requesting the ${housing_subsidy_amount} student/limited income housing subsidy'
-        )
-
-        supplemental_2023_housing_subsidy_amount = (
-            registration_entry.conclave_config.supplemental_2023_housing_subsidy_amount)
-        self.fields['wants_2023_supplemental_discount'].label = (
-            f'I am requesting the ${supplemental_2023_housing_subsidy_amount} '
-            'limited income single room housing subsidy'
-        )
-
-        canadian_discount = registration_entry.conclave_config.canadian_discount_percent
-        self.fields['wants_canadian_currency_exchange_discount'].label = (
-            f'I am requesting the {canadian_discount}% trust discount'
-        )
-
     def full_clean(self) -> None:
         super().full_clean()
 
@@ -1044,6 +1027,11 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         if (self.instance.room_type != HousingRoomType.off_campus
                 and not self.instance.normal_bed_time):
             self.add_error(None, 'Please specify your preferred normal bedtime.')
+
+        # Added for 2023 (one bed per room)
+        if (self.instance.room_type == HousingRoomType.double
+                and not self.instance.roommate_request):
+            self.add_error(None, 'Please specify your preferred roommate.')
 
         if self.instance.is_bringing_guest_to_banquet == YesNo.yes:
             if not (self.instance.banquet_guest_food_choice and self.instance.banquet_guest_name):
@@ -1331,7 +1319,7 @@ def send_instrument_loan_emails(registration_entry: RegistrationEntry) -> None:
     )
 
     if (hasattr(registration_entry, 'beginner_instruments')
-            and registration_entry.beginner_instuments.needs_instrument == YesNo.yes):
+            and registration_entry.beginner_instruments.needs_instrument == YesNo.yes):
         send_mail(
             f'Conclave {registration_entry.conclave_config.year} '
             'Beginner Instrument Borrow Request',

@@ -43,10 +43,15 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'fourth_period_time_label',
 
             'housing_form_top_markdown',
+            'roommate_preference_text',
+            'suitemate_preference_text',
             'housing_form_pre_arrival_markdown',
             'early_arrival_date_options',
             'arrival_date_options',
             'departure_date_options',
+            'housing_subsidy_text',
+            'supplemental_2023_housing_subsidy_text',
+            'canadian_discount_text',
             'banquet_food_options',
 
             'tshirt_image_url',

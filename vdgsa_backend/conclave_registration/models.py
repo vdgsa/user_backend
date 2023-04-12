@@ -55,6 +55,9 @@ class ConclaveRegistrationConfig(models.Model):
     # Markdown text to go at the beginning of the housing form.
     housing_form_top_markdown = models.TextField(blank=True)
 
+    roommate_preference_text = models.TextField(blank=True)
+    suitemate_preference_text = models.TextField(blank=True)
+
     early_arrival_date_options = models.TextField(
         blank=True, validators=[_arrival_and_departure_date_options_validator]
     )
@@ -66,6 +69,11 @@ class ConclaveRegistrationConfig(models.Model):
     )
     # Markdown text to go in the housing form just before the arrival/departure fields.
     housing_form_pre_arrival_markdown = models.TextField(blank=True)
+
+    # Housing subsidy text
+    housing_subsidy_text = models.TextField(blank=True)
+    supplemental_2023_housing_subsidy_text = models.TextField(blank=True)
+    canadian_discount_text = models.TextField(blank=True)
 
     # Markdown text to go in the housing form just before the dietary needs fields.
     dietary_needs_markdown = models.TextField(blank=True)
