@@ -418,6 +418,14 @@ def get_housing_charges(registration_entry: RegistrationEntry) -> list[ChargeInf
                     full_week_room_rate=conclave_config.double_room_full_week_cost,
                 )
 
+    if (housing.room_type == HousingRoomType.off_campus
+            and housing.banquet_food_choice != NOT_ATTENDING_BANQUET_SENTINEL):
+        charges.append({
+            'display_name': 'Banquet Fee',
+            'csv_label': 'Banquet Fee',
+            'amount': conclave_config.banquet_guest_fee
+        })
+
     if housing.is_bringing_guest_to_banquet == YesNo.yes:
         charges.append({
             'display_name': 'Banquet Guest Fee',
