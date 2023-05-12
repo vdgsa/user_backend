@@ -94,6 +94,17 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
             valid_until=timezone.now() + timezone.timedelta(days=365)
         )
 
+        # Adding a user who should receive an email - but has opted out so count should remain 5
+        optoutuser = User.objects.create_user('optout@user.user', password='fakefakefake')
+        subscription = MembershipSubscription.objects.create(
+            owner=optoutuser,
+            membership_type=MembershipType.regular,
+            valid_until=subtract_months(timezone.now(), 1)
+        )
+        optoutuser.receives_expiration_reminder_emails = False
+        optoutuser.save()
+
+
         allUsers = User.objects.all()
         for member in allUsers:
             print('all users: ', member.email,
@@ -112,6 +123,8 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
         print('test_expiring_emails should be 5', emailcounter)
         # ONLY 3 TEST USERS SHOULD PRODUCE AN EMAIL.
         self.assertEqual(emailcounter, 5)
+
+
 
     def test_is_deceased(self) -> None:
         user = User.objects.create_user('expired-month-ago@user.user',

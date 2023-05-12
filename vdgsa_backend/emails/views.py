@@ -72,6 +72,7 @@ class ExpiringEmails():
             & ~Q(owned_subscription__membership_type=MembershipType.complementary)
             & Q(owned_subscription__valid_until__month=targetDate.month)
             & Q(owned_subscription__valid_until__year=targetDate.year)
+            & Q(receives_expiration_reminder_emails=True)
         )
         # print(expiring_members.query)
         # print('expiring_members', expiring_members)

@@ -58,6 +58,7 @@ class UserProfileForm(ModelForm):
 
             # MEMBERSHIP SECRETARY ONLY
             'is_deceased',
+            'receives_expiration_reminder_emails',
             'notes',
         ]
 
@@ -89,6 +90,7 @@ class UserProfileForm(ModelForm):
 
     _membership_secretary_only_fields: Final[Sequence[str]] = [
         'is_deceased',
+        'receives_expiration_reminder_emails',
         'notes',
     ]
 
