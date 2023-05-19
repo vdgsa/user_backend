@@ -44,7 +44,7 @@
   <div id="roommate-preference-wrapper">
     <div class="row mt-2">
       <div class="col-md-6">
-        Roommate preference
+        {{conclave_config.roommate_preference_text}}
       </div>
     </div>
     <div class="row">
@@ -54,25 +54,10 @@
     </div>
   </div>
 
-  {% comment %}
-  <div id="suite-preference-wrapper">
-    <div class="row mt-2">
-      <div class="col-md-6">
-        I would like to share a suite with
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6">
-        {% include 'utils/form_field.tmpl' with field=form.share_suite_request %}
-      </div>
-    </div>
-  </div>
-  {% endcomment %}
-
   <div id="room-near-preference-wrapper">
     <div class="row mt-2">
       <div class="col-md-6">
-        I would like a room near
+        {{conclave_config.suitemate_preference_text}}
       </div>
     </div>
     <div class="row">
@@ -121,16 +106,27 @@
   </div>
 
   {% if registration_entry.program != 'faculty_guest_other' %}
-  <h4 class="mt-2">Adjustments to Housing Costs</h4>
-  <div class="row">
+
+  <div class="row subsidy-checkbox">
     <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.wants_housing_subsidy %}
+      {% include 'utils/form_field.tmpl' with field=form.wants_housing_subsidy label=conclave_config.housing_subsidy_text %}
     </div>
+  </div>
+
+  <div class="row subsidy-checkbox supplemental-2023-subsidy-checkbox">
+    <div class="col-md-6">
+      {% include 'utils/form_field.tmpl' with field=form.wants_2023_supplemental_discount label=conclave_config.supplemental_2023_housing_subsidy_text %}
+    </div>
+  </div>
+
+  <!-- <h4 class="mt-2">Adjustments to Housing Costs</h4> -->
+  <div class="row mt-2">
+    {{conclave_config.discount_markdown | markdownify}}
   </div>
 
   <div class="row">
     <div class="col-md-6">
-      {% include 'utils/form_field.tmpl' with field=form.wants_canadian_currency_exchange_discount %}
+      {% include 'utils/form_field.tmpl' with field=form.wants_canadian_currency_exchange_discount label=conclave_config.canadian_discount_text %}
     </div>
   </div>
   {% endif %}
@@ -226,9 +222,10 @@
 
 <script>
   radio_button_hide('room_type', '#roommate-preference-wrapper', {show_values: ['double']});
-  // radio_button_hide('room_type', '#suite-preference-wrapper', {show_values: ['single', 'double']});
   radio_button_hide('room_type', '#room-near-preference-wrapper', {show_values: ['single', 'double']});
   radio_button_hide('room_type', '#bedtime-wrapper', {show_values: ['single', 'double']});
+  radio_button_hide('room_type', '.subsidy-checkbox', {show_values: ['single', 'double']});
+  radio_button_hide('room_type', '.supplemental-2023-subsidy-checkbox', {show_values: ['single']});
   radio_button_hide('is_bringing_guest_to_banquet', '#banquet-guest-wrapper');
 </script>
 {% endblock %}

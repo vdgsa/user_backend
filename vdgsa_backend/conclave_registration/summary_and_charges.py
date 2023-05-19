@@ -13,7 +13,7 @@ from typing import Final, Literal, TypedDict, get_args
 from vdgsa_backend.conclave_registration.models import (
     NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, BeginnerInstrumentInfo,
     ClassChoiceDict, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType,
-    InstrumentBringing, InstrumentChoices, Period, Program, RegistrationEntry,
+    InstrumentBringing, InstrumentChoices, InstrumentPurpose, Period, Program, RegistrationEntry,
     RegularProgramClassChoices, TShirts, YesNo
 )
 
@@ -57,7 +57,7 @@ def get_instruments_summary(registration_entry: RegistrationEntry) -> list[str]:
                 return [InstrumentChoices(beginner_instruments.instrument_bringing).label]
         case _:
             return [
-                str(instrument)
+                str(instrument) + f' ({InstrumentPurpose(instrument.purpose).label})'
                 for instrument in registration_entry.instruments_bringing.all()
             ]
     assert False  # suppress mypy warning
@@ -133,9 +133,6 @@ def get_housing_summary(registration_entry: RegistrationEntry) -> list[str]:
         summary_items.append(f'Requested roommate: {roommate_pref}')
 
     if housing.room_type != HousingRoomType.off_campus:
-        suitemate_pref = req if (req := housing.share_suite_request) else 'No preference'
-        summary_items.append(f'Requesting a suite with: {suitemate_pref}')
-
         room_near_pref = req if (req := housing.room_near_person_request) else 'No preference'
         summary_items.append(f'Requesting a room near: {room_near_pref}')
 
@@ -193,6 +190,7 @@ class ChargesSummary(TypedDict):
     charges: list[ChargeInfo]
     work_study_scholarship_amount: int
     apply_housing_subsidy: bool
+    apply_2023_housing_subsidy: bool
     apply_canadian_discount: bool
     subtotal: int
     total: float
@@ -260,6 +258,10 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
         hasattr(registration_entry, 'housing')
         and registration_entry.housing.wants_housing_subsidy
     )
+    apply_2023_housing_subsidy = (
+        hasattr(registration_entry, 'housing')
+        and registration_entry.housing.wants_2023_supplemental_discount
+    )
     apply_canadian_discount = (
         hasattr(registration_entry, 'housing')
         and registration_entry.housing.wants_canadian_currency_exchange_discount
@@ -269,6 +271,11 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if apply_housing_subsidy:
         subtotal -= conclave_config.housing_subsidy_amount
 
+    if apply_2023_housing_subsidy:
+        subtotal -= conclave_config.supplemental_2023_housing_subsidy_amount
+
+    subtotal = max(subtotal, 0)
+
     total: float = subtotal
     if apply_canadian_discount:
         total *= 1 - conclave_config.canadian_discount_percent / 100
@@ -277,6 +284,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
         'charges': charges,
         'work_study_scholarship_amount': work_study_scholarship_amount,
         'apply_housing_subsidy': apply_housing_subsidy,
+        'apply_2023_housing_subsidy': apply_2023_housing_subsidy,
         'apply_canadian_discount': apply_canadian_discount,
         'subtotal': subtotal,
         'total': total,
@@ -286,7 +294,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
 def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
     program = registration_entry.program
-    if program in [Program.non_playing_attendee, Program.beginners]:
+    if program in [Program.non_playing_attendee, Program.beginners, Program.vendor]:
         display_name = 'Workshop Fee'
     else:
         display_name = f'Tuition: {Program(program).label}'
@@ -310,7 +318,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
                 'csv_label': 'Tuition',
                 'amount': conclave_config.consort_coop_tuition
             }
-        case Program.seasoned_players | Program.advanced_projects:
+        case Program.seasoned_players:
             return {
                 'display_name': display_name,
                 'csv_label': 'Tuition',
@@ -328,7 +336,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
             }
         case Program.faculty_guest_other:
             return None
-        case Program.non_playing_attendee:
+        case Program.non_playing_attendee | Program.vendor:
             return {
                 'display_name': display_name,
                 'csv_label': 'Tuition',
@@ -369,8 +377,7 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
                 'csv_label': 'Add-On Classes',
                 'amount': conclave_config.consort_coop_two_extra_classes_fee
             }
-        case Program.seasoned_players | Program.advanced_projects \
-                if class_choices.num_non_freebie_classes == 1:
+        case Program.seasoned_players if class_choices.num_non_freebie_classes == 1:
             return {
                 'display_name': '1 Add-On Class',
                 'csv_label': 'Add-On Classes',
@@ -410,6 +417,14 @@ def get_housing_charges(registration_entry: RegistrationEntry) -> list[ChargeInf
                     per_night_room_rate=conclave_config.double_room_per_night_cost,
                     full_week_room_rate=conclave_config.double_room_full_week_cost,
                 )
+
+    if (housing.room_type == HousingRoomType.off_campus
+            and housing.banquet_food_choice != NOT_ATTENDING_BANQUET_SENTINEL):
+        charges.append({
+            'display_name': 'Banquet Fee',
+            'csv_label': 'Banquet Fee',
+            'amount': conclave_config.banquet_guest_fee
+        })
 
     if housing.is_bringing_guest_to_banquet == YesNo.yes:
         charges.append({
@@ -494,7 +509,7 @@ def get_vendor_table_charge(registration_entry: RegistrationEntry) -> ChargeInfo
             'csv_label': 'Vendor Table',
             'amount': (
                 num_days * conclave_config.vendor_table_cost_per_day
-                if registration_entry.program == Program.non_playing_attendee
+                if registration_entry.program in [Program.non_playing_attendee, Program.vendor]
                 else 0
             ),
         }

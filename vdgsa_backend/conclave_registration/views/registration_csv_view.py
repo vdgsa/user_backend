@@ -47,7 +47,7 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
         if not hasattr(entry, 'payment_info') or entry.payment_info.stripe_payment_method_id == '':
             continue
 
-        writer.writerow({
+        row = {
             'sequence_id': entry.payment_info.id,
 
             'USER INFO': '',
@@ -78,7 +78,9 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             'CHARGES': '',
             **charges_to_dict(entry),
             'charges': json.dumps(get_charges_summary(entry), indent=4),
-        })
+        }
+        print(row)
+        writer.writerow(row)
 
     return response
 
@@ -216,12 +218,12 @@ def housing_to_dict(entry: RegistrationEntry) -> dict[str, object]:
     return {
         'room_type': housing.room_type,
         'roommate_request': housing.roommate_request,
-        'share_suite_request': housing.share_suite_request,
         'room_near_person_request': housing.room_near_person_request,
         'normal_bed_time': housing.normal_bed_time,
         'arrival_day': housing.arrival_day,
         'departure_day': housing.departure_day,
         'wants_housing_subsidy': housing.wants_housing_subsidy,
+        'wants_2023_housing_subsidy': housing.wants_2023_supplemental_discount,
         'wants_canadian_currency_exchange_discount': (
             housing.wants_canadian_currency_exchange_discount
         ),
@@ -252,7 +254,8 @@ def charges_to_dict(entry: RegistrationEntry) -> dict[str, float]:
         **{label: '' for label in CHARGE_CSV_LABELS},
         'Work Study Scholarship': charges_summary['work_study_scholarship_amount'],
         'Housing Subsidy?': charges_summary['apply_housing_subsidy'],
-        'Canadian Discount?': charges_summary['apply_canadian_discount'],
+        'Housing 2023 Single Room Subsidy?': charges_summary['apply_2023_housing_subsidy'],
+        'Trust Discount?': charges_summary['apply_canadian_discount'],
         'Subtotal': charges_summary['subtotal'],
         'Total': charges_summary['total'],
     }
@@ -342,7 +345,6 @@ CSV_HEADERS = [
     'HOUSING',
     'room_type',
     'roommate_request',
-    'share_suite_request',
     'room_near_person_request',
     'normal_bed_time',
     'arrival_day',
@@ -366,7 +368,7 @@ CSV_HEADERS = [
     *CHARGE_CSV_LABELS,
     'Work Study Scholarship',
     'Housing Subsidy?',
-    'Canadian Discount?',
+    'Trust Discount?',
     'Subtotal',
     'Total',
     'charges',

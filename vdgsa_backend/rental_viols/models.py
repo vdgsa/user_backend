@@ -117,10 +117,10 @@ class Bow(RentalItemInstrument):
 
     @property
     def calcStatus(self):
-        if(self.state == RentalState.retired):
+        if self.state == RentalState.retired:
             return self.state
-        elif(self.viol_num):
-            if(self.viol_num.status == RentalState.available):
+        elif self.viol_num:
+            if self.viol_num.status == RentalState.available:
                 return RentalState.attached
             return self.viol_num.status
         else:
@@ -155,10 +155,10 @@ class Case(RentalItemInstrument):
 
     @property
     def calcStatus(self):
-        if(self.state == RentalState.retired):
+        if self.state == RentalState.retired:
             return self.state
-        elif(self.viol_num):
-            if(self.viol_num.status == RentalState.available):
+        elif self.viol_num:
+            if self.viol_num.status == RentalState.available:
                 return RentalState.attached
             return self.viol_num.status
         else:

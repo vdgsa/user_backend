@@ -58,10 +58,6 @@
     Participants in the Seasoned Players Program may add one class in any period.
     Adding a class will increase your registration fee by
     ${{registration_entry.conclave_config.seasoned_players_extra_class_fee}}.
-  {% elif registration_entry.program == 'advanced_projects' %}
-    Participants in the Advanced Projects Program may add one class in any period.
-    Adding a class will increase your registration fee by
-    ${{registration_entry.conclave_config.seasoned_players_extra_class_fee}}.
   {% endif %}
 </div>
 
@@ -70,7 +66,7 @@
   <h3>
     {% if registration_entry.program == 'part_time' %}
     Class Preferences
-    {% elif registration_entry.program == 'seasoned_players' or registration_entry.program == 'advanced_projects' %}
+    {% elif registration_entry.program == 'seasoned_players' %}
     Add one class
     {% endif %}
   </h3>

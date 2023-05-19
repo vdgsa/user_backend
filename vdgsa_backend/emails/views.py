@@ -98,7 +98,7 @@ class ExpiringEmails():
         msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, [to_email],
                                      bcc=[BCC_TO_EMAIL])
         msg.attach_alternative(html_content, "text/html")
-        if(send):
+        if send:
             msg.send()
         return msg
 

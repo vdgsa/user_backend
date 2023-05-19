@@ -5,6 +5,7 @@ from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
@@ -55,6 +56,9 @@ class ConclaveRegistrationConfig(models.Model):
     # Markdown text to go at the beginning of the housing form.
     housing_form_top_markdown = models.TextField(blank=True)
 
+    roommate_preference_text = models.TextField(blank=True)
+    suitemate_preference_text = models.TextField(blank=True)
+
     early_arrival_date_options = models.TextField(
         blank=True, validators=[_arrival_and_departure_date_options_validator]
     )
@@ -66,6 +70,11 @@ class ConclaveRegistrationConfig(models.Model):
     )
     # Markdown text to go in the housing form just before the arrival/departure fields.
     housing_form_pre_arrival_markdown = models.TextField(blank=True)
+
+    # Housing subsidy text
+    housing_subsidy_text = models.TextField(blank=True)
+    supplemental_2023_housing_subsidy_text = models.TextField(blank=True)
+    canadian_discount_text = models.TextField(blank=True)
 
     # Markdown text to go in the housing form just before the dietary needs fields.
     dietary_needs_markdown = models.TextField(blank=True)
@@ -99,9 +108,21 @@ class ConclaveRegistrationConfig(models.Model):
     late_registration_fee = models.IntegerField(blank=True, default=0)
 
     housing_subsidy_amount = models.IntegerField(blank=True, default=150)
+    supplemental_2023_housing_subsidy_amount = models.IntegerField(blank=True, default=225)
+    # "Trust discount"
     canadian_discount_percent = models.IntegerField(blank=True, default=5)
 
+    # Markdown text to go before the discount fields.
+    discount_markdown = models.TextField(blank=True)
+
     vendor_table_cost_per_day = models.IntegerField(blank=True, default=25)
+
+    # NOT markdown. Use <br> on each separate line where you want a blank line
+    confirmation_email_intro_text = models.TextField(
+        blank=True,
+        default='This text is customizable. If you want a blank line, put only <br> on that line. '
+                'Other blank lines will be removed.'
+    )
 
     @property
     def is_open(self) -> bool:
@@ -220,20 +241,20 @@ class Program(models.TextChoices):
     beginners = 'beginners', 'Beginning Viol (free to local attendees)'
     consort_coop = 'consort_coop', 'Consort Co-op (CC 3+1 or CC 2+2)'
     seasoned_players = 'seasoned_players', 'Seasoned Players'
-    advanced_projects = 'advanced_projects', 'Advanced Projects'
     faculty_guest_other = 'faculty_guest_other', 'Faculty'
     non_playing_attendee = 'non_playing_attendee', 'Non-playing Attendee'
+    vendor = 'vendor', 'Vendor (without classes)'
 
 
 BEGINNER_PROGRAMS = [Program.beginners]
 FLEXIBLE_CLASS_SELECTION_PROGRAMS = [
     Program.part_time,
     Program.seasoned_players,
-    Program.advanced_projects,
 ]
 NO_CLASS_PROGRAMS = [
     Program.faculty_guest_other,
     Program.non_playing_attendee,
+    Program.vendor,
 ]
 
 
@@ -310,7 +331,8 @@ class AdditionalRegistrationInfo(models.Model):
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
-    num_display_space_days = models.IntegerField(default=6)
+    num_display_space_days = models.IntegerField(
+        default=6, validators=[MinValueValidator(1), MaxValueValidator(6)])
 
     liability_release = models.BooleanField()
     covid_policy = models.BooleanField()
@@ -403,22 +425,24 @@ class WorkStudyApplication(models.Model):
     has_been_to_conclave = models.TextField(
         blank=False,
         default='',
-        choices=[
-            ('yes', 'Yes, in person'),
-            ('online', 'Yes, online only'),
-            ('both', 'Yes, in person and online'),
-            ('no', 'No'),
-        ]
+        choices=YesNo.choices
+        # choices=[
+        #     ('yes', 'Yes, in person'),
+        #     ('online', 'Yes, online only'),
+        #     ('both', 'Yes, in person and online'),
+        #     ('no', 'No'),
+        # ]
     )
     has_done_work_study = models.TextField(
         blank=False,
         default='',
-        choices=[
-            ('yes', 'Yes, in person'),
-            ('online', 'Yes, online only'),
-            ('both', 'Yes, in person and online'),
-            ('no', 'No'),
-        ]
+        choices=YesNo.choices
+        # choices=[
+        #     ('yes', 'Yes, in person'),
+        #     ('online', 'Yes, online only'),
+        #     ('both', 'Yes, in person and online'),
+        #     ('no', 'No'),
+        # ]
     )
 
     student_info = models.TextField(blank=True)
@@ -657,14 +681,14 @@ class AdvancedProjectsInfo(models.Model):
     )
 
     participation = models.TextField(
-        choices=AdvancedProjectsParticipationOptions.choices, blank=False, default=''
+        choices=YesNo.choices, blank=False, default=''
     )
     project_proposal = models.TextField(blank=True)
 
 
 class HousingRoomType(models.TextChoices):
     single = 'single'
-    double = 'double'
+    double = 'double', 'Double (sharing a bed)'
     off_campus = 'off_campus'
 
 
@@ -692,7 +716,7 @@ class Housing(models.Model):
 
     room_type = models.TextField(choices=HousingRoomType.choices, blank=False, default='')
     roommate_request = models.TextField(blank=True)
-    share_suite_request = models.TextField(blank=True)
+    share_suite_request = models.TextField(blank=True)  # UNUSED
     room_near_person_request = models.TextField(blank=True)
 
     normal_bed_time = models.TextField(
@@ -701,7 +725,12 @@ class Housing(models.Model):
     arrival_day = models.TextField()
     departure_day = models.TextField()
 
+    # For students and limited income
     wants_housing_subsidy = models.BooleanField(default=False)
+    # 2023, for limited income who would have chosen a double room
+    # to afford coming to conclave
+    wants_2023_supplemental_discount = models.BooleanField(default=False)
+    # "Trust discount", percentage discount available to anyone with limited income
     wants_canadian_currency_exchange_discount = models.BooleanField(default=False)
 
     additional_housing_info = models.TextField(blank=True)

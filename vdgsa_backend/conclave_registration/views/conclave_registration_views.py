@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import itertools
 from abc import abstractmethod
+from datetime import datetime
 from itertools import chain
-from typing import Any, Dict, Final, List, Type, cast
+from typing import Any, Dict, Final, Iterable, List, Type, cast
 
 import stripe  # type: ignore
 from django import forms
@@ -32,9 +33,9 @@ from vdgsa_backend.conclave_registration.models import (
     BEGINNER_PROGRAMS, NO_CLASS_PROGRAMS, NOT_ATTENDING_BANQUET_SENTINEL,
     AdditionalRegistrationInfo, AdvancedProjectsInfo, AdvancedProjectsParticipationOptions,
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing,
-    HousingRoomType, InstrumentBringing, PaymentInfo, Period, Program, RegistrationEntry,
-    RegistrationPhase, RegularProgramClassChoices, TShirts, WorkStudyApplication, WorkStudyJob,
-    YesNo, YesNoMaybe, get_classes_by_period
+    HousingRoomType, InstrumentBringing, InstrumentPurpose, PaymentInfo, Period, Program,
+    RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
+    WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.summary_and_charges import (
     get_charges_summary, get_registration_summary
@@ -42,6 +43,7 @@ from vdgsa_backend.conclave_registration.summary_and_charges import (
 from vdgsa_backend.conclave_registration.templatetags.conclave_tags import (
     PERIOD_STRS, format_period_long, get_current_conclave
 )
+from vdgsa_backend.templatetags.filters import show_name, show_name_and_email
 
 from .permissions import is_conclave_team
 
@@ -141,9 +143,19 @@ class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, V
             self.template_name,
             {
                 'choose_program_form': form,
-                'conclave_config': self.conclave_config
+                'conclave_config': self.conclave_config,
+                'membership_valid_through_conclave': self.membership_valid_through_conclave,
             }
         )
+
+    @property
+    def membership_valid_through_conclave(self) -> bool:
+        last_day = datetime.combine(
+            self.conclave_config.departure_dates[-1].replace(year=self.conclave_config.year),
+            timezone.now().time(),
+            timezone.now().tzinfo
+        )
+        return self.request.user.subscription_is_valid_until(last_day)
 
 
 def get_first_step_url_name(registration_entry: RegistrationEntry) -> str:
@@ -770,7 +782,7 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
     form_class = RegularProgramClassSelectionForm
 
     def get_next_step_url(self) -> str:
-        if self.registration_entry.program == Program.advanced_projects:
+        if self.registration_entry.program == Program.seasoned_players:
             url_name = 'conclave-advanced-projects'
         else:
             url_name = 'conclave-basic-info'
@@ -844,7 +856,6 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
             Program.regular,
             Program.beginners,
             Program.seasoned_players,
-            Program.advanced_projects,
         ]
 
     def _period_has_beginner_add_on_classes(self, period: Period) -> bool:
@@ -884,10 +895,10 @@ class AdvancedProjectsForm(_RegistrationStepFormBase, forms.ModelForm):
         if not hasattr(self, 'cleaned_data'):
             return
 
-        if self.registration_entry.program != Program.advanced_projects:
+        if self.registration_entry.program != Program.seasoned_players:
             return
 
-        if (self.instance.participation == AdvancedProjectsParticipationOptions.propose_a_project
+        if (self.instance.participation == YesNo.yes
                 and not self.instance.project_proposal):
             self.add_error(None, 'Please describe your proposed project.')
 
@@ -909,12 +920,12 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         fields = [
             'room_type',
             'roommate_request',
-            'share_suite_request',
             'room_near_person_request',
             'normal_bed_time',
             'arrival_day',
             'departure_day',
             'wants_housing_subsidy',
+            'wants_2023_supplemental_discount',
             'wants_canadian_currency_exchange_discount',
             'additional_housing_info',
             'dietary_needs',
@@ -929,7 +940,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         labels = {
             'room_type': '',
             'roommate_request': '',
-            'share_suite_request': '',
             'room_near_person_request': '',
             'normal_bed_time': '',
             'arrival_day': '',
@@ -946,7 +956,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         widgets = {
             'room_type': widgets.RadioSelect(),
             'roommate_request': widgets.TextInput(),
-            'share_suite_request': widgets.TextInput(),
             'room_near_person_request': widgets.TextInput(),
             'normal_bed_time': widgets.RadioSelect(),
             'additional_housing_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
@@ -999,17 +1008,6 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
             choices=list(zip(banquet_options, banquet_options))
         )
 
-        housing_subsidy_amount = registration_entry.conclave_config.housing_subsidy_amount
-        self.fields['wants_housing_subsidy'].label = (
-            f'I am requesting the ${housing_subsidy_amount} student/limited income housing subsidy'
-        )
-
-        canadian_discount = registration_entry.conclave_config.canadian_discount_percent
-        self.fields['wants_canadian_currency_exchange_discount'].label = (
-            f'I am a Canadian resident requesting a {canadian_discount}% '
-            'currency exchange rate discount'
-        )
-
     def full_clean(self) -> None:
         super().full_clean()
 
@@ -1026,6 +1024,11 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
         if (self.instance.room_type != HousingRoomType.off_campus
                 and not self.instance.normal_bed_time):
             self.add_error(None, 'Please specify your preferred normal bedtime.')
+
+        # Added for 2023 (one bed per room)
+        if (self.instance.room_type == HousingRoomType.double
+                and not self.instance.roommate_request):
+            self.add_error(None, 'Please specify your preferred roommate.')
 
         if self.instance.is_bringing_guest_to_banquet == YesNo.yes:
             if not (self.instance.banquet_guest_food_choice and self.instance.banquet_guest_name):
@@ -1138,12 +1141,32 @@ class PaymentView(_RegistrationStepViewBase):
                     'name': form.cleaned_data['name_on_card']  # type: ignore
                 }
             )
+
+            user = self.registration_entry.user
+            year = self.registration_entry.conclave_config.year
+            new_customer = stripe.Customer.create(
+                description=f"Conclave {year} registration",
+                email=user.email,
+                name=show_name(user),
+                phone=user.phone1,
+                address={
+                    'city': user.address_city,
+                    'country': user.address_country,
+                    'line1': user.address_line_1,
+                    'line2': user.address_line_2,
+                    'postal_code': user.address_postal_code,
+                    'state': user.address_state,
+                },
+            )
+
+            stripe.PaymentMethod.attach(payment_method.id, customer=new_customer.id)
         except stripe.error.CardError as e:
             return self.render_page(form, {'stripe_error': e.user_message})
 
         payment_info.stripe_payment_method_id = payment_method.id
         payment_info.save()
         send_confirmation_email(self.registration_entry)
+        send_instrument_loan_emails(self.registration_entry)
 
         return HttpResponseRedirect(self.get_next_step_url())
 
@@ -1177,7 +1200,7 @@ class PaymentView(_RegistrationStepViewBase):
             if not hasattr(self.registration_entry, 'regular_class_choices'):
                 missing_sections.append('Classes')
 
-        if (self.registration_entry.program == Program.advanced_projects
+        if (self.registration_entry.program == Program.seasoned_players
                 and not hasattr(self.registration_entry, 'advanced_projects')):
             missing_sections.append('Advanced Projects')
 
@@ -1275,3 +1298,46 @@ def _render_confirmation_email(registration_entry: RegistrationEntry) -> str:
             result += '\n'  # Add back a newline since we stripped whitespace
 
     return result
+
+
+def send_instrument_loan_emails(registration_entry: RegistrationEntry) -> None:
+    _send_instrument_loan_email_impl(
+        registration_entry.user,
+        registration_entry.instruments_bringing.filter(purpose=InstrumentPurpose.willing_to_loan),
+        subject=f'Conclave {registration_entry.conclave_config.year} Instrument Loan Offer',
+        purpose_text='is offering to loan the instrument(s) below\n'
+    )
+
+    _send_instrument_loan_email_impl(
+        registration_entry.user,
+        registration_entry.instruments_bringing.filter(purpose=InstrumentPurpose.wants_to_borrow),
+        subject=f'Conclave {registration_entry.conclave_config.year} Instrument Borrow Request',
+        purpose_text='wants to borrow the instrument(s) below\n'
+    )
+
+    if (hasattr(registration_entry, 'beginner_instruments')
+            and registration_entry.beginner_instruments.needs_instrument == YesNo.yes):
+        send_mail(
+            f'Conclave {registration_entry.conclave_config.year} '
+            'Beginner Instrument Borrow Request',
+            from_email=None,
+            recipient_list=['rentalviol@vdgsa.org'],
+            message=f'{show_name_and_email(registration_entry.user)} wants to borrow an instument '
+                    'for the beginner program.'
+        )
+
+
+def _send_instrument_loan_email_impl(
+    user: User, instruments: Iterable[InstrumentBringing], *, subject: str, purpose_text: str
+):
+    if instruments:
+        message = f'{show_name_and_email(user)} ' + purpose_text
+        for i, instrument in enumerate(instruments):
+            message += f'{i}. {instrument}\n'
+            message += instrument.comments
+        send_mail(
+            subject,
+            from_email=None,
+            recipient_list=['rentalviol@vdgsa.org'],
+            message=message
+        )

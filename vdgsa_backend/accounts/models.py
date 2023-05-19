@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from typing import Any, Final, Optional
+from datetime import date
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields.array import ArrayField
@@ -82,6 +83,9 @@ class User(AbstractUser):
 
     @property
     def subscription_is_current(self) -> bool:
+        return self.subscription_is_valid_until(timezone.now())
+
+    def subscription_is_valid_until(self, date_: date) -> bool:
         if self.subscription is None:
             return False
 
@@ -90,7 +94,7 @@ class User(AbstractUser):
 
         return (
             self.subscription.valid_until is not None
-            and timezone.now() <= self.subscription.valid_until
+            and date_ <= self.subscription.valid_until
         )
 
     @property
