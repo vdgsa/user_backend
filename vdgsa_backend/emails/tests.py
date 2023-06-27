@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from django.test import TestCase
 from django.utils import timezone
 
@@ -104,7 +105,6 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
         optoutuser.receives_expiration_reminder_emails = False
         optoutuser.save()
 
-
         allUsers = User.objects.all()
         for member in allUsers:
             print('all users: ', member.email,
@@ -120,11 +120,9 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
                       member.subscription.valid_until.strftime("%m/%d/%Y"))
                 emailcounter += 1
 
-        print('test_expiring_emails should be 5', emailcounter)
+        print('test_expiring_emails should be 5, got: ', emailcounter)
         # ONLY 3 TEST USERS SHOULD PRODUCE AN EMAIL.
         self.assertEqual(emailcounter, 5)
-
-
 
     def test_is_deceased(self) -> None:
         user = User.objects.create_user('expired-month-ago@user.user',
@@ -155,6 +153,6 @@ class MembershipSubscriptionExpiredEmailsTestCase(TestCase):
                       member.subscription.valid_until.strftime("%m/%d/%Y"))
                 emailcounter += 1
 
-        print('test_is_deceased should be zero', emailcounter)
+        print('test_is_deceased should be zero, got: ', emailcounter)
         # ONLY 3 TEST USERS SHOULD PRODUCE AN EMAIL.
         self.assertEqual(emailcounter, 0)
