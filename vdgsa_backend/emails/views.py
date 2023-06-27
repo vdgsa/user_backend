@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import calendar
 from datetime import datetime
 from html.parser import HTMLParser
 from sqlite3 import Date
 from typing import Any, Final, Iterable
 from urllib import request
 
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Q
@@ -33,24 +33,7 @@ EXPIRED_PAST: Final = dict(title='Expired 6 months ago', months=6, message="expi
 
 
 def subtract_months(date: Date, months: int) -> Date:
-    months_count = date.month - months
-
-    # Calculate the year
-    year = date.year + int(months_count // 13)
-
-    # Calculate the month
-    month = (months_count % 12)
-    if month == 0:
-        month = 12
-
-    # Calculate the day
-    day = date.day
-    last_day_of_month = calendar.monthrange(year, month)[1]
-    if day > last_day_of_month:
-        day = last_day_of_month
-
-    new_date = datetime(year, month, day)
-    return new_date
+    return date + relativedelta(months=-months)
 
 
 class ExpiringEmails():
@@ -63,9 +46,12 @@ class ExpiringEmails():
         """
         Query membership for expiring in - months
         """
-        # print('subtract_months ', months, subtract_months(timezone.now(), months))
+        # fakeToday = datetime.today() + relativedelta(days=+7)
+        # print('subtract_months ', months, subtract_months(fakeToday, months))
+        # print('fakeToday', fakeToday)
+        # targetDate = subtract_months(fakeToday, months)
 
-        targetDate = subtract_months(timezone.now(), months)
+        targetDate = subtract_months(datetime.today(), months)
         expiring_members = User.objects.filter(
             Q(is_deceased=False)
             & ~Q(owned_subscription__membership_type=MembershipType.lifetime)
