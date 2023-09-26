@@ -8,7 +8,7 @@ from urllib import request
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.db.models import Q
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
@@ -23,6 +23,7 @@ from vdgsa_backend.accounts.views.permissions import is_membership_secretary
 
 FROM_EMAIL: Final = 'membership@vdgsa.org'
 BCC_TO_EMAIL: Final = 'membership@vdgsa.org'
+JOB_NOTIFICATION_TO_EMAIL: Final = ['membership@vdgsa.org', 'doug.poplin@gmail.com']
 
 EXPIRING_THIS_MONTH: Final = dict(title='Expiring this month', months=0,
                                   message="needs to be renewed in the next month ")
@@ -90,11 +91,26 @@ class ExpiringEmails():
 
     def runJob(self) -> None:
         jobs = [EXPIRING_THIS_MONTH, EXPIRED_LAST_MONTH, EXPIRED_PAST]
+        logging = []
 
         for job in jobs:
             expiring_members = self.list_expiring_members(job['months'])
+            title = job['title']
             for member in expiring_members:
                 msg = self.sendEmail(member, job, send=True)
+                log = f'{title}: {member.email}, expired \
+on {member.subscription.valid_until.strftime("%m/%d/%Y")} \n'
+                logging.append(log)
+
+        email = EmailMessage(
+            subject=f'Monthly Membership email has been run!',
+            from_email=None,
+            to=JOB_NOTIFICATION_TO_EMAIL,
+            body=f'Results of Membership job ' + datetime.today().strftime("%B %d, %Y")
+                    + '\n\n'
+                    + '\n'.join(logging)
+        )
+        email.send(fail_silently=True)
 
 
 class Viewemails(LoginRequiredMixin, UserPassesTestMixin, View):
