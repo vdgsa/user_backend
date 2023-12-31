@@ -160,7 +160,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         self.wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
-            '$35.00',
+            '$40.00',
             self.selenium.find_element_by_id('ProductSummary-totalAmount').text
         )
         self.assertIn('checkout.stripe.com', self.selenium.current_url)
@@ -198,7 +198,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         self.wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
-            '$40.00',
+            '$45.00',
             self.selenium.find_element_by_id('ProductSummary-totalAmount').text
         )
         self.assertIn('checkout.stripe.com', self.selenium.current_url)
@@ -253,7 +253,7 @@ class MembershipUITestCase(SeleniumTestCaseBase):
         self.wait.until(
             lambda driver: driver.find_element_by_id('ProductSummary-totalAmount').text != '')
         self.assertIn(
-            '$35.00',
+            '$40.00',
             self.selenium.find_element_by_id('ProductSummary-totalAmount').text
         )
         self.assertIn('checkout.stripe.com', self.selenium.current_url)

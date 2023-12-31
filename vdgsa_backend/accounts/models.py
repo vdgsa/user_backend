@@ -117,9 +117,9 @@ class ChangeEmailRequest(_CreatedAndUpdatedTimestamps, models.Model):
     new_email = models.EmailField()
 
 
-REGULAR_MEMBERSHIP_PRICE: Final[int] = 35
+REGULAR_MEMBERSHIP_PRICE: Final[int] = 40
 STUDENT_MEMBERSHIP_PRICE: Final[int] = 20
-INTERNATIONAL_MEMBERSHIP_PRICE: Final[int] = 40
+INTERNATIONAL_MEMBERSHIP_PRICE: Final[int] = 45
 
 
 class MembershipType(models.TextChoices):
