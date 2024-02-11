@@ -35,6 +35,8 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'instruments_page_markdown',
             'liability_release_text',
             'covid_policy_markdown',
+            'code_of_conduct_markdown',
+            'charge_card_date_markdown',
             'photo_release_text',
 
             'first_period_time_label',
@@ -96,6 +98,9 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             ),
             'liability_release_text': 'Liability release text. Rendered as markdown',
             'covid_policy_markdown': 'Covid policy text. Rendered as markdown',
+            'code_of_conduct_markdown': 'VdGSA code of Conduct acknowledgement text. '
+                'Rendered as markdown',
+            'charge_card_date_markdown': 'Information about when credit cards will begin to be charged. Rendered as markdown',
             'housing_form_top_markdown': (
                 'Text to display at the top of the housing form. Rendered as markdown'),
             'housing_form_pre_arrival_markdown': (
@@ -116,13 +121,16 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
                 'A list of banquet food options, each separated by a newline. '
                 'Note that "Not Attending" is automatically added as a choice.'
             ),
-            'workshop_fee': 'Workshop fee (for non-playing attendees and on-campus beginners).'
+            'workshop_fee': 'Conference fee (for non-playing attendees and on-campus beginners).'
         }
 
         widgets = {
             'phase': widgets.RadioSelect,
             'liability_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'photo_release_text': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+
+            'code_of_conduct_markdown': widgets.Textarea(attrs={'rows': 4, 'cols': None}),
+            'charge_card_date_markdown': widgets.Textarea(attrs={'rows': 4, 'cols': None}),
 
             'housing_form_top_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'early_arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),

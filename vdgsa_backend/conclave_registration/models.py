@@ -46,6 +46,8 @@ class ConclaveRegistrationConfig(models.Model):
 
     liability_release_text = models.TextField(blank=True)
     covid_policy_markdown = models.TextField(blank=True)
+    code_of_conduct_markdown = models.TextField(blank=True)
+    charge_card_date_markdown = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
 
     first_period_time_label = models.CharField(max_length=255, blank=True)

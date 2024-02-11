@@ -295,7 +295,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
     program = registration_entry.program
     if program in [Program.non_playing_attendee, Program.beginners, Program.vendor]:
-        display_name = 'Workshop Fee'
+        display_name = 'Conference Fee'
     else:
         display_name = f'Tuition: {Program(program).label}'
 
