@@ -736,7 +736,7 @@ class AdvancedProjectsInfo(models.Model):
 
 class HousingRoomType(models.TextChoices):
     single = 'single'
-    double = 'double', 'Double (sharing a bed)'
+    double = 'double', 'Double'
     off_campus = 'off_campus'
 
 
