@@ -354,7 +354,7 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
 
     is_on_campus = (
         hasattr(registration_entry, 'housing')
-        and registration_entry.room_type != HousingRoomType.off_campus
+        and registration_entry.housing.room_type != HousingRoomType.off_campus
     )
 
     match(registration_entry.program):
