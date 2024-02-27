@@ -92,8 +92,10 @@ class ConclaveRegistrationConfig(models.Model):
     # For non-playing attendees/on-campus beginners.
     workshop_fee = models.IntegerField(blank=True, default=0)
 
-    beginners_extra_class_fee = models.IntegerField(blank=True, default=0)
-    beginners_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
+    beginners_extra_class_on_campus_fee = models.IntegerField(blank=True, default=0)
+    beginners_two_extra_classes_on_campus_fee = models.IntegerField(blank=True, default=0)
+    beginners_extra_class_off_campus_fee = models.IntegerField(blank=True, default=0)
+    beginners_two_extra_classes_off_campus_fee = models.IntegerField(blank=True, default=0)
     consort_coop_one_extra_class_fee = models.IntegerField(blank=True, default=0)
     consort_coop_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
     seasoned_players_extra_class_fee = models.IntegerField(blank=True, default=0)
