@@ -113,11 +113,11 @@
     </div>
   </div>
 
-  <div class="row subsidy-checkbox supplemental-2023-subsidy-checkbox">
+  <!-- <div class="row subsidy-checkbox supplemental-2023-subsidy-checkbox">
     <div class="col-md-6">
       {% include 'utils/form_field.tmpl' with field=form.wants_2023_supplemental_discount label=conclave_config.supplemental_2023_housing_subsidy_text %}
     </div>
-  </div>
+  </div> -->
 
   <!-- <h4 class="mt-2">Adjustments to Housing Costs</h4> -->
   <div class="row mt-2">
@@ -225,7 +225,7 @@
   radio_button_hide('room_type', '#room-near-preference-wrapper', {show_values: ['single', 'double']});
   radio_button_hide('room_type', '#bedtime-wrapper', {show_values: ['single', 'double']});
   radio_button_hide('room_type', '.subsidy-checkbox', {show_values: ['single', 'double']});
-  radio_button_hide('room_type', '.supplemental-2023-subsidy-checkbox', {show_values: ['single']});
+  // radio_button_hide('room_type', '.supplemental-2023-subsidy-checkbox', {show_values: ['single']});
   radio_button_hide('is_bringing_guest_to_banquet', '#banquet-guest-wrapper');
 </script>
 {% endblock %}
