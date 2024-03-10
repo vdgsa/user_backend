@@ -4,6 +4,7 @@ import csv
 import itertools
 import json
 from typing import Any, Dict, get_args
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http.response import HttpResponse
@@ -31,6 +32,15 @@ class DownloadRegistrationEntriesCSVView(LoginRequiredMixin, UserPassesTestMixin
         return is_conclave_team(self.request.user)
 
 
+def format_datetime(datetime_):
+    if datetime_ is None:
+        return ''
+
+    return datetime_.astimezone(
+        ZoneInfo('America/New_York')
+    ).strftime('%b %d, %Y %I:%M:%S%p')
+
+
 def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = (
@@ -51,8 +61,9 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
         # update the CSV dicts.
         row = {
             'sequence_id': entry.payment_info.id,
-            'created_at': entry.created_at,
-            'last_modified': entry.last_modified,
+            'created_at': format_datetime(entry.created_at),
+            'last_modified': format_datetime(entry.last_modified),
+            'finalized_at': format_datetime(entry.finalized_at),
 
             'USER INFO': '',
             **user_info_to_dict(entry),
@@ -274,6 +285,7 @@ def charges_to_dict(entry: RegistrationEntry) -> dict[str, float]:
 CSV_HEADERS = [
     'sequence_id',
     'created_at',
+    'finalized_at',
     'last_modified',
 
     'USER INFO',

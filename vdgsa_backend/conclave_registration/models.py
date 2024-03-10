@@ -280,7 +280,6 @@ class RegistrationEntry(models.Model):
             for registration_part in (
                 'additional_info',
                 'work_study',
-                'instruments_bringing',
                 'beginner_instruments',
                 'regular_class_choices',
                 'advanced_projects',
@@ -291,6 +290,10 @@ class RegistrationEntry(models.Model):
             if hasattr(self, registration_part)
         ]
         return max([self._last_modified] + subpart_timestamps)
+
+    @cached_property
+    def finalized_at(self):
+        return self.payment_info.created_at if self.is_finalized else None
 
     conclave_config = models.ForeignKey(
         ConclaveRegistrationConfig,
