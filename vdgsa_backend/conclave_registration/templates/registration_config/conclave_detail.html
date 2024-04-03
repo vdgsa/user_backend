@@ -54,7 +54,11 @@
             </tr>
             <tr>
               <td class="class-info-label">Level:</td>
-              <td class="class-info-cell">{{class_.level}}</td>
+              <td class="class-info-cell">{{class_.level}}
+                {% if class_.offer_to_beginners %}
+                <span class="ml-2" >(Offered to Beginners)</span>
+                 {% endif %}
+              </td>
             </tr>
           </table>
           <div>{{class_.description}}</div>
