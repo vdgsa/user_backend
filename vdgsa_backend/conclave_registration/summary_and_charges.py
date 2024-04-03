@@ -352,18 +352,29 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
         return None
     class_choices: RegularProgramClassChoices = registration_entry.regular_class_choices
 
+    is_on_campus = (
+        hasattr(registration_entry, 'housing')
+        and registration_entry.housing.room_type != HousingRoomType.off_campus
+    )
+
     match(registration_entry.program):
         case Program.beginners if class_choices.num_non_freebie_classes == 1:
             return {
                 'display_name': '1 Add-On Class',
                 'csv_label': 'Add-On Classes',
-                'amount': conclave_config.beginners_extra_class_fee
+                'amount': (
+                    conclave_config.beginners_extra_class_on_campus_fee if is_on_campus
+                    else conclave_config.beginners_extra_class_off_campus_fee
+                )
             }
         case Program.beginners if class_choices.num_non_freebie_classes == 2:
             return {
                 'display_name': '2 Add-On Classes',
                 'csv_label': 'Add-On Classes',
-                'amount': conclave_config.beginners_two_extra_classes_fee
+                'amount': (
+                    conclave_config.beginners_two_extra_classes_on_campus_fee if is_on_campus
+                    else conclave_config.beginners_two_extra_classes_off_campus_fee
+                )
             }
         case Program.consort_coop if class_choices.num_non_freebie_classes == 1:
             return {

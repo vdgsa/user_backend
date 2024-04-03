@@ -35,9 +35,14 @@
     for levels.
   {% elif registration_entry.program == 'beginners' %}
     Participants in the Adult Beginners Program can sign up for an additional
-    Beginners+ class for ${{registration_entry.conclave_config.beginners_extra_class_fee}}
+    Beginners+ class for
+    ${{registration_entry.conclave_config.beginners_extra_class_on_campus_fee}}
+    (if staying on campus)/${{registration_entry.conclave_config.beginners_extra_class_off_campus_fee}}
+    (if staying off campus)
     or for two additional classes for
-    ${{registration_entry.conclave_config.beginners_two_extra_classes_fee}}.
+    ${{registration_entry.conclave_config.beginners_two_extra_classes_on_campus_fee}}
+    (if staying on campus)/${{registration_entry.conclave_config.beginners_two_extra_classes_off_campus_fee}}
+    (if staying off campus).
     You may also sign up for a 4th period
     class at no additional charge. To sign up for a 4th period freebie class,
     please select a 1st, 2nd, and 3rd choice for 4th period below.

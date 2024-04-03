@@ -745,18 +745,16 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if not self.registration_entry.uses_flexible_class_selection:
             return
 
-        if self.registration_entry.program == Program.part_time:
-            # We don't have any more validation to do for part time
-            # extra class selection because the flex_choice fields
-            # are marked as required for part-timers.
-            return
-
-        # Seasoned players should specify all three choices.
+        # All three choices must be selected.
         extra_class_choices = [
             self.instance.flex_choice1,
             self.instance.flex_choice2,
             self.instance.flex_choice3
         ]
+
+        # Note: In part-time class selection, the flex choice fields
+        # are marked as required, so if we get to this point for part-time
+        # registration, num_choices should always be 3.
         num_choices = sum(1 for choice in extra_class_choices if choice is not None)
         if num_choices == 0:
             return
@@ -1025,10 +1023,15 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
                 and not self.instance.normal_bed_time):
             self.add_error(None, 'Please specify your preferred normal bedtime.')
 
-        # Added for 2023 (one bed per room)
-        if (self.instance.room_type == HousingRoomType.double
+        # Added for 2023 only (one bed per room)
+        if (self.registration_entry.conclave_config.year == 2023
+                and self.instance.room_type == HousingRoomType.double
                 and not self.instance.roommate_request):
             self.add_error(None, 'Please specify your preferred roommate.')
+
+        if self.instance.room_type == HousingRoomType.off_campus:
+            self.instance.wants_housing_subsidy = False
+            self.instance.wants_2023_supplemental_discount = False
 
         if self.instance.is_bringing_guest_to_banquet == YesNo.yes:
             if not (self.instance.banquet_guest_food_choice and self.instance.banquet_guest_name):
