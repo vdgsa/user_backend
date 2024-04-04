@@ -173,17 +173,14 @@
           {% include 'utils/small_select.tmpl' with field=form.period1_choice1 label='Choice 1'%}
           {% include 'utils/small_select.tmpl' with field=form.period1_choice1_instrument label='Instrument Preference'%}
         </div>
-        {% if form.period1_choice1.field.queryset.count > 1 %}
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period1_choice2 label='Choice 2'%}
           {% include 'utils/small_select.tmpl' with field=form.period1_choice2_instrument label='Instrument Preference'%}
         </div>
-        {% elif form.period1_choice1.field.queryset.count > 2 %}
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period1_choice3 label='Choice 3'%}
           {% include 'utils/small_select.tmpl' with field=form.period1_choice3_instrument label='Instrument Preference'%}
         </div>
-        {% endif %}
       </div>
       {% endif %}
 
@@ -196,20 +193,17 @@
           {% include 'utils/small_select.tmpl' with field=form.period2_choice1 label='Choice 1'%}
           {% include 'utils/small_select.tmpl' with field=form.period2_choice1_instrument label='Instrument Preference'%}
         </div>
-        {% if form.period2_choice1.field.queryset.count > 1 %}
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period2_choice2 label='Choice 2'%}
           {% include 'utils/small_select.tmpl' with field=form.period2_choice2_instrument label='Instrument Preference'%}
         </div>
-        {% elif form.period2_choice1.field.queryset.count > 2 %}
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period2_choice3 label='Choice 3'%}
           {% include 'utils/small_select.tmpl' with field=form.period2_choice3_instrument label='Instrument Preference'%}
         </div>
-        {% endif %}
       </div>
       {% endif %}
-
+      
       {% if show_third_period %}
       <div class="period-header fs-4 mt-2">
         3rd Period: {{registration_entry.conclave_config.third_period_time_label}}
@@ -219,17 +213,14 @@
           {% include 'utils/small_select.tmpl' with field=form.period3_choice1 label='Choice 1'%}
           {% include 'utils/small_select.tmpl' with field=form.period3_choice1_instrument label='Instrument Preference'%}
         </div>
-        {% if form.period3_choice1.field.queryset.count > 1 %}
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period3_choice2 label='Choice 2'%}
           {% include 'utils/small_select.tmpl' with field=form.period3_choice2_instrument label='Instrument Preference'%}
         </div>
-        {% elif form.period3_choice1.field.queryset.count > 2 %}
         <div class="choice-wrapper">
           {% include 'utils/small_select.tmpl' with field=form.period3_choice3 label='Choice 3'%}
           {% include 'utils/small_select.tmpl' with field=form.period3_choice3_instrument label='Instrument Preference'%}
         </div>
-        {% endif %}
       </div>
       {% endif %}
 
