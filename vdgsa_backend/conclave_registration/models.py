@@ -91,6 +91,7 @@ class ConclaveRegistrationConfig(models.Model):
     seasoned_players_tuition = models.IntegerField(blank=True, default=0)
     # For non-playing attendees/on-campus beginners.
     workshop_fee = models.IntegerField(blank=True, default=0)
+    prorated_workshop_fee = models.IntegerField(blank=True, default=0)
 
     beginners_extra_class_on_campus_fee = models.IntegerField(blank=True, default=0)
     beginners_two_extra_classes_on_campus_fee = models.IntegerField(blank=True, default=0)
@@ -214,7 +215,7 @@ def get_classes_by_period(
 ) -> dict[int, QuerySet[Class]]:
     queryset = Class.objects.filter(conclave_config=conclave_config_pk)
     if program == Program.beginners:
-        queryset = queryset.filter(Q(offer_to_beginners=True) | Q(period=Period.fourth))
+        queryset = queryset.filter(Q(offer_to_beginners=True))
 
     return {
         Period.first: queryset.filter(period=Period.first),
@@ -280,7 +281,6 @@ class RegistrationEntry(models.Model):
             for registration_part in (
                 'additional_info',
                 'work_study',
-                'instruments_bringing',
                 'beginner_instruments',
                 'regular_class_choices',
                 'advanced_projects',
@@ -291,6 +291,10 @@ class RegistrationEntry(models.Model):
             if hasattr(self, registration_part)
         ]
         return max([self._last_modified] + subpart_timestamps)
+
+    @cached_property
+    def finalized_at(self):
+        return self.payment_info.created_at if self.is_finalized else None
 
     conclave_config = models.ForeignKey(
         ConclaveRegistrationConfig,
