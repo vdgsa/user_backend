@@ -63,6 +63,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'consort_coop_tuition',
             'seasoned_players_tuition',
             'workshop_fee',
+            'prorated_workshop_fee',
             'beginners_extra_class_on_campus_fee',
             'beginners_extra_class_off_campus_fee',
             'beginners_two_extra_classes_on_campus_fee',
@@ -123,7 +124,9 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
                 'A list of banquet food options, each separated by a newline. '
                 'Note that "Not Attending" is automatically added as a choice.'
             ),
-            'workshop_fee': 'Conference fee (for non-playing attendees and on-campus beginners).'
+            'workshop_fee': 'Conference fee (for non-playing attendees and on-campus beginners).',
+            'prorated_workshop_fee': 'Prorated conference fee for partial-week (for non-playing '
+                                     'attendees and on-campus beginners).'
         }
 
         widgets = {

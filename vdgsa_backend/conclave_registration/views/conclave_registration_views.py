@@ -15,7 +15,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail
 from django.db.models.base import Model
 from django.forms import widgets
-from django.forms.fields import BooleanField
+from django.forms.fields import BooleanField, IntegerField
 from django.forms.utils import ErrorDict
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
