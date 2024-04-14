@@ -1098,7 +1098,7 @@ _YEARS: Final = _generate_credit_card_years()
 def _credit_card_number_validator(card_number: str) -> None:
     for digit in card_number:
         if not digit.isdigit():
-            raise ValidationError('Invalid card number')
+            raise ValidationError('Invalid card number: numbers only (no spaces)')
 
 
 class PaymentForm(_RegistrationStepFormBase, forms.ModelForm):
