@@ -1132,10 +1132,11 @@ class PaymentView(_RegistrationStepViewBase):
             return self.render_page(form)
 
         try:
+            card_number = ''.join(form.cleaned_data['card_number'].split())
             payment_method = stripe.PaymentMethod.create(
                 type='card',
                 card={
-                    'number': form.cleaned_data['card_number'],  # type: ignore
+                    'number': card_number,  # type: ignore
                     'exp_month': form.cleaned_data['expiration_month'],  # type: ignore
                     'exp_year': form.cleaned_data['expiration_year'],  # type: ignore
                     'cvc': form.cleaned_data['cvc'],  # type: ignore
