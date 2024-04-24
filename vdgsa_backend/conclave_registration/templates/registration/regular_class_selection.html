@@ -14,7 +14,7 @@
   </div>
 {% endif %}
 
-<div>
+<div class="col-md-8">
   {% if registration_entry.program == 'regular' %}
     Full-time participants in the Regular Curriculum may take two or
     three classes 1st-3rd periods, and may also take an optional fourth class
@@ -34,10 +34,15 @@
     </a>
     for levels.
   {% elif registration_entry.program == 'beginners' %}
-    Participants in the Adult Beginners Program can sign up for an additional
-    Beginners+ class for ${{registration_entry.conclave_config.beginners_extra_class_fee}}
+    Participants in the Beginners Program can sign up for an additional
+    Beginners+ class for
+    ${{registration_entry.conclave_config.beginners_extra_class_on_campus_fee}}
+    (if staying on campus)/${{registration_entry.conclave_config.beginners_extra_class_off_campus_fee}}
+    (if staying off campus)
     or for two additional classes for
-    ${{registration_entry.conclave_config.beginners_two_extra_classes_fee}}.
+    ${{registration_entry.conclave_config.beginners_two_extra_classes_on_campus_fee}}
+    (if staying on campus)/${{registration_entry.conclave_config.beginners_two_extra_classes_off_campus_fee}}
+    (if staying off campus).
     You may also sign up for a 4th period
     class at no additional charge. To sign up for a 4th period freebie class,
     please select a 1st, 2nd, and 3rd choice for 4th period below.
@@ -198,7 +203,7 @@
         </div>
       </div>
       {% endif %}
-
+      
       {% if show_third_period %}
       <div class="period-header fs-4 mt-2">
         3rd Period: {{registration_entry.conclave_config.third_period_time_label}}

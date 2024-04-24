@@ -7,6 +7,7 @@ on the "Summary" page and in confirmation emails.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Final, Literal, TypedDict, get_args
 
@@ -295,7 +296,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
     conclave_config: ConclaveRegistrationConfig = registration_entry.conclave_config
     program = registration_entry.program
     if program in [Program.non_playing_attendee, Program.beginners, Program.vendor]:
-        display_name = 'Workshop Fee'
+        display_name = 'Conference Fee'
     else:
         display_name = f'Tuition: {Program(program).label}'
 
@@ -332,7 +333,8 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
             return {
                 'display_name': display_name,
                 'csv_label': 'Tuition',
-                'amount': 0 if staying_off_campus else conclave_config.workshop_fee
+                'amount': 0 if staying_off_campus
+                            else _get_workshop_fee(conclave_config, registration_entry)
             }
         case Program.faculty_guest_other:
             return None
@@ -340,10 +342,23 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
             return {
                 'display_name': display_name,
                 'csv_label': 'Tuition',
-                'amount': conclave_config.workshop_fee
+                'amount': _get_workshop_fee(conclave_config, registration_entry)
             }
         case _:
             assert False
+
+
+def _get_workshop_fee(conclave_config: ConclaveConfig, registration_entry: RegistrationEntry):
+    if not hasattr(registration_entry, 'housing'):
+        return conclave_config.workshop_fee
+
+    housing = registration_entry.housing
+    stay_duration = _get_stay_duration(conclave_config, housing)
+
+    if stay_duration.num_nights == FULL_WEEK_NUM_NIGHTS:
+        return conclave_config.workshop_fee
+    else:
+        return conclave_config.prorated_workshop_fee * stay_duration.num_nights
 
 
 def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:
@@ -352,18 +367,29 @@ def get_add_on_class_charge(registration_entry: RegistrationEntry) -> ChargeInfo
         return None
     class_choices: RegularProgramClassChoices = registration_entry.regular_class_choices
 
+    is_on_campus = (
+        hasattr(registration_entry, 'housing')
+        and registration_entry.housing.room_type != HousingRoomType.off_campus
+    )
+
     match(registration_entry.program):
         case Program.beginners if class_choices.num_non_freebie_classes == 1:
             return {
                 'display_name': '1 Add-On Class',
                 'csv_label': 'Add-On Classes',
-                'amount': conclave_config.beginners_extra_class_fee
+                'amount': (
+                    conclave_config.beginners_extra_class_on_campus_fee if is_on_campus
+                    else conclave_config.beginners_extra_class_off_campus_fee
+                )
             }
         case Program.beginners if class_choices.num_non_freebie_classes == 2:
             return {
                 'display_name': '2 Add-On Classes',
                 'csv_label': 'Add-On Classes',
-                'amount': conclave_config.beginners_two_extra_classes_fee
+                'amount': (
+                    conclave_config.beginners_two_extra_classes_on_campus_fee if is_on_campus
+                    else conclave_config.beginners_two_extra_classes_off_campus_fee
+                )
             }
         case Program.consort_coop if class_choices.num_non_freebie_classes == 1:
             return {
@@ -436,6 +462,9 @@ def get_housing_charges(registration_entry: RegistrationEntry) -> list[ChargeInf
     return charges
 
 
+FULL_WEEK_NUM_NIGHTS: Final = 7
+
+
 def _room_and_board_charge(
     housing: Housing,
     conclave_config: ConclaveRegistrationConfig,
@@ -447,21 +476,9 @@ def _room_and_board_charge(
 ) -> list[ChargeInfo]:
     registration_entry: RegistrationEntry = housing.registration_entry
 
-    arrival_date = datetime.strptime(
-        housing.arrival_day, conclave_config.arrival_date_format
-    ).date().replace(year=conclave_config.year)
-    departure_date = datetime.strptime(
-        housing.departure_day, conclave_config.arrival_date_format
-    ).date().replace(year=conclave_config.year)
-
-    num_nights = (departure_date - arrival_date).days
-    num_early_arrival_nights = (
-        (conclave_config.arrival_dates[0] - arrival_date).days
-        if arrival_date in conclave_config.early_arrival_dates
-        else 0
-    )
-    num_nights -= num_early_arrival_nights
-    full_week_num_nights: Final = 7
+    stay_duration = _get_stay_duration(conclave_config, housing)
+    num_nights = stay_duration.num_nights
+    num_early_arrival_nights = stay_duration.num_early_arrival_nights
 
     charges: list[ChargeInfo] = []
     # Note that this will also cause superusers to be considered board
@@ -479,7 +496,7 @@ def _room_and_board_charge(
             'amount': early_arrival_room_rate * num_early_arrival_nights
         })
 
-    if num_nights == full_week_num_nights:
+    if num_nights == FULL_WEEK_NUM_NIGHTS:
         charges.append({
             'display_name': f'Full Week Room and Board: {formatted_room_type}',
             'csv_label': 'Room and Board',
@@ -493,6 +510,37 @@ def _room_and_board_charge(
         })
 
     return charges
+
+
+@dataclass
+class StayDuration:
+    num_nights: int
+    num_early_arrival_nights: int
+
+
+def _get_stay_duration(
+    conclave_config: ConclaveRegistrationConfig,
+    housing: Housing,
+):
+    arrival_date = datetime.strptime(
+        housing.arrival_day, conclave_config.arrival_date_format
+    ).date().replace(year=conclave_config.year)
+    departure_date = datetime.strptime(
+        housing.departure_day, conclave_config.arrival_date_format
+    ).date().replace(year=conclave_config.year)
+
+    num_nights = (departure_date - arrival_date).days
+    num_early_arrival_nights = (
+        (conclave_config.arrival_dates[0] - arrival_date).days
+        if arrival_date in conclave_config.early_arrival_dates
+        else 0
+    )
+    num_nights -= num_early_arrival_nights
+
+    return StayDuration(
+        num_nights=num_nights,
+        num_early_arrival_nights=num_early_arrival_nights
+    )
 
 
 def get_vendor_table_charge(registration_entry: RegistrationEntry) -> ChargeInfo | None:

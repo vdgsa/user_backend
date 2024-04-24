@@ -15,7 +15,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail
 from django.db.models.base import Model
 from django.forms import widgets
-from django.forms.fields import BooleanField
+from django.forms.fields import BooleanField, IntegerField
 from django.forms.utils import ErrorDict
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -745,18 +745,16 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if not self.registration_entry.uses_flexible_class_selection:
             return
 
-        if self.registration_entry.program == Program.part_time:
-            # We don't have any more validation to do for part time
-            # extra class selection because the flex_choice fields
-            # are marked as required for part-timers.
-            return
-
-        # Seasoned players should specify all three choices.
+        # All three choices must be selected.
         extra_class_choices = [
             self.instance.flex_choice1,
             self.instance.flex_choice2,
             self.instance.flex_choice3
         ]
+
+        # Note: In part-time class selection, the flex choice fields
+        # are marked as required, so if we get to this point for part-time
+        # registration, num_choices should always be 3.
         num_choices = sum(1 for choice in extra_class_choices if choice is not None)
         if num_choices == 0:
             return
@@ -1025,10 +1023,15 @@ class HousingForm(_RegistrationStepFormBase, forms.ModelForm):
                 and not self.instance.normal_bed_time):
             self.add_error(None, 'Please specify your preferred normal bedtime.')
 
-        # Added for 2023 (one bed per room)
-        if (self.instance.room_type == HousingRoomType.double
+        # Added for 2023 only (one bed per room)
+        if (self.registration_entry.conclave_config.year == 2023
+                and self.instance.room_type == HousingRoomType.double
                 and not self.instance.roommate_request):
             self.add_error(None, 'Please specify your preferred roommate.')
+
+        if self.instance.room_type == HousingRoomType.off_campus:
+            self.instance.wants_housing_subsidy = False
+            self.instance.wants_2023_supplemental_discount = False
 
         if self.instance.is_bringing_guest_to_banquet == YesNo.yes:
             if not (self.instance.banquet_guest_food_choice and self.instance.banquet_guest_name):
@@ -1095,7 +1098,7 @@ _YEARS: Final = _generate_credit_card_years()
 def _credit_card_number_validator(card_number: str) -> None:
     for digit in card_number:
         if not digit.isdigit():
-            raise ValidationError('Invalid card number')
+            raise ValidationError('Invalid card number: numbers only (no spaces)')
 
 
 class PaymentForm(_RegistrationStepFormBase, forms.ModelForm):
@@ -1129,10 +1132,11 @@ class PaymentView(_RegistrationStepViewBase):
             return self.render_page(form)
 
         try:
+            card_number = ''.join(form.cleaned_data['card_number'].split())
             payment_method = stripe.PaymentMethod.create(
                 type='card',
                 card={
-                    'number': form.cleaned_data['card_number'],  # type: ignore
+                    'number': card_number,  # type: ignore
                     'exp_month': form.cleaned_data['expiration_month'],  # type: ignore
                     'exp_year': form.cleaned_data['expiration_year'],  # type: ignore
                     'cvc': form.cleaned_data['cvc'],  # type: ignore

@@ -46,6 +46,8 @@ class ConclaveRegistrationConfig(models.Model):
 
     liability_release_text = models.TextField(blank=True)
     covid_policy_markdown = models.TextField(blank=True)
+    code_of_conduct_markdown = models.TextField(blank=True)
+    charge_card_date_markdown = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
 
     first_period_time_label = models.CharField(max_length=255, blank=True)
@@ -89,9 +91,12 @@ class ConclaveRegistrationConfig(models.Model):
     seasoned_players_tuition = models.IntegerField(blank=True, default=0)
     # For non-playing attendees/on-campus beginners.
     workshop_fee = models.IntegerField(blank=True, default=0)
+    prorated_workshop_fee = models.IntegerField(blank=True, default=0)
 
-    beginners_extra_class_fee = models.IntegerField(blank=True, default=0)
-    beginners_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
+    beginners_extra_class_on_campus_fee = models.IntegerField(blank=True, default=0)
+    beginners_two_extra_classes_on_campus_fee = models.IntegerField(blank=True, default=0)
+    beginners_extra_class_off_campus_fee = models.IntegerField(blank=True, default=0)
+    beginners_two_extra_classes_off_campus_fee = models.IntegerField(blank=True, default=0)
     consort_coop_one_extra_class_fee = models.IntegerField(blank=True, default=0)
     consort_coop_two_extra_classes_fee = models.IntegerField(blank=True, default=0)
     seasoned_players_extra_class_fee = models.IntegerField(blank=True, default=0)
@@ -210,7 +215,7 @@ def get_classes_by_period(
 ) -> dict[int, QuerySet[Class]]:
     queryset = Class.objects.filter(conclave_config=conclave_config_pk)
     if program == Program.beginners:
-        queryset = queryset.filter(Q(offer_to_beginners=True) | Q(period=Period.fourth))
+        queryset = queryset.filter(Q(offer_to_beginners=True))
 
     return {
         Period.first: queryset.filter(period=Period.first),
@@ -262,6 +267,35 @@ class RegistrationEntry(models.Model):
     class Meta:
         unique_together = ('conclave_config', 'user')
 
+    _created_at = models.DateTimeField(auto_now_add=True)
+    _last_modified = models.DateTimeField(auto_now=True)
+
+    @cached_property
+    def created_at(self):
+        return self._created_at
+
+    @cached_property
+    def last_modified(self):
+        subpart_timestamps = [
+            getattr(self, registration_part).last_modified
+            for registration_part in (
+                'additional_info',
+                'work_study',
+                'beginner_instruments',
+                'regular_class_choices',
+                'advanced_projects',
+                'housing',
+                'tshirts',
+                'payment_info',
+            )
+            if hasattr(self, registration_part)
+        ]
+        return max([self._last_modified] + subpart_timestamps)
+
+    @cached_property
+    def finalized_at(self):
+        return self.payment_info.created_at if self.is_finalized else None
+
     conclave_config = models.ForeignKey(
         ConclaveRegistrationConfig,
         related_name='registration_entries',
@@ -302,6 +336,9 @@ class RegistrationEntry(models.Model):
 
 
 class AdditionalRegistrationInfo(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
@@ -411,6 +448,9 @@ class EarlyArrivalChoices(models.TextChoices):
 
 
 class WorkStudyApplication(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
@@ -509,6 +549,9 @@ class InstrumentPurpose(models.TextChoices):
 
 
 class InstrumentBringing(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         order_with_respect_to = 'registration_entry'
 
@@ -539,6 +582,9 @@ class InstrumentBringing(models.Model):
 
 
 class BeginnerInstrumentInfo(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
@@ -574,6 +620,9 @@ ClassChoiceDict = TypedDict(
 # It should be called "ClassSelection", and it functions as a fat interface for all
 # types of class selection.
 class RegularProgramClassChoices(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
@@ -674,6 +723,9 @@ class AdvancedProjectsParticipationOptions(models.TextChoices):
 
 
 class AdvancedProjectsInfo(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
@@ -688,7 +740,7 @@ class AdvancedProjectsInfo(models.Model):
 
 class HousingRoomType(models.TextChoices):
     single = 'single'
-    double = 'double', 'Double (sharing a bed)'
+    double = 'double', 'Double'
     off_campus = 'off_campus'
 
 
@@ -708,6 +760,9 @@ class DietaryNeeds(models.TextChoices):
 
 
 class Housing(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
@@ -765,6 +820,9 @@ TSHIRT_SIZES: Final = [
 
 
 class TShirts(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
@@ -788,6 +846,9 @@ class TShirts(models.Model):
 
 
 class PaymentInfo(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
     registration_entry = models.OneToOneField(
         RegistrationEntry,
         on_delete=models.CASCADE,
