@@ -12,10 +12,17 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 from typing import List
+from dotenv import load_dotenv
+import os
 
 import stripe  # type: ignore
 from bleach.sanitizer import ALLOWED_ATTRIBUTES  # type: ignore
 from django.urls.base import reverse_lazy
+
+load_dotenv()
+
+RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -59,6 +66,7 @@ INSTALLED_APPS = [
     'vdgsa_backend.stripe_email_webhook',
     'vdgsa_backend.conclave_registration',
     'corsheaders',
+    'django_recaptcha',
 
     'markdownify.apps.MarkdownifyConfig',
 ]
@@ -187,6 +195,8 @@ MARKDOWNIFY = {
         ]
     }
 }
+
+
 
 # Misc custom settings --------------------------------------------------------
 MAX_NUM_FAMILY_MEMBERS = 3
