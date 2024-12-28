@@ -63,7 +63,6 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         )
         context['add_family_member_form'] = AddFamilyMemberForm()
         context['can_renew_membership'] = self.can_renew_membership()
-        print('can_renew_membership',context['can_renew_membership'] )
 
         return context
     

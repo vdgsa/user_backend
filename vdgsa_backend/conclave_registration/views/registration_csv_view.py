@@ -94,7 +94,6 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             **charges_to_dict(entry),
             'charges': json.dumps(get_charges_summary(entry), indent=4),
         }
-        print(row)
         writer.writerow(row)
 
     return response
