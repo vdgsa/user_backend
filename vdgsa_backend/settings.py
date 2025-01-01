@@ -40,9 +40,11 @@ SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
 DEBUG = True
 
 # Change the email backend in production
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = "/home/ubuntu/vdgsa_backend/emails.log"
 
-ALLOWED_HOSTS: List[str] = []
+ALLOWED_HOSTS: List[str] = ['localhost','127.0.0.1']
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = reverse_lazy('login')
@@ -210,12 +212,16 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
         },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'vdgsa_app.log',
+        },
     },
     'loggers': {
         # This is the "catch all" logger
         '': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+            'handlers': ['file'],
             'propagate': False,
         },
     }
