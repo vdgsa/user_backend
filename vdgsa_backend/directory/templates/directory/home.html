@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+<div>
+<h3>Membership Directory</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-md-12">
+          {% include 'utils/form_field.tmpl' with field=form.searchtext %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+        
+            <a class="btn btn-sm btn-secondary" data-bs-toggle="collapse" href="#collapseAdvancedOptions" role="button" aria-expanded="false" aria-controls="collapseAdvancedOptions">
+                Advanced options
+            </a>
+            {% include 'utils/form_field.tmpl' with field=form.isAdvancedSearch %}
+
+          <div class="collapse" id="collapseAdvancedOptions">
+            <div class="card card-body">
+
+                <div class="row">
+                    <div class="col-md-3">
+                      {% include 'utils/form_field.tmpl' with field=form.first_name %}
+                    </div>
+                    <div class="col-md-3">
+                      {% include 'utils/form_field.tmpl' with field=form.last_name %}
+                    </div>
+   
+                    <div class="col-md-3">
+                      {% include 'utils/form_field.tmpl' with field=form.teaching_member_type %}
+                    </div>
+                    <div class="col-md-3">
+                      {% include 'utils/form_field.tmpl' with field=form.commercial_member_type %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                      {% include 'utils/form_field.tmpl' with field=form.address_city %}
+                    </div>
+                    <div class="col-md-3">
+                      {% include 'utils/form_field.tmpl' with field=form.address_state %}
+                    </div>
+   
+                    <div class="col-md-3">
+                      {% include 'utils/form_field.tmpl' with field=form.address_country %}
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mt-2">
+            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+          </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-primary m-2">Search</button>
+                    <button type="clear" class="btn btn-secondary m-2">Clear Search Terms</button>
+                </div>
+                
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- <div class="row mt-4">
+        <div class="col-auto ">
+            {% include 'utils/form_body.tmpl' with form=form %}
+        </div>
+    </div> -->
+    {% if results %}
+    <table class="table">
+
+    {% for item in results %}
+        <tr>
+            <td>{{ item.first_name }}</td>
+            <td>{{ item.last_name }}</td>
+            <td>{{ item.address_city }}, {{ item.address_state }} {{ item.address_country}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    <div class="non-field-errors">
+    {% for err in form.non_field_errors %}
+        <p class="form-error">{{ err }}</p>
+    {% endfor %}
+    </div>
+    {% endif %}
+    </form>
+
+</div>
+
+
+<div class="row mt-4">
+    <div class="col-auto ">
+        Note: Users who have opted out of having their information being published will not appear.
+    </div>
+</div>
+
+{% endblock %}
