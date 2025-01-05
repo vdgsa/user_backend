@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models.base import Q
 from django.db import models
 from django.http.response import HttpResponse, HttpResponseRedirect
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 from django.urls.base import reverse
 from django.utils.functional import cached_property
@@ -44,6 +45,7 @@ class DirectorySearchForm(forms.Form):
     commercial_member_type = forms.MultipleChoiceField(label='Commercial Member', choices=CommercialMemberType.choices, widget=forms.CheckboxSelectMultiple, required=False)
     teaching_member_type = forms.MultipleChoiceField(label='Teaching Member', choices=TeachingMemberType.choices, widget=forms.CheckboxSelectMultiple, required=False)
 
+    page = forms.IntegerField(widget=forms.HiddenInput, initial=1, label=False)
 
     def clean(self) -> Dict[str, Any]:
         result = super().clean()
@@ -59,15 +61,15 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
         return render(self.request, self.template_name, context)
 
     def getFiltered(self, form,  **kwargs):
-
-        print('getFiltered', form.cleaned_data['searchtext'])
         q_objects = Q(is_deceased=False)
-        q_objects &= (Q(owned_subscription__membership_type=MembershipType.lifetime)
-                    | Q(owned_subscription__membership_type=MembershipType.complementary)
-                    | Q(owned_subscription__membership_type=MembershipType.organization)
-                    | Q(owned_subscription__membership_type=MembershipType.regular)
-                    | Q(owned_subscription__membership_type=MembershipType.student)
-                    | Q(owned_subscription__membership_type=MembershipType.international))
+        q_objects &= Q(include_name_in_membership_directory=True)
+
+        # q_objects &= (Q(owned_subscription__membership_type=MembershipType.lifetime)
+        #             | Q(owned_subscription__membership_type=MembershipType.complementary)
+        #             | Q(owned_subscription__membership_type=MembershipType.organization)
+        #             | Q(owned_subscription__membership_type=MembershipType.regular)
+        #             | Q(owned_subscription__membership_type=MembershipType.student)
+        #             | Q(owned_subscription__membership_type=MembershipType.international))
         
         if(form.cleaned_data['searchtext']):
             q_objects &= ( Q(first_name__icontains=form.cleaned_data['searchtext'])
@@ -75,25 +77,54 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
                      | Q(address_city__icontains=form.cleaned_data['searchtext'])
                      | Q(address_line_1__icontains=form.cleaned_data['searchtext'])
                      | Q(address_line_2__icontains=form.cleaned_data['searchtext'])
+                     | Q(email__icontains=form.cleaned_data['searchtext'])
                     )
 
         if(form.cleaned_data['isAdvancedSearch']):
-            if(form.cleaned_data['first_name'] != '' & form.cleaned_data['first_name'] != None):
+            print('isAdvancedSearch')
+            if(form.cleaned_data['first_name']):
+                print('first_name',form.cleaned_data['first_name'])
                 q_objects &= Q(first_name__icontains=form.cleaned_data['first_name'])
-            if(form.cleaned_data['last_name'] != '' & form.cleaned_data['last_name'] != None):
+            if(form.cleaned_data['last_name']):
                 q_objects &= Q(last_name__icontains=form.cleaned_data['last_name'])
-            if(form.cleaned_data['address_city'] != '' & form.cleaned_data['address_city'] != None):
+            if(form.cleaned_data['address_city']):
                 q_objects &= Q(address_city__icontains=form.cleaned_data['address_city'])
-            if(form.cleaned_data['address_state'] != '' & form.cleaned_data['address_state'] != None):
+            if(form.cleaned_data['address_state']):
                 q_objects &= Q(address_state__icontains=form.cleaned_data['address_state'])
-            if(form.cleaned_data['address_country'] != '' & form.cleaned_data['address_country'] != None):
+            if(form.cleaned_data['address_country']):
                 q_objects &= Q(address_country__icontains=form.cleaned_data['address_country'] )
+            print(form.cleaned_data['teaching_member_type'])
 
-            # if(form.cleaned_data['teaching_member_type'] != '' & form.cleaned_data['teaching_member_type'] != None):
-            #     q_objects &= Q(teacher_description__icontains=form.cleaned_data['teacher_description'])
+            if(len(form.cleaned_data['teaching_member_type'])>0):
+                teaching_member = Q()
+                if('I' in form.cleaned_data['teaching_member_type']):
+                    teaching_member |= Q(is_teacher=True)
+                if('R' in form.cleaned_data['teaching_member_type']):
+                    teaching_member |= Q(is_remote_teacher=True)
+                if('C' in form.cleaned_data['teaching_member_type']):
+                    teaching_member |= Q(is_teacher=True)
+                q_objects &= teaching_member
 
-            # if(form.cleaned_data['teacher_description']!= '' & form.cleaned_data['teacher_description'] != None):
-            #     q_objects &= Q(commercial_member_type__icontains=form.cleaned_data['searchtext)
+            if(len(form.cleaned_data['commercial_member_type'])>0):
+                commercial_member = Q()
+                if('I' in form.cleaned_data['commercial_member_type']):
+                    commercial_member |= Q(is_instrument_maker=True)
+                if('B' in form.cleaned_data['commercial_member_type']):
+                    commercial_member |= Q(is_bow_maker=True)
+                if('R' in form.cleaned_data['commercial_member_type']):
+                    commercial_member |= Q(is_repairer=True)
+                if('P' in form.cleaned_data['commercial_member_type']):
+                    commercial_member |= Q(is_publisher=True)
+                if('O' in form.cleaned_data['commercial_member_type']):
+                    commercial_member |= Q(other_commercial=True)
+                q_objects &= commercial_member
+
+        else: 
+            print('NOT isAdvancedSearch')
+
+
+
+        print(User.objects.filter(q_objects).order_by('last_name').query)
 
         return User.objects.filter(q_objects).order_by('last_name')
 
@@ -108,14 +139,15 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
         context = {}
         context['form'] = form
 
+
+
+
         if not form.is_valid():
             print(form.errors)
         else:
-            context['results'] = self.getFiltered(form)
-            # include_name_in_membership_directory = models.BooleanField(default=True)
-            # include_email_in_membership_directory = models.BooleanField(default=True)
-            # include_address_in_membership_directory = models.BooleanField(default=True)
-            # include_phone_in_membership_directory = models.BooleanField(default=True)
+            p = Paginator(self.getFiltered(form), 10)
+            print('pag',form.cleaned_data['page'])
+            context['results'] = p.get_page(form.cleaned_data['page'])
 
         return render(self.request, self.template_name, context)
 

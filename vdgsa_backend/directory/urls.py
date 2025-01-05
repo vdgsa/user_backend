@@ -5,6 +5,6 @@ from . import views
 
 urlpatterns = [
     path('', views.DirectoryHomeView.as_view(), name='directory'),
-    path('clear', views.DirectoryHomeView.as_view(), name='clearDirectory')
+    path('', views.DirectoryHomeView.as_view(), name='clearDirectory')
     
 ]
