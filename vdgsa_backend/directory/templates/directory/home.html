@@ -52,10 +52,11 @@
                       {% include 'utils/form_field.tmpl' with field=form.address_country %}
                     </div>
                     <div class="col-md-3">
-                        <div class="mt-2">
-            
+                        <div>
+                            <button type="clear" class="btn btn-secondary m-2" 
+                            onclick="window.location = '{{ request.path }}'"
+                            >Clear Search Terms</button>
                         </div>
-                        
                     </div>
                 </div>
             </div>
@@ -64,7 +65,6 @@
             <div class="col-md-3">
                 <div class="mt-2">
                     <button type="submit" class="btn btn-primary m-2">Search</button>
-                    <button type="clear" class="btn btn-secondary m-2">Clear Search Terms</button>
                 </div>
                 
             </div>
@@ -84,6 +84,8 @@
         <tr>
             <td>{{ item.first_name }}</td>
             <td>{{ item.last_name }}</td>
+            <td>{{ item.email }}</td>
+            <td>{{ item.phone1 }}</td>
             <td>{{ item.address_city }}, {{ item.address_state }} {{ item.address_country}}</td>
         </tr>
     {% endfor %}

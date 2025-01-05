@@ -49,7 +49,6 @@ class DirectorySearchForm(forms.Form):
         result = super().clean()
         return result
 
-
 class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'directory/home.html'
 
