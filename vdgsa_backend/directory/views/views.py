@@ -30,8 +30,6 @@ class TeachingMemberType(models.TextChoices):
 class DirectorySearchForm(forms.Form):
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        # print('address_state',[(genre, genre) for genre in list(User.objects.distinct().order_by('address_state').values_list('address_state', flat=True))])
-        # self.fields['address_state'].choices = [(genre, genre) for genre in list(User.objects.distinct().order_by('address_state').values_list('address_state', flat=True))]
         
     searchtext = forms.CharField(label='Search Text', required=False)
 
@@ -55,7 +53,6 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'directory/home.html'
 
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
-        print('DirectoryHomeView get')
         context = {}
         context['form'] = DirectorySearchForm()
         return render(self.request, self.template_name, context)
@@ -81,9 +78,7 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
                     )
 
         if(form.cleaned_data['isAdvancedSearch']):
-            print('isAdvancedSearch')
             if(form.cleaned_data['first_name']):
-                print('first_name',form.cleaned_data['first_name'])
                 q_objects &= Q(first_name__icontains=form.cleaned_data['first_name'])
             if(form.cleaned_data['last_name']):
                 q_objects &= Q(last_name__icontains=form.cleaned_data['last_name'])
@@ -93,7 +88,7 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
                 q_objects &= Q(address_state__icontains=form.cleaned_data['address_state'])
             if(form.cleaned_data['address_country']):
                 q_objects &= Q(address_country__icontains=form.cleaned_data['address_country'] )
-            print(form.cleaned_data['teaching_member_type'])
+
 
             if(len(form.cleaned_data['teaching_member_type'])>0):
                 teaching_member = Q()
@@ -119,13 +114,6 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
                     commercial_member |= Q(other_commercial=True)
                 q_objects &= commercial_member
 
-        else: 
-            print('NOT isAdvancedSearch')
-
-
-
-        print(User.objects.filter(q_objects).order_by('last_name').query)
-
         return User.objects.filter(q_objects).order_by('last_name')
 
 
@@ -142,12 +130,9 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 
-        if not form.is_valid():
-            print(form.errors)
-        else:
-            p = Paginator(self.getFiltered(form), 10)
-            print('pag',form.cleaned_data['page'])
-            context['results'] = p.get_page(form.cleaned_data['page'])
+
+        p = Paginator(self.getFiltered(form), 10)
+        context['results'] = p.get_page(form.cleaned_data['page'])
 
         return render(self.request, self.template_name, context)
 
