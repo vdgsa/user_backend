@@ -6,23 +6,23 @@
 
 <div class="container">
     <div class="container">
-    <p class="h2">{{ member.first_name }} {{ member.last_name }}</p>
-    {% if member.include_email_in_membership_directory %}<p>{{ member.email }}</p>{% endif %}
-    {% if member.include_phone_in_membership_directory %}<p>{{ member.phone1 }}</p>{% endif %}
-    {% if member.include_address_in_membership_directory %}
-    <address>
+        <p class="h2">{{ member.first_name }} {{ member.last_name }}</p>
+        {% if member.include_email_in_membership_directory %}<p>{{ member.email }}</p>{% endif %}
+        {% if member.include_phone_in_membership_directory %}<p>{{ member.phone1 }}</p>{% endif %}
+        {% if member.include_address_in_membership_directory %}
+        <address>
             {% if member.address_line_1 %}{{member.address_line_1}}<br>{% endif%}
             {% if member.address_line_2 %}{{member.address_line_2}}<br>{% endif%}
             {% if member.address_city %}
-                {{member.address_city}}, {{member.address_state}} {{member.address_postal_code}}
-                {% if member.address_country %}{{member.address_country}}{% endif%}
+            {{member.address_city}}, {{member.address_state}} {{member.address_postal_code}}
+            {% if member.address_country %}{{member.address_country}}{% endif%}
             {% endif%}
-    </address>
-    {% endif %}
+        </address>
+        {% endif %}
 
     </div>
 
-    {% if member.teacher_description %}
+    {% if member.teacher_description or member.is_teacher or member.is_remote_teacher %}
     <div class="container mt-5">
         <legend>Teaching Member</legend>
         <hr>
@@ -31,7 +31,7 @@
     </div>
     {% endif%}
 
-    {% if member.commercial_description %}
+    {% if member.commercial_description or member.is_instrument_maker or member.is_bow_maker or member.is_repairer or member.is_publisher or member.other_commercial %}
     <div class="container mt-5">
         <legend>Commercial Member</legend>
         <hr>
@@ -41,7 +41,7 @@
     {% endif%}
 
 </div>
-  
+
 
 
 
