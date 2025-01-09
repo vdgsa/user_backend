@@ -4,26 +4,41 @@
 
 
 
-<div>
-
-    <div>{{ member.first_name }} {{ member.last_name }}</div>
-    <div>{% if member.include_email_in_membership_directory %}{{ member.email }} {% endif %}</div>
-    <div>{% if member.include_phone_in_membership_directory %}{{ member.phone1 }} {% endif %}</div>
-    <div>{% if member.include_address_in_membership_directory %}
+<div class="container">
+    <div class="container">
+    <p class="h2">{{ member.first_name }} {{ member.last_name }}</p>
+    {% if member.include_email_in_membership_directory %}<p>{{ member.email }}</p>{% endif %}
+    {% if member.include_phone_in_membership_directory %}<p>{{ member.phone1 }}</p>{% endif %}
+    {% if member.include_address_in_membership_directory %}
+    <address>
             {% if member.address_line_1 %}{{member.address_line_1}}<br>{% endif%}
             {% if member.address_line_2 %}{{member.address_line_2}}<br>{% endif%}
             {% if member.address_city %}
                 {{member.address_city}}, {{member.address_state}} {{member.address_postal_code}}
                 {% if member.address_country %}{{member.address_country}}{% endif%}
             {% endif%}
-        {% endif %}</div>
+    </address>
+    {% endif %}
 
-    <div>{{ member | teacher_affiliation }}</div>
-        <div>{{ teacher_description }}</div>
+    </div>
 
-    <div> {{ member | commercial_affiliation }}</div>
-        <div>{{ commercial_description }}</div>
+    {% if member.teacher_description %}
+    <div class="container mt-5">
+        <legend>Teaching Member</legend>
+        <hr>
+        <p>{{ member | teacher_affiliation }}</p>
+        <p>{{ member.teacher_description }}</p>
+    </div>
+    {% endif%}
 
+    {% if member.commercial_description %}
+    <div class="container mt-5">
+        <legend>Commercial Member</legend>
+        <hr>
+        <p>{{ member | commercial_affiliation }}</p>
+        <p>{{ member.commercial_description }}</p>
+    </div>
+    {% endif%}
 
 </div>
   
