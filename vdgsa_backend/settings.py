@@ -42,7 +42,7 @@ DEBUG = True
 # Change the email backend in production
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = "/home/ubuntu/vdgsa_backend/emails.log"
+EMAIL_FILE_PATH = "./emails.log"
 
 ALLOWED_HOSTS: List[str] = ['localhost','127.0.0.1']
 

@@ -38,6 +38,35 @@ def show_name_and_email(user: User) -> str:
     return user.username
 
 
+def teacher_affiliation(user: User) -> str:
+    output = []
+    if user.is_teacher:
+        output.append("Lessons in Person")
+
+    if user.is_remote_teacher: 
+        output.append("Remote Lessons")
+
+    return ', '.join(output)
+
+def commercial_affiliation(user: User) -> str:
+    output = []
+    if user.is_instrument_maker:
+        output.append("Instrument Maker")
+
+    if user.is_bow_maker:
+        output.append("Bow Maker")
+
+    if user.is_repairer:
+        output.append("Repairer")
+
+    if user.is_publisher:
+        output.append("Publisher")
+
+    if len(user.other_commercial) > 0:
+        output.append(user.other_commercial)
+
+    return ', '.join(output)
+
 def add_classes(field: Union[BoundField, BoundWidget], classes: str) -> SafeText:
     """
     Adds "classes" (a space-separated string of classes) to "field".
@@ -111,3 +140,5 @@ register.filter('show_name_and_email', show_name_and_email)
 register.filter('introspect', introspect)
 register.filter('add_classes', add_classes)
 register.filter('current_page_is_my_account_page', current_page_is_my_account_page)
+register.filter('teacher_affiliation', teacher_affiliation)
+register.filter('commercial_affiliation', commercial_affiliation)

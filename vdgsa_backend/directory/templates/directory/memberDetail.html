@@ -1,0 +1,35 @@
+{% block content %}
+
+{% load vdgsa_tags %}
+
+
+
+<div>
+
+    <div>{{ member.first_name }} {{ member.last_name }}</div>
+    <div>{% if member.include_email_in_membership_directory %}{{ member.email }} {% endif %}</div>
+    <div>{% if member.include_phone_in_membership_directory %}{{ member.phone1 }} {% endif %}</div>
+    <div>{% if member.include_address_in_membership_directory %}
+            {% if member.address_line_1 %}{{member.address_line_1}}<br>{% endif%}
+            {% if member.address_line_2 %}{{member.address_line_2}}<br>{% endif%}
+            {% if member.address_city %}
+                {{member.address_city}}, {{member.address_state}} {{member.address_postal_code}}
+                {% if member.address_country %}{{member.address_country}}{% endif%}
+            {% endif%}
+        {% endif %}</div>
+
+    <div>{{ member | teacher_affiliation }}</div>
+        <div>{{ teacher_description }}</div>
+
+    <div> {{ member | commercial_affiliation }}</div>
+        <div>{{ commercial_description }}</div>
+
+
+</div>
+  
+
+
+
+
+
+{% endblock %}

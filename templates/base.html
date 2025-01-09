@@ -82,6 +82,8 @@
           >
             <a class="nav-link" href="{% url 'current-user-account' %}">My Account</a>
           </li>
+
+          {% if user.subscription_is_current %}
           <li
             class="
               {% url 'directory' as url %}
@@ -91,8 +93,9 @@
               nav-item
             "
           >
-            <a class="nav-link" href="{% url 'directory' %}">Directory</a>
+            <a class="nav-link" href="{% url 'directory' %}">Membership Directory</a>
           </li>
+          {% endif %}
           {% if perms.accounts.membership_secretary or perms.accounts.board_member %}
           <li
             class="
@@ -103,7 +106,7 @@
               nav-item
             "
           >
-            <a class="nav-link" href="{% url 'membership-secretary' %}">Admin Directory</a>
+            <a class="nav-link" href="{% url 'membership-secretary' %}">Board Directory</a>
           </li>
           {% endif %}
 

@@ -116,24 +116,28 @@
     {% if results %}
     <table class="table">
         <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
+            <th>Name</th>
             <th>Email</th>
             <th>Phone</th>
             <th>Address</th>
+            <th>Teacher/Commercial affiliation</th>
         </tr>
     {% for item in results %}
         <tr>
-            <td>{{ item.first_name }}</td>
-            <td>{{ item.last_name }}</td>
+            <td>{{ item.first_name }} {{ item.last_name }}
+                <a class="btn btn-default btn-xs float-end me-2" onClick="show_detail_modal({{ item.pk }})"><i class="bi bi-eye"></i></a></td>
             <td>{% if item.include_email_in_membership_directory %}{{ item.email }} {% endif %}</td>
             <td>{% if item.include_phone_in_membership_directory %}{{ item.phone1 }} {% endif %}</td>
             <td>{% if item.include_address_in_membership_directory %}
-                {{item.address_line_1}}<br>
-                {% if item.address_line_2 %}<br>{% endif%}
-                {{item.address_city}}, {{item.address_state}} {{item.address_postal_code}}
-                {% if item.address_country %}{{item.address_country}}{% endif%}
+                    {% if item.address_line_1 %}{{item.address_line_1}}<br>{% endif%}
+                    {% if item.address_line_2 %}{{item.address_line_2}}<br>{% endif%}
+                    {% if item.address_city %}
+                        {{item.address_city}}, {{item.address_state}} {{item.address_postal_code}}
+                        {% if item.address_country %}{{item.address_country}}{% endif%}
+                    {% endif%}
                 {% endif %}</td>
+            <td>{{ item | teacher_affiliation }}
+                {{ item | commercial_affiliation }}</td>
         </tr>
     {% endfor %}
     </table>
@@ -170,5 +174,44 @@
         Note: Users who have opted out of having their information being published will not appear.
     </div>
 </div>
+
+
+
+<script>
+
+function show_detail_modal(pk) {
+      
+      $.ajax({
+        url: "detail/"+pk
+      }).done(function(data) {
+        $('#member-detail-modal').html(data)
+        $("#directoryDetailModal").modal("show");
+      });
+
+
+  }
+
+
+  </script>
+  <div class="modal fade" id="directoryDetailModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Member Detail</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="member-detail-modal" >
+              <!-- ajax memberDetail  -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 {% endblock %}
