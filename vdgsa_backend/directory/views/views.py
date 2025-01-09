@@ -60,7 +60,6 @@ class DirectoryMemberDetailView(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
         context = {}
         if self.kwargs['pk']:
-            print('member', self.getMember(self.kwargs['pk']))
             context['member'] = self.getMember(self.kwargs['pk'])
         else:
             context['member'] = self.getMember(1)
