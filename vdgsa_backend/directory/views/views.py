@@ -34,7 +34,8 @@ class DirectorySearchForm(forms.Form):
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
-    searchtext = forms.CharField(label="Search Text for any field", required=False)
+    searchtext = forms.CharField(
+        widget=forms.TextInput(attrs={'placeholder': 'Search Text for any field'}), label=False, required=False)
 
     isAdvancedSearch = forms.BooleanField(
         widget=forms.HiddenInput, required=False, initial=False, label=False
@@ -208,27 +209,15 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
         return User.objects.filter(q_objects).order_by("last_name")
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
-        if "user_pk" in self.request.POST:
-            self.requested_user = get_object_or_404(
-                User, pk=self.request.POST["user_pk"]
-            )
-        else:
-            self.requested_user = cast(User, self.request.user)
-
         form = DirectorySearchForm(self.request.POST)
         context = {}
         context["form"] = form
         if not form.is_valid():
             return render(self.request, self.template_name)
         else:
-            print("query", self.getFiltered(form).query)
-            p = Paginator(self.getFiltered(form), 10)
+            p = Paginator(self.getFiltered(form), 2 )
             context["results"] = p.get_page(form.cleaned_data["page"])
         return render(self.request, self.template_name, context)
 
     def test_func(self) -> bool:
         return is_active_member(self.request.user)
-
-    @cached_property
-    def requested_user(self) -> User:
-        return cast(User, self.request.user)

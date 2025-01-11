@@ -34,6 +34,9 @@
     }
 
     const submitForm = function(page){
+      if(page){
+        document.getElementById("id_page").value = page;
+      }
         toggleAdvancedOptions()
         document.getElementById("directorySearchForm").submit();
     }
