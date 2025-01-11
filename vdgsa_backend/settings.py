@@ -44,7 +44,7 @@ DEBUG = True
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = "./emails.log"
 
-ALLOWED_HOSTS: List[str] = ['localhost','127.0.0.1']
+ALLOWED_HOSTS: List[str] = ['localhost', '127.0.0.1']
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = reverse_lazy('login')

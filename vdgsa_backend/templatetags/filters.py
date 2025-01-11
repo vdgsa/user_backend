@@ -43,10 +43,11 @@ def teacher_affiliation(user: User) -> str:
     if user.is_teacher:
         affiliations.append("Lessons in Person")
 
-    if user.is_remote_teacher: 
+    if user.is_remote_teacher:
         affiliations.append("Remote Lessons")
 
     return affiliations
+
 
 def commercial_affiliation(user: User) -> str:
     affiliations = []
@@ -67,8 +68,10 @@ def commercial_affiliation(user: User) -> str:
 
     return affiliations
 
+
 def all_affiliation(user: User) -> str:
-    return commercial_affiliation(user) + teacher_affiliation(user) 
+    return commercial_affiliation(user) + teacher_affiliation(user)
+
 
 def add_classes(field: Union[BoundField, BoundWidget], classes: str) -> SafeText:
     """
@@ -146,4 +149,3 @@ register.filter('current_page_is_my_account_page', current_page_is_my_account_pa
 register.filter('teacher_affiliation', teacher_affiliation)
 register.filter('commercial_affiliation', commercial_affiliation)
 register.filter('all_affiliation', all_affiliation)
-
