@@ -10,6 +10,13 @@
 
 <script>
     $().ready(function() { 
+      document.getElementById('directorySearchForm').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          submitForm()
+        }
+      })
+
         if(document.getElementById("id_isAdvancedSearch").value == "True"){
             document.getElementById("advancedOptions").classList.add('show')
         }else{
@@ -27,12 +34,10 @@
     }
 
     const submitForm = function(page){
-        if(page){
-            document.getElementById("id_page").value = page;
-        }
         toggleAdvancedOptions()
         document.getElementById("directorySearchForm").submit();
     }
+    
 
 </script>
 
@@ -121,11 +126,11 @@
             <th>Phone</th>
             <th>Address</th>
             <th>Teacher/Commercial affiliation</th>
+            <th class="text-center">Info</th>
         </tr>
     {% for item in results %}
         <tr>
-            <td>{{ item.first_name }} {{ item.last_name }}
-                <a class="btn btn-default btn-xs float-end me-2" onClick="show_detail_modal({{ item.pk }})"><i class="bi bi-eye"></i></a></td>
+            <td>{{ item.first_name }} {{ item.last_name }}</td>
             <td>{% if item.include_email_in_membership_directory %}{{ item.email }} {% endif %}</td>
             <td>{% if item.include_phone_in_membership_directory %}{{ item.phone1 }} {% endif %}</td>
             <td>{% if item.include_address_in_membership_directory %}
@@ -136,8 +141,8 @@
                         {% if item.address_country %}{{item.address_country}}{% endif%}
                     {% endif%}
                 {% endif %}</td>
-            <td>{{ item | teacher_affiliation }}
-                {{ item | commercial_affiliation }}</td>
+            <td>{{ item | all_affiliation | join:", " }}</td>
+            <td><a class="btn btn-default btn-xs float-end me-2" onClick="show_detail_modal({{ item.pk }})"><i class="bi bi-card-text"></i></a></td>
         </tr>
     {% endfor %}
     </table>
@@ -170,8 +175,9 @@
 
 
 <div class="row mt-4">
-    <div class="col-auto ">
-        Note: Users who have opted out of having their information being published will not appear.
+    <div class="col-auto">
+      <em>Note: Members control what contact information they wish to publish in this directory, and may opt out of appearing entirely.</br>
+      Click the Info icon to get more information for teachers and commercial members.</em>
     </div>
 </div>
 

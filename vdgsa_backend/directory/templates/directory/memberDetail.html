@@ -7,8 +7,8 @@
 <div class="container">
     <div class="container">
         <p class="h2">{{ member.first_name }} {{ member.last_name }}</p>
-        {% if member.include_email_in_membership_directory %}<p>{{ member.email }}</p>{% endif %}
-        {% if member.include_phone_in_membership_directory %}<p>{{ member.phone1 }}</p>{% endif %}
+        {% if member.include_email_in_membership_directory and member.email %}<p>{{ member.email }}</p>{% endif %}
+        {% if member.include_phone_in_membership_directory and member.phone1 %}<p>phone: {{ member.phone1 }}</p>{% endif %}
         {% if member.include_address_in_membership_directory %}
         <address>
             {% if member.address_line_1 %}{{member.address_line_1}}<br>{% endif%}
@@ -26,7 +26,7 @@
     <div class="container mt-5">
         <legend>Teaching Member</legend>
         <hr>
-        <p>{{ member | teacher_affiliation }}</p>
+        <p>{{ member | teacher_affiliation | join:", " }}</p>
         <p>{{ member.teacher_description }}</p>
     </div>
     {% endif%}
@@ -35,7 +35,7 @@
     <div class="container mt-5">
         <legend>Commercial Member</legend>
         <hr>
-        <p>{{ member | commercial_affiliation }}</p>
+        <p>{{ member | commercial_affiliation | join:", "}}</p>
         <p>{{ member.commercial_description }}</p>
     </div>
     {% endif%}

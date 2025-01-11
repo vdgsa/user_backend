@@ -109,6 +109,7 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
         if(form.cleaned_data['searchtext']):
             q_objects &= ( Q(first_name__icontains=form.cleaned_data['searchtext'])
                      | Q(last_name__icontains=form.cleaned_data['searchtext'])
+                     | Q(phone1=form.cleaned_data['searchtext'])
                      | ( Q(include_address_in_membership_directory=True) &
                         ( Q(address_city__icontains=form.cleaned_data['searchtext'])
                         | Q(address_line_1__icontains=form.cleaned_data['searchtext'])
