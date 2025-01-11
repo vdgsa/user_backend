@@ -215,7 +215,7 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
         if not form.is_valid():
             return render(self.request, self.template_name)
         else:
-            p = Paginator(self.getFiltered(form), 2 )
+            p = Paginator(self.getFiltered(form), 10 )
             context["results"] = p.get_page(form.cleaned_data["page"])
         return render(self.request, self.template_name, context)
 
