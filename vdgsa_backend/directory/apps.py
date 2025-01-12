@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class RentalViolsConfig(AppConfig):
+class DirectoryConfig(AppConfig):
     name = 'vdgsa_backend.directory'

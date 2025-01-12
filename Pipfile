@@ -23,6 +23,8 @@ stripe = "*"
 pillow = "*"
 django-markdownify = "*"
 python-dateutil = "*"
+python-dotenv = "*"
+django-recaptcha = "*"
 
 [requires]
 python_version = "3.10"
