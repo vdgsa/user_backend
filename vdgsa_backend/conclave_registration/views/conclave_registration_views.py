@@ -150,11 +150,19 @@ class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, V
 
     @property
     def membership_valid_through_conclave(self) -> bool:
-        last_day = datetime.combine(
-            self.conclave_config.departure_dates[-1].replace(year=self.conclave_config.year),
-            timezone.now().time(),
-            timezone.now().tzinfo
-        )
+        # Avoid throwing an exception before departure_dates have been set
+        if not self.conclave_config.departure_dates:
+            last_day = timezone.now().replace(
+                year=self.conclave_config.year,
+                month=9,
+                day=1,
+            )
+        else:
+            last_day = datetime.combine(
+                self.conclave_config.departure_dates[-1].replace(year=self.conclave_config.year),
+                timezone.now().time(),
+                timezone.now().tzinfo
+            )
         return self.request.user.subscription_is_valid_until(last_day)
 
 
