@@ -307,6 +307,13 @@ class RegistrationEntry(models.Model):
     is_late = models.BooleanField(blank=True, default=False)
 
     @property
+    def self_rating_is_required(self) -> bool:
+        return (
+            self.class_selection_is_required
+            and self.program not in BEGINNER_PROGRAMS
+        )
+
+    @property
     def class_selection_is_required(self) -> bool:
         """
         Returns True if the registrant is required to complete the

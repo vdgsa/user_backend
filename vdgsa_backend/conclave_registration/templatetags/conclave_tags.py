@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from ..models import (
     BEGINNER_PROGRAMS, Clef, ConclaveRegistrationConfig, DietaryNeeds, HousingRoomType,
-    InstrumentChoices, InstrumentPurpose, Program, RegistrationPhase
+    InstrumentChoices, InstrumentPurpose, Program, RegistrationPhase, RelativeInstrumentLevel
 )
 
 register = template.Library()
@@ -57,6 +57,10 @@ def format_period_long(period: int) -> str:
     return f'{PERIOD_STRS[period]} Period'
 
 
+def format_relative_level(relative_level: str) -> str:
+    return RelativeInstrumentLevel(relative_level).label
+
+
 def format_instrument_size(instrument_size: str) -> str:
     return InstrumentChoices(instrument_size).label
 
@@ -89,6 +93,7 @@ def is_beginner_program(program: str) -> bool:
 
 register.filter('format_registration_phase', format_registration_phase)
 register.filter('format_period_long', format_period_long)
+register.filter('format_relative_level', format_relative_level)
 register.filter('format_instrument_size', format_instrument_size)
 register.filter('format_instrument_purpose', format_instrument_purpose)
 register.filter('format_clef_list', format_clef_list)

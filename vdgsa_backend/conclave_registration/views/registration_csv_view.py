@@ -72,6 +72,9 @@ def make_reg_csv(conclave_config: ConclaveRegistrationConfig) -> HttpResponse:
             'is_late': entry.is_late,
             'stripe_payment_method_id': entry.payment_info.stripe_payment_method_id,
 
+            'SELF-RATING': '',
+            **self_rating_to_dict(entry),
+
             'INSTRUMENTS': '',
             **instruments_to_dict(entry),
 
@@ -142,6 +145,13 @@ def user_info_to_dict(entry: RegistrationEntry) -> dict[str, object]:
     })
 
     return result
+
+
+def self_rating_to_dict(entry: RegistrationEntry) -> dict[str, str]:
+    if not hasattr(entry, 'self_rating'):
+        return {}
+
+    return {'level': entry.self_rating.level}
 
 
 def instruments_to_dict(entry: RegistrationEntry) -> Dict[str, Any]:

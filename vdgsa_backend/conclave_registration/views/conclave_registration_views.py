@@ -34,7 +34,7 @@ from vdgsa_backend.conclave_registration.models import (
     AdditionalRegistrationInfo, AdvancedProjectsInfo, AdvancedProjectsParticipationOptions,
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing,
     HousingRoomType, InstrumentBringing, InstrumentPurpose, PaymentInfo, Period, Program,
-    RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
+    RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, SelfRatingInfo, TShirts,
     WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.summary_and_charges import (
@@ -170,7 +170,10 @@ def get_first_step_url_name(registration_entry: RegistrationEntry) -> str:
     if registration_entry.program in NO_CLASS_PROGRAMS:
         return 'conclave-basic-info'
 
-    return 'conclave-instruments-bringing'
+    if registration_entry.program in BEGINNER_PROGRAMS:
+        return 'conclave-instruments-bringing'
+
+    return 'conclave-self-rating'
 
 
 class _RegistrationStepFormBase:
@@ -452,6 +455,34 @@ class WorkStudyApplicationView(_RegistrationStepViewBase):
         return None
 
 
+
+class SelfRatingInfoForm(_RegistrationStepFormBase, forms.ModelForm):
+    class Meta:
+        model = SelfRatingInfo
+        fields = [
+            'level',
+        ]
+
+        labels = {
+            'level': 'My overall level is:',
+        }
+
+
+class SelfRatingInfoInfoView(_RegistrationStepViewBase):
+    template_name = 'registration/self_rating.html'
+    form_class = SelfRatingInfoForm
+
+    @property
+    def next_step_url_name(self) -> str:  # type: ignore
+        return 'conclave-instruments-bringing'
+
+    def get_step_instance(self) -> SelfRatingInfo | None:
+        if hasattr(self.registration_entry, 'self_rating'):
+            return self.registration_entry.self_rating
+
+        return None
+
+
 class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = InstrumentBringing
@@ -459,7 +490,7 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
             'size',
             'name_if_other',
             'purpose',
-            'level',
+            'relative_level',
             'clefs',
             'comments',
         ]
@@ -467,7 +498,7 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
         labels = {
             'purpose': 'Are you bringing this instrument for yourself, '
                        'willing to lend it, or needing to borrow it?',
-            'level': 'My level on this instrument',
+            'relative_level': 'I play this instrument:',
             'comments': 'Comments (e.g., "I can lend this instrument during 1st period only")',
             'name_if_other': 'Please specify instrument size/type'
         }
@@ -1201,6 +1232,10 @@ class PaymentView(_RegistrationStepViewBase):
 
     def _get_missing_sections(self) -> list[str]:
         missing_sections = []
+
+        if (self.registration_entry.self_rating_is_required
+                and not hasattr(self.registration_entry, 'self_rating')):
+            missing_sections.append('Self-Rating')
 
         if self.registration_entry.class_selection_is_required:
             if self.registration_entry.program in BEGINNER_PROGRAMS:
