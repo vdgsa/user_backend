@@ -43,6 +43,7 @@ class ConclaveRegistrationConfig(models.Model):
 
     landing_page_markdown = models.TextField(blank=True)
     instruments_page_markdown = models.TextField(blank=True)
+    instruments_page_overall_level_question_markdown = models.TextField(blank=True)
 
     liability_release_text = models.TextField(blank=True)
     covid_policy_markdown = models.TextField(blank=True)
