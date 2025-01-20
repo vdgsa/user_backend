@@ -42,8 +42,8 @@ class ConclaveRegistrationConfig(models.Model):
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
     landing_page_markdown = models.TextField(blank=True)
+    overall_level_question_markdown = models.TextField(blank=True)
     instruments_page_markdown = models.TextField(blank=True)
-    instruments_page_overall_level_question_markdown = models.TextField(blank=True)
 
     liability_release_text = models.TextField(blank=True)
     covid_policy_markdown = models.TextField(blank=True)
@@ -528,6 +528,15 @@ class WorkStudyApplication(models.Model):
             raise ValidationError({'job_preferences': 'Please choose at least two options.'})
 
 
+class SelfRatingInfo(models.Model):
+    registration_entry = models.OneToOneField(
+        RegistrationEntry,
+        on_delete=models.CASCADE,
+        related_name='self_rating',
+    )
+    level = models.TextField(choices=Level.choices[1:])
+
+
 class Clef(models.TextChoices):
     treble = 'treble', 'Treble clef'
     octave_treble = 'octave_treble', 'Octave Treble clef'
@@ -549,6 +558,12 @@ class InstrumentPurpose(models.TextChoices):
     wants_to_borrow = 'wants_to_borrow', "I need to borrow this instrument"
 
 
+class RelativeInstrumentLevel(models.TextChoices):
+    at_level = 'at_level', 'At my level'
+    below_level = 'below_level', 'A little below my level'
+    just_beginning = 'just_beginning', "I'm just beginning to play this instument"
+
+
 class InstrumentBringing(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
@@ -564,7 +579,8 @@ class InstrumentBringing(models.Model):
 
     size = models.CharField(max_length=100, choices=InstrumentChoices.choices)
     name_if_other = models.CharField(max_length=100, blank=True)
-    level = models.TextField(choices=Level.choices[1:])
+    relative_level = models.TextField(choices=RelativeInstrumentLevel.choices)
+    level = models.TextField(choices=Level.choices[1:])  # legacy since 2025
     clefs = ArrayField(models.CharField(max_length=50, choices=Clef.choices))
     purpose = models.CharField(max_length=100, choices=InstrumentPurpose.choices)
 

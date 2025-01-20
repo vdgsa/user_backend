@@ -33,7 +33,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'faculty_registration_password',
             'landing_page_markdown',
             'instruments_page_markdown',
-            'instruments_page_overall_level_question_markdown',
+            'overall_level_question_markdown',
             'liability_release_text',
             'covid_policy_markdown',
             'code_of_conduct_markdown',
@@ -100,9 +100,9 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
                 'Text to display on the regular program instruments page (not beginner). '
                 'Rendered as markdown'
             ),
-            'instruments_page_overall_level_question_markdown': (
+            'overall_level_question_markdown': (
                 'Text to display on before the overall level question on the '
-                'regular program instruments page. Rendered as markdown'
+                'self-rating page. Rendered as markdown'
             ),
             'liability_release_text': 'Liability release text. Rendered as markdown',
             'covid_policy_markdown': 'Covid policy text. Rendered as markdown',

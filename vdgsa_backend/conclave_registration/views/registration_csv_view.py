@@ -148,7 +148,7 @@ def instruments_to_dict(entry: RegistrationEntry) -> Dict[str, Any]:
     instruments_str = ''
     for instr in entry.instruments_bringing.all():
         instruments_str += (
-            str(instr) + f' | {instr.level} | {",".join(instr.clefs)} '
+            str(instr) + f' | {instr.relative_level} | {",".join(instr.clefs)} '
             f'| {instr.purpose} | {instr.comments}\n'
         )
 

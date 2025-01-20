@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='conclaveregistrationconfig',
-            name='instruments_page_overall_level_question_markdown',
+            name='overall_level_question_markdown',
             field=models.TextField(blank=True),
         ),
     ]
