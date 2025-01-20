@@ -40,7 +40,7 @@ SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
 DEBUG = True
 
 # Change the email backend in production
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ALLOWED_HOSTS: List[str] = ['localhost', '127.0.0.1']
 
