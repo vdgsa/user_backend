@@ -9,6 +9,23 @@
   <div id="sidebar">
     <div id="sidebar-wrapper" class=" collapse-show bg-white">
       <div class="list-group">
+        {% if registration_entry.self_rating_is_required %}
+        <a {% url 'conclave-self-rating' conclave_reg_pk=registration_entry.pk as url %}
+          href="{{url}}"
+          class="
+            list-group-item list-group-item-action
+            {% if request.path == url %}active{% endif %}
+          "
+        >
+          <div class="d-flex justify-content-between">
+            Self-Rating
+            {% if registration_entry.self_rating %}
+            <i class="bi bi-check"></i>
+            {% endif %}
+          </div>
+        </a>
+        {% endif %}
+
         {% if registration_entry.class_selection_is_required %}
         <a {% url 'conclave-instruments-bringing' conclave_reg_pk=registration_entry.pk as url %}
           href="{{url}}"

@@ -23,6 +23,7 @@ from .conclave_registration_views import (
 )
 from .conclave_registration_views import DeleteInstrumentView as DeleteInstrumentView
 from .conclave_registration_views import HousingView as HousingView
+from .conclave_registration_views import SelfRatingInfoInfoView as SelfRatingInfoInfoView
 from .conclave_registration_views import InstrumentsBringingView as InstrumentsBringingView
 from .conclave_registration_views import PaymentView as PaymentView
 from .conclave_registration_views import RegistrationDoneView as RegistrationDoneView
