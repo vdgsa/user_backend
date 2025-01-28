@@ -61,7 +61,7 @@
   action="{% url 'purchase-subscription' pk=user.pk %}"
 >
 
-  {% if can_renew_membership and user.subscription.membership_type != 'lifetime' %}
+  {% if can_renew_membership %}
     {% include 'utils/form_body.tmpl' with form=form %}
     <div class="redirect-info-msg my-2">
       Clicking "Checkout" will redirect you to Stripe. <br>
