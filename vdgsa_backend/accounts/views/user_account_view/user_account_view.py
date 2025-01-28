@@ -67,7 +67,7 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return context
     
     def can_renew_membership(self) -> Optional[bool]:
-        if is_membership_secretary(self.user) or not self.requested_user.subscription:  
+        if is_membership_secretary(self.request.user) or not self.requested_user.subscription:  
             return True  
 
         return date.today() > self.requested_user.subscription.valid_until.date() - relativedelta(months=6)  
