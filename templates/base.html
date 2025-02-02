@@ -82,7 +82,7 @@
           >
             <a class="nav-link" href="{% url 'current-user-account' %}">My Account</a>
           </li>
-
+          
           {% if perms.accounts.membership_secretary or perms.accounts.board_member %}
           <li
             class="
@@ -93,7 +93,7 @@
               nav-item
             "
           >
-            <a class="nav-link" href="{% url 'membership-secretary' %}">Directory</a>
+            <a class="nav-link" href="{% url 'membership-secretary' %}">Board Directory</a>
           </li>
           {% endif %}
 

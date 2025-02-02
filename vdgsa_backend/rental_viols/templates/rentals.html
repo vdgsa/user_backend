@@ -83,35 +83,19 @@
             >
             <a class="nav-link" href="{% url 'current-user-account' %}">My Account</a>
             </li>
-
             {% if perms.accounts.membership_secretary or perms.accounts.board_member %}
             <li
-            class="
-              {% url 'membership-secretary' as url %}
-              {% if request.path == url %}
-                current-tab
-              {% endif %}
-              nav-item
-            "
-            >
-            <a class="nav-link" href="{% url 'membership-secretary' %}">Directory</a>
-          </li>
-          {% endif %}
-
-          {% if perms.conclave_registration.conclave_team %}
-          <li
-            class="
-              {% with is_current_page=request.path|url_path_is_conclave_admin %}
-                {% if is_current_page %}
+              class="
+                {% url 'membership-secretary' as url %}
+                {% if request.path == url %}
                   current-tab
                 {% endif %}
-              {% endwith %}
-              nav-item
-            "
-              >
-            <a class="nav-link" href="{% url 'list-conclaves' %}">Conclave Admin</a>
+                nav-item
+              "
+            >
+              <a class="nav-link" href="{% url 'membership-secretary' %}">Board Directory</a>
             </li>
-            {% endif %} 
+            {% endif %}
           {% get_current_conclave as conclave %}
           {% if conclave is not None %}
           <li
@@ -130,6 +114,37 @@
           </li>
           {% endif %}
 
+          {% if perms.conclave_registration.conclave_team %}
+          <li
+            class="
+              {% with is_current_page=request.path|url_path_is_conclave_admin %}
+                {% if is_current_page %}
+                  current-tab
+                {% endif %}
+              {% endwith %}
+              nav-item
+            "
+          >
+            <a class="nav-link" href="{% url 'list-conclaves' %}">Conclave Admin</a>
+          </li>
+          {% endif %}
+          {% get_current_conclave as conclave %}
+          {% if conclave is not None %}
+          <li
+            class="
+              {% with is_current_page=request.path|url_path_is_conclave_registration %}
+                {% if is_current_page %}
+                  current-tab
+                {% endif %}
+              {% endwith %}
+              nav-item
+            "
+          >
+            <a class="nav-link" href="{% url 'conclave-reg-landing-current-user' %}">
+              Conclave Registration
+            </a>
+          </li>
+          {% endif %}
             {% if perms.accounts.board_member %}
             <li class="nav-item">
               <a class="nav-link" href="http://www.notion.so/vdgsa/">Wiki</a>

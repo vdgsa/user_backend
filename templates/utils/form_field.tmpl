@@ -39,6 +39,20 @@
   <div class="form-field-errors mt-1">
     {{field.errors}}
   </div>
+
+{% elif field.name == 'captcha' %}
+
+  {% if label or field.label %}
+    <label for="{{field.id_for_label}}" class="form-label">
+      <br>
+    </label>
+  {% endif %}
+  <div class="form-field-errors mt-1">
+    {{field.errors}}
+  </div>
+
+ {{field}}
+
 {% else %}
   {% comment %} No label tag if label is empty. {% endcomment %}
   {% if label or field.label %}

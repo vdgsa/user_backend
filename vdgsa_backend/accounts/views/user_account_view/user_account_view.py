@@ -2,6 +2,8 @@
 Contains the top-level view for the "My Account" page.
 """
 from typing import Any, Dict, Optional, cast
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -16,7 +18,7 @@ from django.utils.functional import cached_property
 from django.views.generic.edit import UpdateView
 
 from vdgsa_backend.accounts.models import User
-from vdgsa_backend.accounts.views.permissions import is_requested_user_or_membership_secretary
+from vdgsa_backend.accounts.views.permissions import is_requested_user_or_membership_secretary, is_membership_secretary
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 
 from .change_email import ChangeEmailForm
@@ -27,6 +29,7 @@ from .user_profile import UserProfileForm
 @login_required
 def current_user_account_view(request: HttpRequest) -> HttpResponse:
     return redirect(reverse('user-account', kwargs={'pk': request.user.pk}))
+
 
 
 class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -59,8 +62,15 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             authenticated_user=cast(User, self.request.user)
         )
         context['add_family_member_form'] = AddFamilyMemberForm()
+        context['can_renew_membership'] = self.can_renew_membership()
 
         return context
+    
+    def can_renew_membership(self) -> Optional[bool]:
+        if is_membership_secretary(self.request.user) or not self.requested_user.subscription:  
+            return True  
+
+        return date.today() > self.requested_user.subscription.valid_until.date() - relativedelta(months=6)  
 
     def test_func(self) -> Optional[bool]:
         return is_requested_user_or_membership_secretary(

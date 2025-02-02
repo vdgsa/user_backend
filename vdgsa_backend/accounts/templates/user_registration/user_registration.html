@@ -20,13 +20,16 @@
 
   {% include 'required_contact_info_form.tmpl' with form=form %}
 
+  {% include 'utils/form_field.tmpl' with field=form.captcha %}
+  
   {% if username_taken %}
-  <div id="username-taken-msg">
-    There is already an account associated with that email address. <br>
-    If you're having trouble logging in, you can
-    <a href="{% url 'password_reset' %}">reset your password here.</a>
+  <div id="username-taken-msg" class="my-4 text-danger">
+    <p>There is already an account associated with that email address. </p>
+    <p>If you're having trouble logging in, you can
+    <a href="{% url 'password_reset' %}">reset your password here.</a></p>
   </div>
   {% endif %}
+
 
   <div class="mt-2">
     <button type="submit" class="btn btn-primary">Submit</button>

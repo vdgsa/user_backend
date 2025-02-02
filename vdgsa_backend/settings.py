@@ -12,10 +12,17 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 from typing import List
+from dotenv import load_dotenv
+import os
 
 import stripe  # type: ignore
 from bleach.sanitizer import ALLOWED_ATTRIBUTES  # type: ignore
 from django.urls.base import reverse_lazy
+
+load_dotenv()
+
+RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,7 +42,7 @@ DEBUG = True
 # Change the email backend in production
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-ALLOWED_HOSTS: List[str] = []
+ALLOWED_HOSTS: List[str] = ['localhost', '127.0.0.1']
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = reverse_lazy('login')
@@ -59,6 +66,7 @@ INSTALLED_APPS = [
     'vdgsa_backend.stripe_email_webhook',
     'vdgsa_backend.conclave_registration',
     'corsheaders',
+    'django_recaptcha',
 
     'markdownify.apps.MarkdownifyConfig',
 ]
@@ -187,6 +195,36 @@ MARKDOWNIFY = {
         ]
     }
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[contactor] %(levelname)s %(asctime)s %(message)s'
+        },
+    },
+    'handlers': {
+        # Send all messages to console
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'vdgsa_app.log',
+        },
+    },
+    'loggers': {
+        # This is the "catch all" logger
+        '': {
+            'handlers': ['file'],
+            'propagate': False,
+        },
+    }
+}
+
 
 # Misc custom settings --------------------------------------------------------
 MAX_NUM_FAMILY_MEMBERS = 3

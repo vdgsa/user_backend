@@ -48,8 +48,6 @@ class ExpiringEmails():
         Query membership for expiring in - months
         """
         # fakeToday = datetime.today() + relativedelta(days=+7)
-        # print('subtract_months ', months, subtract_months(fakeToday, months))
-        # print('fakeToday', fakeToday)
         # targetDate = subtract_months(fakeToday, months)
 
         targetDate = subtract_months(datetime.today(), months)
@@ -61,8 +59,6 @@ class ExpiringEmails():
             & Q(owned_subscription__valid_until__year=targetDate.year)
             & Q(receives_expiration_reminder_emails=True)
         )
-        # print(expiring_members.query)
-        # print('expiring_members', expiring_members)
         return expiring_members
 
     def sendEmail(self, member: User,
@@ -81,7 +77,6 @@ class ExpiringEmails():
         f.feed(html_content)
         text_content = f.text
 
-        # print('text_content', text_content)
         msg = EmailMultiAlternatives(subject, text_content, FROM_EMAIL, [to_email],
                                      bcc=[BCC_TO_EMAIL])
         msg.attach_alternative(html_content, "text/html")

@@ -47,6 +47,7 @@
   {% endif %}
 {% endif %}
 
+
 <form
   id="purchase-subscription-form"
   class="
@@ -59,24 +60,28 @@
   method="post"
   action="{% url 'purchase-subscription' pk=user.pk %}"
 >
-  {% include 'utils/form_body.tmpl' with form=form %}
 
-  <div class="redirect-info-msg my-2">
-    Clicking "Checkout" will redirect you to Stripe. <br>
-    Please enter your payment info there.
-  </div>
-  <button type="submit" class="btn btn-primary">Checkout</button>
-  {% if user.subscription is not None %}
-  <button
-    id="hide-purchase-subscription"
-    type="button"
-    class="btn cancel-button"
-    data-bs-toggle="collapse"
-    data-bs-target="#purchase-subscription-form"
-    aria-controls="purchase-subscription-form"
-  >
-    Cancel
-  </button>
+  {% if can_renew_membership %}
+    {% include 'utils/form_body.tmpl' with form=form %}
+    <div class="redirect-info-msg my-2">
+      Clicking "Checkout" will redirect you to Stripe. <br>
+      Please enter your payment info there.
+    </div>
+    <button type="submit" class="btn btn-primary">Checkout</button>
+    {% if user.subscription is not None %}
+    <button
+      id="hide-purchase-subscription"
+      type="button"
+      class="btn cancel-button"
+      data-bs-toggle="collapse"
+      data-bs-target="#purchase-subscription-form"
+      aria-controls="purchase-subscription-form"
+    >
+      Cancel
+    </button>
+    {% endif %}
+  {% else %}
+    <p>Please wait until 6 months before your memebership expires before renewing.</p>
   {% endif %}
 </form>
 

@@ -20,3 +20,7 @@ def is_requested_user_or_membership_secretary(requested_user: User, request: Htt
         is_membership_secretary(request.user)
         or request.user == requested_user
     )
+
+
+def is_active_member(user: Union[User, AnonymousUser]) -> bool:
+    return user.subscription_is_current
