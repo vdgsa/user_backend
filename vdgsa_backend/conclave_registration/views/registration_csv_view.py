@@ -131,9 +131,11 @@ def user_info_to_dict(entry: RegistrationEntry) -> dict[str, object]:
         'gender': info.gender,
         'pronouns': info.pronouns,
 
+        'do_not_send_text_updates': info.do_not_send_text_updates,
         'include_in_whos_coming_to_conclave_list': info.include_in_whos_coming_to_conclave_list,
         'attended_conclave_before': info.attended_conclave_before,
         'buddy_willingness': info.buddy_willingness,
+        'can_drive_loaners': info.can_drive_loaners,
         'wants_display_space': info.wants_display_space,
         'num_display_space_days': (
             info.num_display_space_days if info.wants_display_space == YesNo.yes else 0

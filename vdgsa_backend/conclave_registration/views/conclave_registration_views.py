@@ -340,10 +340,12 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'other_info': '',
         }
 
+    do_not_send_text_updates = BooleanField(required=False, label='I would like to opt-out of text reminders')
     include_in_whos_coming_to_conclave_list = YesNoRadioField(label='')
     attended_conclave_before = YesNoRadioField(
         label='', no_label='No, this is my first Conclave!')
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
+    can_drive_loaners = YesNoMaybeRadioField(label='', required=False)
     liability_release = BooleanField(required=True, label='I agree')
     covid_policy = BooleanField(required=True, label='I agree')
     photo_release_auth = YesNoRadioField(
@@ -1310,7 +1312,7 @@ class CurrentUserRegistrationSummaryView(LoginRequiredMixin, View):
 def send_confirmation_email(registration_entry: RegistrationEntry) -> None:
     send_mail(
         subject=f'VdGSA Conclave {registration_entry.conclave_config.year} '
-                '- Thank you for registering!',
+                f'- Thank you for registering, {show_name(registration_entry.user)}!',
         from_email=None,
         recipient_list=[
             registration_entry.user.username,
