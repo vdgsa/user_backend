@@ -355,6 +355,7 @@ class AdditionalRegistrationInfo(models.Model):
 
     nickname = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=30)
+    do_not_send_text_updates = models.TextField(choices=YesNo.choices, blank='no')
     include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
 
     age = models.TextField(choices=[
@@ -374,6 +375,7 @@ class AdditionalRegistrationInfo(models.Model):
 
     attended_conclave_before = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
+    can_drive_loaners = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
     num_display_space_days = models.IntegerField(

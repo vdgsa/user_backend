@@ -610,8 +610,9 @@ def get_nondiscountable_charges(conclave_config, registration_entry):
     if (donation_charge := get_donation_charge(registration_entry)) is not None:
         amount += donation_charge
 
-    housing: Housing = registration_entry.housing
-    if housing.is_bringing_guest_to_banquet == YesNo.yes:
-        amount += conclave_config.banquet_guest_fee
+    if hasattr(registration_entry, 'housing'):
+        housing: Housing = registration_entry.housing
+        if housing.is_bringing_guest_to_banquet == YesNo.yes:
+            amount += conclave_config.banquet_guest_fee
 
     return amount
