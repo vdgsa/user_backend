@@ -32,6 +32,8 @@ urlpatterns = [
          name='conclave-basic-info'),
     path('register/<int:conclave_reg_pk>/work_study/', views.WorkStudyApplicationView.as_view(),
          name='conclave-work-study'),
+    path('register/<int:conclave_reg_pk>/self_rating/', views.SelfRatingInfoInfoView.as_view(),
+         name='conclave-self-rating'),
     path('register/<int:conclave_reg_pk>/instruments/', views.InstrumentsBringingView.as_view(),
          name='conclave-instruments-bringing'),
     path('register/instruments/<int:pk>/', views.DeleteInstrumentView.as_view(),

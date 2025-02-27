@@ -42,6 +42,7 @@ class ConclaveRegistrationConfig(models.Model):
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
     landing_page_markdown = models.TextField(blank=True)
+    overall_level_question_markdown = models.TextField(blank=True)
     instruments_page_markdown = models.TextField(blank=True)
 
     liability_release_text = models.TextField(blank=True)
@@ -306,6 +307,13 @@ class RegistrationEntry(models.Model):
     is_late = models.BooleanField(blank=True, default=False)
 
     @property
+    def self_rating_is_required(self) -> bool:
+        return (
+            self.class_selection_is_required
+            and self.program not in BEGINNER_PROGRAMS
+        )
+
+    @property
     def class_selection_is_required(self) -> bool:
         """
         Returns True if the registrant is required to complete the
@@ -347,6 +355,7 @@ class AdditionalRegistrationInfo(models.Model):
 
     nickname = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=30)
+    do_not_send_text_updates = models.TextField(choices=YesNo.choices, blank='no')
     include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
 
     age = models.TextField(choices=[
@@ -366,6 +375,7 @@ class AdditionalRegistrationInfo(models.Model):
 
     attended_conclave_before = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
+    can_drive_loaners = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
     num_display_space_days = models.IntegerField(
@@ -527,6 +537,15 @@ class WorkStudyApplication(models.Model):
             raise ValidationError({'job_preferences': 'Please choose at least two options.'})
 
 
+class SelfRatingInfo(models.Model):
+    registration_entry = models.OneToOneField(
+        RegistrationEntry,
+        on_delete=models.CASCADE,
+        related_name='self_rating',
+    )
+    level = models.TextField(choices=Level.choices[1:])
+
+
 class Clef(models.TextChoices):
     treble = 'treble', 'Treble clef'
     octave_treble = 'octave_treble', 'Octave Treble clef'
@@ -548,6 +567,12 @@ class InstrumentPurpose(models.TextChoices):
     wants_to_borrow = 'wants_to_borrow', "I need to borrow this instrument"
 
 
+class RelativeInstrumentLevel(models.TextChoices):
+    at_level = 'at_level', 'At my level'
+    below_level = 'below_level', 'A little below my level'
+    just_beginning = 'just_beginning', "I'm just beginning to play this instument"
+
+
 class InstrumentBringing(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
@@ -563,7 +588,8 @@ class InstrumentBringing(models.Model):
 
     size = models.CharField(max_length=100, choices=InstrumentChoices.choices)
     name_if_other = models.CharField(max_length=100, blank=True)
-    level = models.TextField(choices=Level.choices[1:])
+    relative_level = models.TextField(choices=RelativeInstrumentLevel.choices)
+    level = models.TextField(choices=Level.choices[1:])  # legacy since 2025
     clefs = ArrayField(models.CharField(max_length=50, choices=Clef.choices))
     purpose = models.CharField(max_length=100, choices=InstrumentPurpose.choices)
 

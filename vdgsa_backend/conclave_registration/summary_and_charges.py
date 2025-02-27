@@ -279,7 +279,11 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
 
     total: float = subtotal
     if apply_canadian_discount:
-        total *= 1 - conclave_config.canadian_discount_percent / 100
+        nondiscountable_amount = get_nondiscountable_charges(conclave_config, registration_entry)
+        discount_fraction = 1 - conclave_config.canadian_discount_percent / 100
+
+        discountable_amount = total - nondiscountable_amount
+        total = discountable_amount * discount_fraction + nondiscountable_amount
         total = int(total)  # round down
     return {
         'charges': charges,
@@ -595,3 +599,20 @@ def get_donation_charge(registration_entry: RegistrationEntry) -> ChargeInfo | N
         'csv_label': 'Donation',
         'amount': donation
     }
+
+
+def get_nondiscountable_charges(conclave_config, registration_entry):
+    # 'trust' discount does not apply to banquet guest, t-shirt, or donation
+    amount = 0
+    if (tshirts_charge := get_tshirts_charge(registration_entry)) is not None:
+        amount += tshirts_charge
+
+    if (donation_charge := get_donation_charge(registration_entry)) is not None:
+        amount += donation_charge
+
+    if hasattr(registration_entry, 'housing'):
+        housing: Housing = registration_entry.housing
+        if housing.is_bringing_guest_to_banquet == YesNo.yes:
+            amount += conclave_config.banquet_guest_fee
+
+    return amount
