@@ -355,7 +355,7 @@ class AdditionalRegistrationInfo(models.Model):
 
     nickname = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=30)
-    do_not_send_text_updates = models.TextField(choices=YesNo.choices, blank='no')
+    do_not_send_text_updates = models.BooleanField(null=True, blank=True)
     include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
 
     age = models.TextField(choices=[
