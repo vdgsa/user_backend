@@ -740,21 +740,21 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if not hasattr(self, 'cleaned_data'):
             return
 
-        if self.registration_entry.program == Program.regular:
-            if self.instance.num_non_freebie_classes < 2:
-                self.add_error(
-                    None,
-                    'Regular Curriculum (full-time) attendees must select at least '
-                    '2 non-freebie courses to attend. If you want to take only one '
-                    'class, you should register as part-time. '
-                    "If you don't want to take any classes, you should register "
-                    'as a non-playing attendee.'
-                )
-
         self._validate_period_preferences(Period.first)
         self._validate_period_preferences(Period.second)
         self._validate_period_preferences(Period.third)
         self._validate_period_preferences(Period.fourth)
+
+        if self.registration_entry.program == Program.regular:
+            if not (2 <= self.instance.num_non_freebie_classes <= 3):
+                self.add_error(
+                    None,
+                    'Regular Curriculum (full-time) attendees must select '
+                    '2 or 3 non-freebie courses to attend. If you want to take only one '
+                    'class, you should register as part-time. '
+                    "If you don't want to take any classes, you should register "
+                    'as a non-playing attendee.'
+                )
 
         self._validate_extra_class_preferences()
 
@@ -767,8 +767,21 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if len(choices) == 0:
             return
 
+        if len({choice.is_freebie for choice in choices}) != 1:
+            self.add_error(
+                None,
+                f'{format_period_long(period)}: '
+                'You have selected a mix of freebie and paid classes. '
+                'If you want to take a paid class during this period, '
+                'please select 1st, 2nd, and 3rd paid class options. '
+                'If you want to take a freebie during this period, '
+                'please select up to 3 freebie options.'
+            )
+            return
+
+        freebies_selected = all(choice.is_freebie for choice in choices)
         # Allow < 3 choices for freebies and beginners
-        if (len(choices) != 3 and period != Period.fourth
+        if (len(choices) != 3 and not freebies_selected
                 and self.registration_entry.program != Program.beginners):
             self.add_error(
                 None,
@@ -783,6 +796,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                 f'{format_period_long(period)}: You must select different classes for '
                 'your 1st, 2nd, and 3rd choices.'
             )
+
 
     def _validate_extra_class_preferences(self) -> None:
         if not self.registration_entry.uses_flexible_class_selection:
