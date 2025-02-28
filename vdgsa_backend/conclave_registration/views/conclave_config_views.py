@@ -266,6 +266,7 @@ class ConclaveClassForm(forms.ModelForm):
             'instructor',
             'level',
             'offer_to_beginners',
+            'is_freebie',
             'description',
             'notes',
         ]
@@ -370,6 +371,7 @@ class ConclaveClassCSVView(LoginRequiredMixin, UserPassesTestMixin, View):
                         description=row['Description'],
                         notes=row['Notes'],
                         offer_to_beginners=row['offer_to_beginners'].strip().lower() == 'true',
+                        is_freebie=row['is_freebie'].strip().lower() == 'true',
                     )
 
         return HttpResponseRedirect(

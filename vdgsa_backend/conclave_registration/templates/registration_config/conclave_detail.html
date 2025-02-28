@@ -61,6 +61,11 @@
               </td>
             </tr>
           </table>
+          {% if class_.is_freebie %}
+          <div class="my-2">
+            Freebie
+          </div>
+          {% endif %}
           <div>{{class_.description}}</div>
           <div class="mt-2">{{class_.notes}}</div>
         </td>

@@ -205,8 +205,19 @@ class Class(models.Model):
     # registrants.
     offer_to_beginners = models.BooleanField(blank=True, default=False)
 
+    is_freebie = models.BooleanField(blank=True, default=False)
+
+    def clean(self):
+        super().clean()
+        if self.period != Period.fourth and self.is_freebie:
+            raise ValidationError({'is_freebie': 'Freebie classes must be in 4th period'})
+
     def __str__(self) -> str:
-        return f'{self.instructor} | {self.name} | {self.level}'
+        result = f'{self.instructor} | {self.name} | {self.level}'
+        if self.is_freebie:
+            result += ' (freebie)'
+
+        return result
 
 
 def get_classes_by_period(
@@ -725,8 +736,6 @@ class RegularProgramClassChoices(models.Model):
             ]
         }
 
-    # FIXME: Make this a separate function that takes in registration entry
-    # and class selection
     @cached_property
     def num_non_freebie_classes(self) -> int:
         if self.flex_choice1:
@@ -735,7 +744,14 @@ class RegularProgramClassChoices(models.Model):
         count = 0
 
         choices_by_period = dict(self.by_period)
-        choices_by_period.pop(Period.fourth)
+        chose_only_freebies = all([
+            entry['class'].is_freebie 
+            for entry in choices_by_period[Period.fourth] 
+            if entry['class'] is not None
+        ])
+        if chose_only_freebies:
+            choices_by_period.pop(Period.fourth)
+
         for choices in choices_by_period.values():
             if any(choice['class'] is not None for choice in choices):
                 count += 1
