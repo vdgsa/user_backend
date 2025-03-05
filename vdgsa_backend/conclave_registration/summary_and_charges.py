@@ -605,10 +605,10 @@ def get_nondiscountable_charges(conclave_config, registration_entry):
     # 'trust' discount does not apply to banquet guest, t-shirt, or donation
     amount = 0
     if (tshirts_charge := get_tshirts_charge(registration_entry)) is not None:
-        amount += tshirts_charge
+        amount += tshirts_charge['amount']
 
     if (donation_charge := get_donation_charge(registration_entry)) is not None:
-        amount += donation_charge
+        amount += donation_charge['amount']
 
     if hasattr(registration_entry, 'housing'):
         housing: Housing = registration_entry.housing
