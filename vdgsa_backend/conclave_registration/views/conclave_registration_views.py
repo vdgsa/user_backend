@@ -750,10 +750,11 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                 self.add_error(
                     None,
                     'Regular Curriculum (full-time) attendees must select '
-                    '2 or 3 non-freebie courses to attend. If you want to take only one '
+                    '2 or 3 non-FREEBIE courses to attend. If you want to take only one '
                     'class, you should register as part-time. '
                     "If you don't want to take any classes, you should register "
                     'as a non-playing attendee.'
+                    'You cannot take 4 paying courses.'
                 )
 
         self._validate_extra_class_preferences()
@@ -771,11 +772,11 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             self.add_error(
                 None,
                 f'{format_period_long(period)}: '
-                'You have selected a mix of freebie and paid classes. '
+                'You have selected a mix of Freebie and paid classes. '
                 'If you want to take a paid class during this period, '
-                'please select 1st, 2nd, and 3rd paid class options. '
-                'If you want to take a freebie during this period, '
-                'please select up to 3 freebie options.'
+                'please select a 1st and 2nd paid class options. '
+                'If you want to take a Freebie during this period, '
+                'please select up to 3 Freebie options.'
             )
             return
 
@@ -905,7 +906,7 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
     @property
     def _show_fourth_period(self) -> bool:
         """
-        Fourth period contains only freebie classes.
+        Fourth period contains a mix of paid and freebie classes.
         """
         return self.registration_entry.program in [
             Program.regular,

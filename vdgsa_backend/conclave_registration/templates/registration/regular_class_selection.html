@@ -17,8 +17,8 @@
 <div class="col-md-8">
   {% if registration_entry.program == 'regular' %}
     Full-time participants in the Regular Curriculum may take two or three
-    classes chosen from any of the four periods. If they select paid classes
-    from the 1st-3rd periods, they may also take an optional 4th-period FREEBIE
+    classes in any of the four periods. If you select paid classes
+    from the 1st-3rd periods, you may also take an optional 4th-period FREEBIE
     class.
     Please refer to the
     <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
@@ -34,6 +34,9 @@
       self-rating guide
     </a>
     for levels.
+
+    If you would like to register for a 4th period FREEBIE, please note this in the
+    comment section at the bottom.
   {% elif registration_entry.program == 'beginners' %}
     Participants in the Beginners Program can sign up for an additional
     Beginners+ class for
@@ -44,7 +47,7 @@
     ${{registration_entry.conclave_config.beginners_two_extra_classes_on_campus_fee}}
     (if staying on campus)/${{registration_entry.conclave_config.beginners_two_extra_classes_off_campus_fee}}
     (if staying off campus).
-    You may also sign up for a 4th period Freebie
+    You may also sign up for a 4th period FREEBIE
     class at no additional charge.
   {% elif registration_entry.program == 'consort_coop' %}
     Participants in the Consort Cooperative Program may choose one of these two options:
@@ -63,6 +66,9 @@
     Participants in the Seasoned Players Program may add one class in any period.
     Adding a class will increase your registration fee by
     ${{registration_entry.conclave_config.seasoned_players_extra_class_fee}}.
+
+    If you would like to register for a 4th period FREEBIE, please note this in the
+    comment section at the bottom.
   {% endif %}
 </div>
 

@@ -373,7 +373,7 @@ class AdditionalRegistrationInfo(models.Model):
         ('18-35', '18-35'),
         ('36-64', '36-64'),
         ('65+', '65+'),
-        ('Under 18', 'Under 18 (Parent or Guardian must also register)'),
+        ('Under 18', 'Under 18 (Parent or Legal Guardian must also register)'),
     ])
 
     gender = models.TextField(choices=[
@@ -569,13 +569,15 @@ class InstrumentChoices(models.TextChoices):
     tenor = 'tenor'
     bass = 'bass', '6-string Bass'
     bass_7_string = 'bass_7_string', '7-string Bass'
-    other = 'other', 'Other Instrument or Rennaissance Viol'
+    vielle = 'vielle'
+    other = 'other', 'Other Instrument or Renaissance Viol'
 
 
 class InstrumentPurpose(models.TextChoices):
     bringing_for_self = 'bringing_for_self', "I'm bringing this instrument for myself"
     willing_to_loan = 'willing_to_loan', "I'm willing to loan this instrument to someone else"
     wants_to_borrow = 'wants_to_borrow', "I need to borrow this instrument"
+    could_play = 'could_play', "I can play this instrument in class if one is provided"
 
 
 class RelativeInstrumentLevel(models.TextChoices):
@@ -745,8 +747,8 @@ class RegularProgramClassChoices(models.Model):
 
         choices_by_period = dict(self.by_period)
         chose_only_freebies = all([
-            entry['class'].is_freebie 
-            for entry in choices_by_period[Period.fourth] 
+            entry['class'].is_freebie
+            for entry in choices_by_period[Period.fourth]
             if entry['class'] is not None
         ])
         if chose_only_freebies:
