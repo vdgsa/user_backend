@@ -699,7 +699,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
     def flexible_class_selection_init(self) -> None:
         class_options_queryset = Class.objects.filter(
             conclave_config=self.registration_entry.conclave_config
-        ).exclude(period=Period.fourth)
+        ).exclude(is_freebie=True)
 
         self.fields['flex_choice1'].queryset = class_options_queryset
         self.fields['flex_choice1'].label_from_instance = flex_choice_class_label
@@ -779,24 +779,42 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                 'please select up to 3 Freebie options.'
             )
             return
-
+        
         freebies_selected = all(choice.is_freebie for choice in choices)
-        # Allow < 3 choices for freebies and beginners
-        if (len(choices) != 3 and not freebies_selected
-                and self.registration_entry.program != Program.beginners):
-            self.add_error(
-                None,
-                f'{format_period_long(period)}: You must select a 1st, 2nd, and 3rd choice. '
-                'If you do not want to take a class during this period, please '
-                'set all three choices to "No class."'
-            )
+        if period ==Period.fourth:
+            # Allow < 3 choices for freebies and beginners
+            if (len(choices) != 2 and not freebies_selected
+                    and self.registration_entry.program != Program.beginners):
+                self.add_error(
+                    None,
+                    f'{format_period_long(period)}: You must select a 1st and 2nd choice. '
+                    'If you do not want to take a class during this period, please '
+                    'set all choices to "No class."'
+                )
 
-        if len(set(choices)) != len(choices):
-            self.add_error(
-                None,
-                f'{format_period_long(period)}: You must select different classes for '
-                'your 1st, 2nd, and 3rd choices.'
-            )
+            if len(set(choices)) != len(choices):
+                self.add_error(
+                    None,
+                    f'{format_period_long(period)}: You must select different classes for '
+                    'your 1st and 2nd choices.'
+                )  
+        else:
+            # Allow < 3 choices for freebies and beginners
+            if (len(choices) != 3 and not freebies_selected
+                    and self.registration_entry.program != Program.beginners):
+                self.add_error(
+                    None,
+                    f'{format_period_long(period)}: You must select a 1st, 2nd, and 3rd choice. '
+                    'If you do not want to take a class during this period, please '
+                    'set all three choices to "No class."'
+                )
+
+            if len(set(choices)) != len(choices):
+                self.add_error(
+                    None,
+                    f'{format_period_long(period)}: You must select different classes for '
+                    'your 1st, 2nd, and 3rd choices.'
+                )
 
 
     def _validate_extra_class_preferences(self) -> None:
@@ -911,7 +929,6 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
         return self.registration_entry.program in [
             Program.regular,
             Program.beginners,
-            Program.seasoned_players,
         ]
 
     def _period_has_beginner_add_on_classes(self, period: Period) -> bool:
