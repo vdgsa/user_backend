@@ -33,6 +33,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'faculty_registration_password',
             'landing_page_markdown',
             'instruments_page_markdown',
+            'overall_level_question_markdown',
             'liability_release_text',
             'covid_policy_markdown',
             'code_of_conduct_markdown',
@@ -98,6 +99,10 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'instruments_page_markdown': (
                 'Text to display on the regular program instruments page (not beginner). '
                 'Rendered as markdown'
+            ),
+            'overall_level_question_markdown': (
+                'Text to display on before the overall level question on the '
+                'self-rating page. Rendered as markdown'
             ),
             'liability_release_text': 'Liability release text. Rendered as markdown',
             'covid_policy_markdown': 'Covid policy text. Rendered as markdown',
@@ -261,6 +266,7 @@ class ConclaveClassForm(forms.ModelForm):
             'instructor',
             'level',
             'offer_to_beginners',
+            'is_freebie',
             'description',
             'notes',
         ]
@@ -365,6 +371,7 @@ class ConclaveClassCSVView(LoginRequiredMixin, UserPassesTestMixin, View):
                         description=row['Description'],
                         notes=row['Notes'],
                         offer_to_beginners=row['offer_to_beginners'].strip().lower() == 'true',
+                        is_freebie=row['is_freebie'].strip().lower() == 'true',
                     )
 
         return HttpResponseRedirect(
