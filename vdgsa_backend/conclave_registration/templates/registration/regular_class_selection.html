@@ -16,23 +16,32 @@
 
 <div class="col-md-8">
   {% if registration_entry.program == 'regular' %}
-    Full-time participants in the Regular Curriculum may take two or
-    three classes 1st-3rd periods, and may also take an optional fourth class
-    from among the "freebie" offerings in 4th Period.
+    Full-time participants in the Regular Curriculum may take two or three
+    classes in any of the four periods. If you select paid classes
+    from the 1st-3rd periods, you may also take an optional 4th-period FREEBIE
+    class.
     Please refer to the
     <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
        target="_blank">
       self-rating guide
     </a>
     for levels.
+    If you're applying to a class as a preformed group, please note your group members
+    in the comment section at the bottom.
   {% elif registration_entry.program == 'part_time' %}
-    Part-time participants in the Regular Curriculum may take one class in 1st, 2nd, or 3rd period.
+    Part-time participants in the Regular Curriculum may take one class in any period.
     Please refer to the
     <a href="https://08b17806-15bd-4507-98ad-095362515803.filesusr.com/ugd/859b9e_255451bad2bd42f4984bf5b431ca55f9.pdf"
        target="_blank">
       self-rating guide
     </a>
     for levels.
+
+    If you would like to register for a 4th period FREEBIE, please note this in the
+    comment section at the bottom.
+
+    If you're applying to a class as a preformed group, please note your group members
+    in the comment section at the bottom.
   {% elif registration_entry.program == 'beginners' %}
     Participants in the Beginners Program can sign up for an additional
     Beginners+ class for
@@ -43,9 +52,8 @@
     ${{registration_entry.conclave_config.beginners_two_extra_classes_on_campus_fee}}
     (if staying on campus)/${{registration_entry.conclave_config.beginners_two_extra_classes_off_campus_fee}}
     (if staying off campus).
-    You may also sign up for a 4th period
-    class at no additional charge. To sign up for a 4th period freebie class,
-    please select a 1st, 2nd, and 3rd choice for 4th period below.
+    You may also sign up for a 4th period FREEBIE
+    class at no additional charge.
   {% elif registration_entry.program == 'consort_coop' %}
     Participants in the Consort Cooperative Program may choose one of these two options:
     <ol>
@@ -63,6 +71,12 @@
     Participants in the Seasoned Players Program may add one class in any period.
     Adding a class will increase your registration fee by
     ${{registration_entry.conclave_config.seasoned_players_extra_class_fee}}.
+
+    If you would like to register for a 4th period FREEBIE, please note this in the
+    comment section at the bottom.
+
+    If you're applying to a class as a preformed group, please note your group members
+    in the comment section at the bottom.
   {% endif %}
 </div>
 
@@ -203,7 +217,7 @@
         </div>
       </div>
       {% endif %}
-      
+
       {% if show_third_period %}
       <div class="period-header fs-4 mt-2">
         3rd Period: {{registration_entry.conclave_config.third_period_time_label}}
@@ -226,7 +240,7 @@
 
       {% if show_fourth_period %}
       <div class="period-header fs-4 mt-2">
-        4th Period Freebie: {{registration_entry.conclave_config.fourth_period_time_label}}
+        4th Period: {{registration_entry.conclave_config.fourth_period_time_label}}
       </div>
       <div>
         <div class="choice-wrapper">
@@ -237,10 +251,7 @@
           {% include 'utils/small_select.tmpl' with field=form.period4_choice2 label='Choice 2'%}
           {% include 'utils/small_select.tmpl' with field=form.period4_choice2_instrument label='Instrument Preference'%}
         </div>
-        <div class="choice-wrapper">
-          {% include 'utils/small_select.tmpl' with field=form.period4_choice3 label='Choice 3'%}
-          {% include 'utils/small_select.tmpl' with field=form.period4_choice3_instrument label='Instrument Preference'%}
-        </div>
+
       </div>
       {% endif %}
 

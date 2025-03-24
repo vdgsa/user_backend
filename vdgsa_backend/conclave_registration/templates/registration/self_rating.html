@@ -1,0 +1,20 @@
+{% extends 'registration/registration_base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load markdownify %}
+
+<h3 data-testid="registration_section_header">Self-Rating Level</h3>
+
+<div>
+  {{conclave_config.overall_level_question_markdown | markdownify}}
+</div>
+
+<form method="post">
+  {% include 'utils/form_body.tmpl' %}
+
+  <div class="mt-3">
+    <button type="submit" class="btn btn-primary">Save and continue</button>
+  </div>
+</form>
+{% endblock %}

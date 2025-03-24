@@ -42,6 +42,7 @@ class ConclaveRegistrationConfig(models.Model):
     faculty_registration_password = models.CharField(max_length=50, blank=True)
 
     landing_page_markdown = models.TextField(blank=True)
+    overall_level_question_markdown = models.TextField(blank=True)
     instruments_page_markdown = models.TextField(blank=True)
 
     liability_release_text = models.TextField(blank=True)
@@ -204,8 +205,19 @@ class Class(models.Model):
     # registrants.
     offer_to_beginners = models.BooleanField(blank=True, default=False)
 
+    is_freebie = models.BooleanField(blank=True, default=False)
+
+    def clean(self):
+        super().clean()
+        if self.period != Period.fourth and self.is_freebie:
+            raise ValidationError({'is_freebie': 'Freebie classes must be in 4th period'})
+
     def __str__(self) -> str:
-        return f'{self.instructor} | {self.name} | {self.level}'
+        result = f'{self.instructor} | {self.name} | {self.level}'
+        if self.is_freebie:
+            result += ' (freebie)'
+
+        return result
 
 
 def get_classes_by_period(
@@ -306,6 +318,13 @@ class RegistrationEntry(models.Model):
     is_late = models.BooleanField(blank=True, default=False)
 
     @property
+    def self_rating_is_required(self) -> bool:
+        return (
+            self.class_selection_is_required
+            and self.program not in BEGINNER_PROGRAMS
+        )
+
+    @property
     def class_selection_is_required(self) -> bool:
         """
         Returns True if the registrant is required to complete the
@@ -347,13 +366,14 @@ class AdditionalRegistrationInfo(models.Model):
 
     nickname = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=30)
+    do_not_send_text_updates = models.BooleanField(null=True, blank=True)
     include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
 
     age = models.TextField(choices=[
         ('18-35', '18-35'),
         ('36-64', '36-64'),
         ('65+', '65+'),
-        ('Under 18', 'Under 18 (Parent or Guardian must also register)'),
+        ('Under 18', 'Under 18 (Parent or Legal Guardian must also register)'),
     ])
 
     gender = models.TextField(choices=[
@@ -366,6 +386,7 @@ class AdditionalRegistrationInfo(models.Model):
 
     attended_conclave_before = models.TextField(choices=YesNo.choices)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
+    can_drive_loaners = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
     num_display_space_days = models.IntegerField(
@@ -527,6 +548,15 @@ class WorkStudyApplication(models.Model):
             raise ValidationError({'job_preferences': 'Please choose at least two options.'})
 
 
+class SelfRatingInfo(models.Model):
+    registration_entry = models.OneToOneField(
+        RegistrationEntry,
+        on_delete=models.CASCADE,
+        related_name='self_rating',
+    )
+    level = models.TextField(choices=Level.choices[1:])
+
+
 class Clef(models.TextChoices):
     treble = 'treble', 'Treble clef'
     octave_treble = 'octave_treble', 'Octave Treble clef'
@@ -539,13 +569,21 @@ class InstrumentChoices(models.TextChoices):
     tenor = 'tenor'
     bass = 'bass', '6-string Bass'
     bass_7_string = 'bass_7_string', '7-string Bass'
-    other = 'other', 'Other Instrument or Rennaissance Viol'
+    vielle = 'vielle'
+    other = 'other', 'Other Instrument or Renaissance Viol'
 
 
 class InstrumentPurpose(models.TextChoices):
     bringing_for_self = 'bringing_for_self', "I'm bringing this instrument for myself"
     willing_to_loan = 'willing_to_loan', "I'm willing to loan this instrument to someone else"
     wants_to_borrow = 'wants_to_borrow', "I need to borrow this instrument"
+    could_play = 'could_play', "I can play this instrument in class if one is provided"
+
+
+class RelativeInstrumentLevel(models.TextChoices):
+    at_level = 'at_level', 'At my level'
+    below_level = 'below_level', 'A little below my level'
+    just_beginning = 'just_beginning', "I'm just beginning to play this instument"
 
 
 class InstrumentBringing(models.Model):
@@ -563,7 +601,8 @@ class InstrumentBringing(models.Model):
 
     size = models.CharField(max_length=100, choices=InstrumentChoices.choices)
     name_if_other = models.CharField(max_length=100, blank=True)
-    level = models.TextField(choices=Level.choices[1:])
+    relative_level = models.TextField(choices=RelativeInstrumentLevel.choices)
+    level = models.TextField(choices=Level.choices[1:])  # legacy since 2025
     clefs = ArrayField(models.CharField(max_length=50, choices=Clef.choices))
     purpose = models.CharField(max_length=100, choices=InstrumentPurpose.choices)
 
@@ -699,8 +738,6 @@ class RegularProgramClassChoices(models.Model):
             ]
         }
 
-    # FIXME: Make this a separate function that takes in registration entry
-    # and class selection
     @cached_property
     def num_non_freebie_classes(self) -> int:
         if self.flex_choice1:
@@ -709,7 +746,14 @@ class RegularProgramClassChoices(models.Model):
         count = 0
 
         choices_by_period = dict(self.by_period)
-        choices_by_period.pop(Period.fourth)
+        chose_only_freebies = all([
+            entry['class'].is_freebie
+            for entry in choices_by_period[Period.fourth]
+            if entry['class'] is not None
+        ])
+        if chose_only_freebies:
+            choices_by_period.pop(Period.fourth)
+
         for choices in choices_by_period.values():
             if any(choice['class'] is not None for choice in choices):
                 count += 1

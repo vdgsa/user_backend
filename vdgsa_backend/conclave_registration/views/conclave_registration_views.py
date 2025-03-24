@@ -34,7 +34,7 @@ from vdgsa_backend.conclave_registration.models import (
     AdditionalRegistrationInfo, AdvancedProjectsInfo, AdvancedProjectsParticipationOptions,
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing,
     HousingRoomType, InstrumentBringing, InstrumentPurpose, PaymentInfo, Period, Program,
-    RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, TShirts,
+    RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, SelfRatingInfo, TShirts,
     WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.summary_and_charges import (
@@ -150,11 +150,19 @@ class ConclaveRegistrationLandingPage(LoginRequiredMixin, UserPassesTestMixin, V
 
     @property
     def membership_valid_through_conclave(self) -> bool:
-        last_day = datetime.combine(
-            self.conclave_config.departure_dates[-1].replace(year=self.conclave_config.year),
-            timezone.now().time(),
-            timezone.now().tzinfo
-        )
+        # Avoid throwing an exception before departure_dates have been set
+        if not self.conclave_config.departure_dates:
+            last_day = timezone.now().replace(
+                year=self.conclave_config.year,
+                month=9,
+                day=1,
+            )
+        else:
+            last_day = datetime.combine(
+                self.conclave_config.departure_dates[-1].replace(year=self.conclave_config.year),
+                timezone.now().time(),
+                timezone.now().tzinfo
+            )
         return self.request.user.subscription_is_valid_until(last_day)
 
 
@@ -162,7 +170,10 @@ def get_first_step_url_name(registration_entry: RegistrationEntry) -> str:
     if registration_entry.program in NO_CLASS_PROGRAMS:
         return 'conclave-basic-info'
 
-    return 'conclave-instruments-bringing'
+    if registration_entry.program in BEGINNER_PROGRAMS:
+        return 'conclave-instruments-bringing'
+
+    return 'conclave-self-rating'
 
 
 class _RegistrationStepFormBase:
@@ -298,12 +309,14 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         fields = [
             'nickname',
             'phone',
+            'do_not_send_text_updates',
             'age',
             'gender',
             'pronouns',
             'include_in_whos_coming_to_conclave_list',
             'attended_conclave_before',
             'buddy_willingness',
+            'can_drive_loaners',
             # 'willing_to_help_with_small_jobs',
             'wants_display_space',
             'num_display_space_days',
@@ -329,10 +342,12 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'other_info': '',
         }
 
+    do_not_send_text_updates = BooleanField(required=False, label='I would like to opt-out of text reminders')
     include_in_whos_coming_to_conclave_list = YesNoRadioField(label='')
     attended_conclave_before = YesNoRadioField(
         label='', no_label='No, this is my first Conclave!')
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
+    can_drive_loaners = YesNoMaybeRadioField(label='', required=False)
     liability_release = BooleanField(required=True, label='I agree')
     covid_policy = BooleanField(required=True, label='I agree')
     photo_release_auth = YesNoRadioField(
@@ -444,6 +459,34 @@ class WorkStudyApplicationView(_RegistrationStepViewBase):
         return None
 
 
+
+class SelfRatingInfoForm(_RegistrationStepFormBase, forms.ModelForm):
+    class Meta:
+        model = SelfRatingInfo
+        fields = [
+            'level',
+        ]
+
+        labels = {
+            'level': 'My overall level is:',
+        }
+
+
+class SelfRatingInfoInfoView(_RegistrationStepViewBase):
+    template_name = 'registration/self_rating.html'
+    form_class = SelfRatingInfoForm
+
+    @property
+    def next_step_url_name(self) -> str:  # type: ignore
+        return 'conclave-instruments-bringing'
+
+    def get_step_instance(self) -> SelfRatingInfo | None:
+        if hasattr(self.registration_entry, 'self_rating'):
+            return self.registration_entry.self_rating
+
+        return None
+
+
 class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = InstrumentBringing
@@ -451,7 +494,7 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
             'size',
             'name_if_other',
             'purpose',
-            'level',
+            'relative_level',
             'clefs',
             'comments',
         ]
@@ -459,7 +502,7 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
         labels = {
             'purpose': 'Are you bringing this instrument for yourself, '
                        'willing to lend it, or needing to borrow it?',
-            'level': 'My level on this instrument',
+            'relative_level': 'I play this instrument:',
             'comments': 'Comments (e.g., "I can lend this instrument during 1st period only")',
             'name_if_other': 'Please specify instrument size/type'
         }
@@ -656,7 +699,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
     def flexible_class_selection_init(self) -> None:
         class_options_queryset = Class.objects.filter(
             conclave_config=self.registration_entry.conclave_config
-        ).exclude(period=Period.fourth)
+        ).exclude(is_freebie=True)
 
         self.fields['flex_choice1'].queryset = class_options_queryset
         self.fields['flex_choice1'].label_from_instance = flex_choice_class_label
@@ -697,21 +740,22 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if not hasattr(self, 'cleaned_data'):
             return
 
-        if self.registration_entry.program == Program.regular:
-            if self.instance.num_non_freebie_classes < 2:
-                self.add_error(
-                    None,
-                    'Regular Curriculum (full-time) attendees must select at least '
-                    '2 non-freebie courses to attend. If you want to take only one '
-                    'class, you should register as part-time. '
-                    "If you don't want to take any classes, you should register "
-                    'as a non-playing attendee.'
-                )
-
         self._validate_period_preferences(Period.first)
         self._validate_period_preferences(Period.second)
         self._validate_period_preferences(Period.third)
         self._validate_period_preferences(Period.fourth)
+
+        if self.registration_entry.program == Program.regular:
+            if not (2 <= self.instance.num_non_freebie_classes <= 3):
+                self.add_error(
+                    None,
+                    'Regular Curriculum (full-time) attendees must select '
+                    '2 or 3 non-FREEBIE courses to attend. If you want to take only one '
+                    'class, you should register as part-time. '
+                    "If you don't want to take any classes, you should register "
+                    'as a non-playing attendee.'
+                    'You cannot take 4 paying courses.'
+                )
 
         self._validate_extra_class_preferences()
 
@@ -724,22 +768,54 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
         if len(choices) == 0:
             return
 
-        # Allow < 3 choices for freebies and beginners
-        if (len(choices) != 3 and period != Period.fourth
-                and self.registration_entry.program != Program.beginners):
+        if len({choice.is_freebie for choice in choices}) != 1:
             self.add_error(
                 None,
-                f'{format_period_long(period)}: You must select a 1st, 2nd, and 3rd choice. '
-                'If you do not want to take a class during this period, please '
-                'set all three choices to "No class."'
+                f'{format_period_long(period)}: '
+                'You have selected a mix of Freebie and paid classes. '
+                'If you want to take a paid class during this period, '
+                'please select a 1st and 2nd paid class options. '
+                'If you want to take a Freebie during this period, '
+                'please select up to 3 Freebie options.'
             )
+            return
+        
+        freebies_selected = all(choice.is_freebie for choice in choices)
+        if period ==Period.fourth:
+            # Allow < 3 choices for freebies and beginners
+            if (len(choices) != 2 and not freebies_selected
+                    and self.registration_entry.program != Program.beginners):
+                self.add_error(
+                    None,
+                    f'{format_period_long(period)}: You must select a 1st and 2nd choice. '
+                    'If you do not want to take a class during this period, please '
+                    'set all choices to "No class."'
+                )
 
-        if len(set(choices)) != len(choices):
-            self.add_error(
-                None,
-                f'{format_period_long(period)}: You must select different classes for '
-                'your 1st, 2nd, and 3rd choices.'
-            )
+            if len(set(choices)) != len(choices):
+                self.add_error(
+                    None,
+                    f'{format_period_long(period)}: You must select different classes for '
+                    'your 1st and 2nd choices.'
+                )  
+        else:
+            # Allow < 3 choices for freebies and beginners
+            if (len(choices) != 3 and not freebies_selected
+                    and self.registration_entry.program != Program.beginners):
+                self.add_error(
+                    None,
+                    f'{format_period_long(period)}: You must select a 1st, 2nd, and 3rd choice. '
+                    'If you do not want to take a class during this period, please '
+                    'set all three choices to "No class."'
+                )
+
+            if len(set(choices)) != len(choices):
+                self.add_error(
+                    None,
+                    f'{format_period_long(period)}: You must select different classes for '
+                    'your 1st, 2nd, and 3rd choices.'
+                )
+
 
     def _validate_extra_class_preferences(self) -> None:
         if not self.registration_entry.uses_flexible_class_selection:
@@ -848,12 +924,11 @@ class RegularProgramClassSelectionView(_RegistrationStepViewBase):
     @property
     def _show_fourth_period(self) -> bool:
         """
-        Fourth period contains only freebie classes.
+        Fourth period contains a mix of paid and freebie classes.
         """
         return self.registration_entry.program in [
             Program.regular,
             Program.beginners,
-            Program.seasoned_players,
         ]
 
     def _period_has_beginner_add_on_classes(self, period: Period) -> bool:
@@ -1194,6 +1269,10 @@ class PaymentView(_RegistrationStepViewBase):
     def _get_missing_sections(self) -> list[str]:
         missing_sections = []
 
+        if (self.registration_entry.self_rating_is_required
+                and not hasattr(self.registration_entry, 'self_rating')):
+            missing_sections.append('Self-Rating')
+
         if self.registration_entry.class_selection_is_required:
             if self.registration_entry.program in BEGINNER_PROGRAMS:
                 if not hasattr(self.registration_entry, 'beginner_instruments'):
@@ -1267,7 +1346,7 @@ class CurrentUserRegistrationSummaryView(LoginRequiredMixin, View):
 def send_confirmation_email(registration_entry: RegistrationEntry) -> None:
     send_mail(
         subject=f'VdGSA Conclave {registration_entry.conclave_config.year} '
-                '- Thank you for registering!',
+                f'- Thank you for registering, {show_name(registration_entry.user)}!',
         from_email=None,
         recipient_list=[
             registration_entry.user.username,
