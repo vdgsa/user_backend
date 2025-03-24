@@ -83,6 +83,17 @@
             >
             <a class="nav-link" href="{% url 'current-user-account' %}">My Account</a>
             </li>
+            <li
+              class="
+                {% url 'directory' as url %}
+                {% if request.path == url %}
+                  current-tab
+                {% endif %}
+                nav-item
+              "
+            >
+              <a class="nav-link" href="{% url 'directory' %}">Membership Directory</a>
+            </li>
             {% if perms.accounts.membership_secretary or perms.accounts.board_member %}
             <li
               class="
