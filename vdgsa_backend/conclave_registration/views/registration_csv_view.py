@@ -316,7 +316,7 @@ CSV_HEADERS = [
     'age',
     'gender',
     'pronouns',
-    'do_not_send_text_updates'
+    'do_not_send_text_updates',
     'include_in_whos_coming_to_conclave_list',
     'attended_conclave_before',
     'buddy_willingness',
