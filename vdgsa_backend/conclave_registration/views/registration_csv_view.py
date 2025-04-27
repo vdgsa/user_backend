@@ -333,7 +333,7 @@ CSV_HEADERS = [
     'stripe_payment_method_id',
 
     'INSTRUMENTS',
-    'overall_level_question_markdown',
+    'level',
     'instruments_bringing',
     'beginner_needs_instrument',
     'beginner_instrument_bringing',
