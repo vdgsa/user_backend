@@ -17,7 +17,7 @@ from django.urls.base import reverse
 from django.utils.functional import cached_property
 from django.views.generic.edit import UpdateView
 
-from vdgsa_backend.accounts.models import User
+from vdgsa_backend.accounts.models import MembershipType, User
 from vdgsa_backend.accounts.views.permissions import is_requested_user_or_membership_secretary, is_membership_secretary
 from vdgsa_backend.accounts.views.utils import get_ajax_form_response
 
@@ -67,9 +67,13 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return context
     
     def can_renew_membership(self) -> Optional[bool]:
-        if is_membership_secretary(self.request.user) or not self.requested_user.subscription:  
-            return True  
 
+        if is_membership_secretary(self.request.user) or not self.requested_user.subscription:  
+            return True
+        
+        if self.requested_user.subscription.membership_type == MembershipType.lifetime:
+            return False
+        
         return date.today() > self.requested_user.subscription.valid_until.date() - relativedelta(months=6)  
 
     def test_func(self) -> Optional[bool]:
