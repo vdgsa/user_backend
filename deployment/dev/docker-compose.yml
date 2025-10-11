@@ -1,0 +1,89 @@
+# DEVELOPMENT ONLY. DO NOT USE IN PRODUCTION.
+
+services:
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    container_name: vdgsa_nginx
+    ports:
+      - "1680:80"
+
+    build:
+      dockerfile_inline: |
+        FROM nginx:latest
+        COPY nginx.conf /etc/nginx/conf.d/default.conf
+      context: ./nginx
+
+    depends_on:
+      - django
+
+    develop:
+      watch:
+        - path: deployment/dev/nginx.conf
+          action: rebuild
+
+  django:
+    container_name: vdgsa_django
+    restart: unless-stopped
+    build:
+      # Set the build context to the top-level directory of the repo.
+      # The directory of the dockerfile below and paths in the actual
+      # Dockerfile are relative to this.
+      context: ../../app_backend
+      dockerfile: ../deployment/dev/Dockerfile-django
+      args:
+        - DEPLOYMENT_MODE=dev
+    ports:
+      - "127.0.0.1:8080:8000"
+    command: |
+      gunicorn --reload vdgsa_backend.wsgi:application --bind 0.0.0.0:8000 --error-logfile=- --access-logfile=-
+    environment:
+      DEPLOYMENT_MODE: dev
+    env_file: .env
+    volumes:
+      - /home/vdgsaapi/vdgsa_backend/media_root:/usr/src/uploads
+
+    secrets:
+      - postgres_password
+      - recaptcha_private_key
+      - stripe_private_key
+      - django_app_secret_key
+
+    develop:
+      watch:
+        - path: ../../app_backend
+          target: /usr/src/app
+          action: sync
+        - path: ../../app_backend/Pipfile.lock
+          action: rebuild
+        - path: .env
+          action: restart
+
+  postgres:
+    container_name: vdgsa_postgres
+    restart: unless-stopped
+    image: postgres:17
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: vdgsa_postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+
+    secrets:
+      - postgres_password
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
+  recaptcha_private_key:
+    file: ./secrets/recaptcha_private_key
+  stripe_private_key:
+    file: ./secrets/stripe_private_key
+  django_app_secret_key:
+    file: ./secrets/django_app_secret_key
+
+volumes:
+  pgdata: {}

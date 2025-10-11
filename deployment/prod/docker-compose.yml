@@ -1,0 +1,4 @@
+services:
+  nginx:
+    container_name: ${DEV:?error}
+    image: nginx:latest

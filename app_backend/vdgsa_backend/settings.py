@@ -19,22 +19,43 @@ import stripe  # type: ignore
 from bleach.sanitizer import ALLOWED_ATTRIBUTES  # type: ignore
 from django.urls.base import reverse_lazy
 
+
+_deployment_mode = os.environ.get('DEPLOYMENT_MODE')
+if _deployment_mode is not None:
+    _deployment_mode = _deployment_mode.strip()
+_allowed_deployment_modes = ['prod', 'dev', 'unit_test']
+if _deployment_mode not in _allowed_deployment_modes:
+    raise ValueError(
+        'DEPLOYMENT_MODE environment var must be one of: '
+        f'{", ".join(_allowed_deployment_modes)}'
+    )
+
+
+def get_docker_secret(secret_name: str) -> str:
+    secret_file = f'/run/secrets/{secret_name}'
+    if not os.path.isfile(secret_file):
+        raise FileNotFoundError(f'Secret file "{secret_name}" not found.')
+
+    with open(secret_file) as f:
+        return f.read().strip()
+
 load_dotenv()
 
+# django-recaptcha has default values for development,
+# so we only need to set these in production
 RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
-RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
+RECAPTCHA_PRIVATE_KEY = get_docker_secret('recaptcha_private_key')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-with open(BASE_DIR / 'stripe_key') as f:
-    stripe.api_key = f.read().strip()
+stripe.api_key = get_docker_secret('stripe_private_key')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
+SECRET_KEY = get_docker_secret('django_app_secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -116,8 +137,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'vdgsa_postgres',
         'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': '127.0.0.1',
+        'PASSWORD': get_docker_secret('postgres_password'),
+        'HOST': 'postgres',
         'PORT': '5432'
     }
 }

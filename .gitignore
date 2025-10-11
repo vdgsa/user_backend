@@ -141,3 +141,7 @@ cython_debug/
 settings_production.py
 
 stripe_key
+**/secrets
+deployment/**/secrets
+deployment/**/public_keys
+
