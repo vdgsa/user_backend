@@ -14,7 +14,7 @@ from django.views.generic import View
 
 from vdgsa_backend.accounts.models import MembershipType, User
 from vdgsa_backend.accounts.views.permissions import is_active_member
-
+from vdgsa_backend.accounts.views.utils import get_ajax_form_response, LocationAddress
 
 class CommercialMemberType(models.TextChoices):
     INSTRUMENT_MAKER = "I", "Instrument Maker"
@@ -57,7 +57,19 @@ class DirectorySearchForm(forms.Form):
             ]
         ),
     )
-    address_country = forms.CharField(label="Country", required=False)
+    address_country = forms.CharField(
+        label="Country", required=False,
+        widget=forms.Select(
+            choices=[
+                (genre, genre)
+                for genre in list(
+                    User.objects.distinct()
+                    .order_by(Upper("address_country"))
+                    .values_list(Upper("address_country"), flat=True)
+                )
+            ]
+        )
+    )
 
     commercial_member_type = forms.MultipleChoiceField(
         label="Commercial Member",

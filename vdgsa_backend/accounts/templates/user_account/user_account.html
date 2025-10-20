@@ -71,7 +71,7 @@
   <h2>Profile</h2>
   <form id="user-profile-form" method="post" action="{% url 'user-profile' pk=object.pk %}">
     <div class='form-body-wrapper'>
-      {% include 'user_account/user_profile_form.tmpl' with form=edit_profile_form %}
+      {% include 'user_account/user_profile_form.tmpl' with form=form %}
     </div>
   </form>
 </div>
@@ -157,6 +157,36 @@ $().ready(function() {
   let purchase_subscription_form = $('#purchase-subscription-form');
   purchase_subscription_form.on('submit', on_purchase_subscription_form_submit);
 });
+
+
+  const countrySelect = document.getElementById('id_address_country');
+  const subdivisionSelect = document.getElementById('id_address_state');
+
+  countrySelect.addEventListener('change', (event) => {
+      const countryCode = event.target.value;
+
+      // Clear previous options
+      subdivisionSelect.innerHTML = '<option value="">Select a State/Province</option>';
+      subdivisionSelect.disabled = true;
+
+      if (countryCode) {
+          fetch(`/accounts/subdivisions/?country=${countryCode}`)
+              .then(response => response.json())
+              .then(data => {
+                  if (data.length > 0) {
+                      data.forEach(sub => {
+                          const option = document.createElement('option');
+                          option.value = sub.code;
+                          option.textContent = sub.name;
+                          subdivisionSelect.appendChild(option);
+                      });
+                      subdivisionSelect.disabled = false;
+                  }
+              })
+              .catch(error => console.error('Error:', error));
+      }
+  });
+
 </script>
 
 {% endblock %}

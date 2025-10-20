@@ -11,8 +11,8 @@ from django.views import View
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV2Checkbox
 
-
 from vdgsa_backend.accounts.models import User
+from vdgsa_backend.accounts.views.utils import LocationAddress
 
 
 class UserRegistrationForm(PasswordResetForm):
@@ -21,9 +21,16 @@ class UserRegistrationForm(PasswordResetForm):
     address_line_1 = forms.CharField()
     address_line_2 = forms.CharField(required=False)
     address_city = forms.CharField(label='City')
-    address_state = forms.CharField(label='State/Province')
+    address_state = forms.ChoiceField(
+            choices=[(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions('US')],
+            label="State/Province"
+        )
     address_postal_code = forms.CharField(label='ZIP/Postal Code')
-    address_country = forms.CharField(label='Country')
+    address_country = forms.ChoiceField(
+            choices=[(c.alpha_2, c.name) for c in LocationAddress.getCountries()],
+            label="Select a Country",
+            initial='US'
+        )
 
     captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox)
 

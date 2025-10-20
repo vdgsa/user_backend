@@ -9,9 +9,10 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.forms import BaseModelForm
+from django.forms import BaseModelForm, Form, ChoiceField, Select
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls.base import reverse
 from django.utils.functional import cached_property
@@ -19,8 +20,7 @@ from django.views.generic.edit import UpdateView
 
 from vdgsa_backend.accounts.models import MembershipType, User
 from vdgsa_backend.accounts.views.permissions import is_requested_user_or_membership_secretary, is_membership_secretary
-from vdgsa_backend.accounts.views.utils import get_ajax_form_response
-
+from vdgsa_backend.accounts.views.utils import get_ajax_form_response, LocationAddress
 from .change_email import ChangeEmailForm
 from .membership_renewal import AddFamilyMemberForm, PurchaseSubscriptionForm
 from .user_profile import UserProfileForm
@@ -37,24 +37,20 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     form_class = UserProfileForm
 
     template_name = 'user_account/user_account.html'
-
+    
     @cached_property
     def requested_user(self) -> User:
         return cast(User, self.get_object())
-
+    
     def get_form_kwargs(self) -> Dict[str, Any]:
         kwargs = super().get_form_kwargs()
         kwargs['authorized_user'] = self.requested_user
         return kwargs
-
+    
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['MAX_NUM_FAMILY_MEMBERS'] = settings.MAX_NUM_FAMILY_MEMBERS
 
-        context['edit_profile_form'] = UserProfileForm(
-            authorized_user=cast(User, self.request.user),
-            instance=self.requested_user
-        )
         context['change_email_form'] = ChangeEmailForm(self.requested_user)
         context['change_password_form'] = PasswordChangeForm(self.requested_user)
         context['membership_renewal_form'] = PurchaseSubscriptionForm(
@@ -63,7 +59,6 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         )
         context['add_family_member_form'] = AddFamilyMemberForm()
         context['can_renew_membership'] = self.can_renew_membership()
-
         return context
     
     def can_renew_membership(self) -> Optional[bool]:
@@ -100,3 +95,34 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             form_template=self.template_name,
             form_context=self.get_context_data()
         )
+
+
+class LocationForm(Form):
+    country = ChoiceField(
+        choices=([('', 'Select a Country')] + LocationAddress.getCountries()),
+        widget=Select(attrs={'id': 'id_country'})
+    )
+    subdivision = ChoiceField(
+        choices=[('', 'Select a Subdivision')],
+        widget=Select(attrs={'id': 'id_subdivision'})
+    )
+
+def get_subdivisions(request):
+    """
+    AJAX endpoint to return subdivisions for a given country.
+    """
+    country_code = request.GET.get('country')
+    if country_code:
+        try:
+            subdivisions = sorted(
+                [(s.code, s.name) for s in LocationAddress.getSubdivisions(country_code=country_code)],
+                key=lambda x: x[1]
+            )
+            data = [{'code': code.split('-')[1], 'name': name} for code, name in subdivisions]
+        except KeyError:
+            data = []  # No subdivisions found for this country
+    else:
+        data = []
+
+    return JsonResponse(data, safe=False)
+

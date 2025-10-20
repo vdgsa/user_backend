@@ -33,4 +33,6 @@ urlpatterns = [
 
     path('<int:pk>/', views.UserAccountView.as_view(), name='user-account'),
     re_path('^$', views.current_user_account_view, name='current-user-account'),
+
+    path('subdivisions/', views.get_subdivisions, name='ajax_get_subdivisions'),
 ]

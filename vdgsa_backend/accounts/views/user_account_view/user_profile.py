@@ -7,7 +7,7 @@ page.
 from typing import Any, Dict, Final, Optional, Sequence, cast
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.forms import BaseModelForm, ModelForm, Textarea
+from django.forms import BaseModelForm, ModelForm, Textarea, Select
 from django.http.response import HttpResponse
 from django.urls.base import reverse
 from django.utils.functional import cached_property
@@ -17,7 +17,7 @@ from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.permissions import (
     is_membership_secretary, is_requested_user_or_membership_secretary
 )
-from vdgsa_backend.accounts.views.utils import get_ajax_form_response
+from vdgsa_backend.accounts.views.utils import get_ajax_form_response, LocationAddress
 
 
 class UserProfileForm(ModelForm):
@@ -64,7 +64,9 @@ class UserProfileForm(ModelForm):
 
         widgets = {
             'teacher_description': Textarea(attrs={'rows': 5, 'cols': None}),
-            'notes': Textarea(attrs={'rows': 5, 'cols': None}),
+            'notes': Textarea(attrs={'rows': 5, 'cols': None}), 
+            'address_state': Select(),
+            'address_country': Select(),
         }
 
     def __init__(self, *args: Any, authorized_user: User, **kwargs: Any):
@@ -88,6 +90,9 @@ class UserProfileForm(ModelForm):
         self.fields['address_postal_code'].required = True
         self.fields['address_country'].required = True
 
+        self.fields['address_state'].widget.choices = [(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions( self.authorized_user.address_country)]
+        self.fields['address_country'].widget.choices = [(c.alpha_2, c.name) for c in LocationAddress.getCountries()]
+
     _membership_secretary_only_fields: Final[Sequence[str]] = [
         'is_deceased',
         'receives_expiration_reminder_emails',
@@ -103,8 +108,9 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     @cached_property
     def requested_user(self) -> User:
+        print('UserProfileView')
         return cast(User, self.get_object())
-
+        
     def get_form_kwargs(self) -> Dict[str, Any]:
         kwargs = super().get_form_kwargs()
         kwargs['authorized_user'] = self.request.user

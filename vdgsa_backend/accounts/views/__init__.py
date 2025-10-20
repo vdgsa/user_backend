@@ -17,5 +17,7 @@ from .user_account_view.user_account_view import UserAccountView as UserAccountV
 from .user_account_view.user_account_view import (
     current_user_account_view as current_user_account_view
 )
+from .user_account_view.user_account_view import get_subdivisions as get_subdivisions
+
 from .user_account_view.user_profile import UserProfileView as UserProfileView
 from .user_registration import UserRegistrationView as UserRegistrationView
