@@ -90,7 +90,7 @@ class UserProfileForm(ModelForm):
         self.fields['address_postal_code'].required = True
         self.fields['address_country'].required = True
 
-        self.fields['address_state'].widget.choices = [(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions( self.authorized_user.address_country)]
+        self.fields['address_state'].widget.choices = [('','Select State/Province')]+[(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions( self.authorized_user.address_country)]
         self.fields['address_country'].widget.choices = [(c.alpha_2, c.name) for c in LocationAddress.getCountries()]
 
     _membership_secretary_only_fields: Final[Sequence[str]] = [
