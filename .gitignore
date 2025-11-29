@@ -144,4 +144,4 @@ stripe_key
 **/secrets
 deployment/**/secrets
 deployment/**/public_keys
-
+deployment/**/volumes

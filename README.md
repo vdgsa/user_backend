@@ -11,12 +11,6 @@ git clone git@github.com:vdgsa/user_backend.git vdgsa_website
 cd vdgsa_website
 ```
 
-### Create a Self-Signed Certificate (Development only!)
-DO NOT USE A SELF-SIGNED CERTIFICATE IN PRODUCTION.
-This is for local dev builds only.
-
-These instructions are from the [Let's Encrypt docs](https://letsencrypt.org/docs/certificates-for-localhost/#making-and-trusting-your-own-certificates), accessed on Oct 11, 2025.
-
 ### Obtain a TLS Certificate with Let's Encrypt (Production)
 
 ### Set Secrets and Application Keys
@@ -27,18 +21,24 @@ If this is a production deployment, put the files in `deployment/prod`. If this 
 1. Recaptcha private key: `deployment/(dev|prod)/secrets/recaptcha_private_key`
 1. Django app secret key (this can be any random string of letters): `deployment/(dev|prod)/secrets/django_app_secret_key`
 
+### Create Directories for Media and Static File Volumes
+```
+mkdir -p deployment/dev/volumes/{media_root,static}
+```
+
 ### Build and Start the Stack
 ```
 ./dev_scripts/compose_dev watch
 ```
 
 This will start the compose stack in watch mode.
-Changes to the python code should cause the running app to update automatically.
+Changes to the python code and most configuration files should cause the running app to update automatically.
+If you change `docker-compose.yml`, or if you change another config file and the change doesn't seem to get picked up, stop the running watch command and re-run it.
 
 In a separate terminal, collect static files and apply migrations:
 ```
-docker exec -it vdgsa_django python3 manage.py collectstatic --noinput
-docker exec -it vdgsa_django python3 manage.py migrate
+./dev_scripts/compose_dev exec django python3 manage.py collectstatic --noinput
+./dev_scripts/compose_dev exec django python3 manage.py migrate
 ```
 
 ### Stopping the stack
@@ -57,13 +57,13 @@ Whenever you add/alter/remove DB Models, run the following to generate migration
 
 To apply new migrations to your stack:
 ```
-docker exec -it vdgsa_django python3 manage.py migrate
+./dev_scripts/compose_dev exec django python3 manage.py migrate
 ```
 
 ## Updating Django Static Files
 If you add/change/remove any files in `app_backend/static`, run the following to recollect migrations on your stack:
 ```
-docker exec -it vdgsa_django python3 manage.py collectstatic --noinput
+./dev_scripts/compose_dev exec django python3 manage.py collectstatic --noinput
 ```
 
 ## Deploying to Production

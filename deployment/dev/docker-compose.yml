@@ -17,9 +17,12 @@ services:
     depends_on:
       - django
 
+    volumes:
+      - ./dev/volumes/media_root:/usr/src/static
+
     develop:
       watch:
-        - path: deployment/dev/nginx.conf
+        - path: nginx/nginx.conf
           action: rebuild
 
   django:
@@ -41,7 +44,8 @@ services:
       DEPLOYMENT_MODE: dev
     env_file: .env
     volumes:
-      - /home/vdgsaapi/vdgsa_backend/media_root:/usr/src/uploads
+      - ./dev/volumes/media_root:/usr/src/uploads
+      - ./dev/volumes/media_root:/usr/src/static
 
     secrets:
       - postgres_password
