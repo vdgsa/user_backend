@@ -11,8 +11,6 @@ git clone git@github.com:vdgsa/user_backend.git vdgsa_website
 cd vdgsa_website
 ```
 
-### Obtain a TLS Certificate with Let's Encrypt (Production)
-
 ### Set Secrets & Application Public Keys
 #### Application Public Keys
 In `deployment/dev/.env`, set STRIPE_PUBLIC_KEY to the publishable key for your selected Stripe sandbox or test mode.
@@ -29,6 +27,7 @@ Note that the reCaptcha secrets should not be set in development mode.
 This will make django-recaptcha use default test keys.
 
 ### Build and Start the Stack
+The script `dev_scripts/compose_dev` is an alias for `docker compose -f deployment/dev/docker-compose.yml`.
 ```
 ./dev_scripts/compose_dev build
 ./dev_scripts/compose_dev watch
@@ -36,7 +35,7 @@ This will make django-recaptcha use default test keys.
 
 This will start the compose stack in watch mode.
 Changes to the python code and most configuration files should cause the running app to update automatically.
-If you change `docker-compose.yml`, or if you change another config file and the change doesn't seem to get picked up, stop the running watch command, re-build, and re-run it.
+If you change `docker-compose.yml`, or if you change another config file and the change doesn't seem to get picked up, stop the running watch command, [stop the stack](#stopping-the-stack), re-build, and re-run the watch command.
 
 In a separate terminal, collect static files and apply migrations:
 ```
