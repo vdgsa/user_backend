@@ -83,7 +83,7 @@ services:
     build:
       context: stripe-cli
 
-    command: listen --events checkout.session.completed --forward-to django:8000/accounts/stripe_webhook/
+    command: listen --forward-to django:8000/accounts/stripe_webhook/
 
     # After authenticating, the stripe-cli container will exit.
     # This should cause it to restart automatically.
@@ -93,6 +93,11 @@ services:
       - ./stripe-cli/volumes/stripe-config://root/.config/stripe/
       - ./stripe-cli/volumes/stripe-gpg://root/.gnupg/
       - ./stripe-cli/volumes/stripe-pass://root/.password-store/
+
+  # We need 2 of these to forward events to both of our endpoints.
+  stripe-cli2:
+    extends: stripe-cli
+    command: listen --forward-to django:8000/stripe_emails/send_officer_emails/
 
 secrets:
   postgres_password:

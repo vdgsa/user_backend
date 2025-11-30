@@ -12,15 +12,22 @@ cd vdgsa_website
 ```
 
 ### Set Secrets & Application Public Keys
+
+#### Configure a Stripe Sandbox
+In the stripe dashboard, create a sandbox (we're allowed 5, so double check that we have enough left).
+The Stripe CLI in the dev stack is configured to listen for checkout.session.completed events and forward them to our django app endpoints:
+- `/accounts/stripe_webhook/`
+- `/stripe_emails/send_officer_emails/`
+
 #### Application Public Keys
-In `deployment/dev/.env`, set STRIPE_PUBLIC_KEY to the publishable key for your selected Stripe sandbox or test mode.
+In `deployment/dev/.env`, set STRIPE_PUBLIC_KEY to the publishable key for your selected Stripe sandbox.
 
 Note that the reCaptcha public key should not be set in development mode.
 
 #### Secrets
 Write these values to files with the names specified below.
 1. Postgres password (this can be any random string): `deployment/dev/secrets/postgres_password`
-1. Stripe secret key (use the key for your stripe sandbox or test mode): `deployment/dev/secrets/stripe_private_key`
+1. Stripe secret key (use the key for your stripe sandbox): `deployment/dev/secrets/stripe_private_key`
 1. Django app secret key (this can be any random string of letters): `deployment/dev/secrets/django_app_secret_key`
 
 Note that the reCaptcha secrets should not be set in development mode.
@@ -49,13 +56,19 @@ You can stop the stack with:
 ./dev_scripts/compose_dev stop
 ```
 
+#### List Running Containers
+To print information about the currently running containers of the stack:
+```
+./dev_scripts/compose_dev ps
+```
+
 ### Authenticate the Stripe CLI
 View the logs for the stripe container:
 ```
 ./dev_scripts/compose_dev logs -f --since 5m stripe-cli
 ```
 Go to the url in the logs and sign in.
-Select the sandbox or test mode that matches the [stripe secret key you set](#set-secrets-and-application-keys).
+Select the sandbox that matches the [stripe secret key you set](#set-secrets-and-application-keys).
 Check the pairing code printed to the logs, and click Allow Access.
 
 Note that the Stripe CLI is currently only set to listen for checkout session completed events.
