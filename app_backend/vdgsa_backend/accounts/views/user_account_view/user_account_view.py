@@ -64,17 +64,19 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context['add_family_member_form'] = AddFamilyMemberForm()
         context['can_renew_membership'] = self.can_renew_membership()
 
+        context['stripe_public_key'] = settings.STRIPE_PUBLIC_KEY
+
         return context
-    
+
     def can_renew_membership(self) -> Optional[bool]:
 
-        if is_membership_secretary(self.request.user) or not self.requested_user.subscription:  
+        if is_membership_secretary(self.request.user) or not self.requested_user.subscription:
             return True
-        
+
         if self.requested_user.subscription.membership_type == MembershipType.lifetime:
             return False
-        
-        return date.today() > self.requested_user.subscription.valid_until.date() - relativedelta(months=6)  
+
+        return date.today() > self.requested_user.subscription.valid_until.date() - relativedelta(months=6)
 
     def test_func(self) -> Optional[bool]:
         return is_requested_user_or_membership_secretary(

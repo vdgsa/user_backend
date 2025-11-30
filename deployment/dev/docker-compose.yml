@@ -18,7 +18,7 @@ services:
       - django
 
     volumes:
-      - ./dev/volumes/media_root:/usr/src/static
+      - ./volumes/static:/usr/src/static
 
     develop:
       watch:
@@ -44,8 +44,8 @@ services:
       DEPLOYMENT_MODE: dev
     env_file: .env
     volumes:
-      - ./dev/volumes/media_root:/usr/src/uploads
-      - ./dev/volumes/media_root:/usr/src/static
+      - ./volumes/media_root:/usr/src/uploads
+      - ./volumes/static:/usr/src/static
 
     secrets:
       - postgres_password
@@ -78,6 +78,21 @@ services:
 
     secrets:
       - postgres_password
+
+  stripe-cli:
+    build:
+      context: stripe-cli
+
+    command: listen --events checkout.session.completed --forward-to django:8000/accounts/stripe_webhook/
+
+    # After authenticating, the stripe-cli container will exit.
+    # This should cause it to restart automatically.
+    restart: unless-stopped
+
+    volumes:
+      - ./stripe-cli/volumes/stripe-config://root/.config/stripe/
+      - ./stripe-cli/volumes/stripe-gpg://root/.gnupg/
+      - ./stripe-cli/volumes/stripe-pass://root/.password-store/
 
 secrets:
   postgres_password:

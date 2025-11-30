@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 from typing import List
-from dotenv import load_dotenv
 import os
 
 import stripe  # type: ignore
@@ -39,17 +38,18 @@ def get_docker_secret(secret_name: str) -> str:
     with open(secret_file) as f:
         return f.read().strip()
 
-load_dotenv()
 
 # django-recaptcha has default values for development,
 # so we only need to set these in production
-RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
-RECAPTCHA_PRIVATE_KEY = get_docker_secret('recaptcha_private_key')
+if _deployment_mode == 'prod':
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
+    RECAPTCHA_PRIVATE_KEY = get_docker_secret('recaptcha_private_key')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 stripe.api_key = get_docker_secret('stripe_private_key')
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -63,7 +63,10 @@ DEBUG = True
 # Change the email backend in production
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-ALLOWED_HOSTS: List[str] = ['localhost', '127.0.0.1']
+if _deployment_mode == 'dev':
+    ALLOWED_HOSTS: List[str] = ['*']
+elif _deployment_mode == 'prod':
+    ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = reverse_lazy('login')

@@ -133,7 +133,7 @@ $().ready(function() {
       success: function(response_data) {
         if (response_data.extra_data.stripe_session_id) {
           $('#purchase-subscription-form button[type=submit]').text('Redirecting');
-          let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
+          let stripe = Stripe('{{stripe_public_key}}');
           stripe.redirectToCheckout({
             sessionId: response_data.extra_data.stripe_session_id
           });

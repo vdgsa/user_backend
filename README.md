@@ -13,27 +13,30 @@ cd vdgsa_website
 
 ### Obtain a TLS Certificate with Let's Encrypt (Production)
 
-### Set Secrets and Application Keys
-Write these values to files with the names specified below.
-If this is a production deployment, put the files in `deployment/prod`. If this is a dev deployment, put the files in `deployment/dev`.
-1. Postgres password (this can be any random string): `deployment/(dev|prod)/secrets/postgres_password`
-1. Stripe secret key: `deployment/(dev|prod)/secrets/stripe_private_key`
-1. Recaptcha private key: `deployment/(dev|prod)/secrets/recaptcha_private_key`
-1. Django app secret key (this can be any random string of letters): `deployment/(dev|prod)/secrets/django_app_secret_key`
+### Set Secrets & Application Public Keys
+#### Application Public Keys
+In `deployment/dev/.env`, set STRIPE_PUBLIC_KEY to the publishable key for your selected Stripe sandbox or test mode.
 
-### Create Directories for Media and Static File Volumes
-```
-mkdir -p deployment/dev/volumes/{media_root,static}
-```
+Note that the reCaptcha public key should not be set in development mode.
+
+#### Secrets
+Write these values to files with the names specified below.
+1. Postgres password (this can be any random string): `deployment/dev/secrets/postgres_password`
+1. Stripe secret key (use the key for your stripe sandbox or test mode): `deployment/dev/secrets/stripe_private_key`
+1. Django app secret key (this can be any random string of letters): `deployment/dev/secrets/django_app_secret_key`
+
+Note that the reCaptcha secrets should not be set in development mode.
+This will make django-recaptcha use default test keys.
 
 ### Build and Start the Stack
 ```
+./dev_scripts/compose_dev build
 ./dev_scripts/compose_dev watch
 ```
 
 This will start the compose stack in watch mode.
 Changes to the python code and most configuration files should cause the running app to update automatically.
-If you change `docker-compose.yml`, or if you change another config file and the change doesn't seem to get picked up, stop the running watch command and re-run it.
+If you change `docker-compose.yml`, or if you change another config file and the change doesn't seem to get picked up, stop the running watch command, re-build, and re-run it.
 
 In a separate terminal, collect static files and apply migrations:
 ```
@@ -41,11 +44,23 @@ In a separate terminal, collect static files and apply migrations:
 ./dev_scripts/compose_dev exec django python3 manage.py migrate
 ```
 
-### Stopping the stack
+#### Stopping the stack
 You can stop the stack with:
 ```
 ./dev_scripts/compose_dev stop
 ```
+
+### Authenticate the Stripe CLI
+View the logs for the stripe container:
+```
+./dev_scripts/compose_dev logs -f --since 5m stripe-cli
+```
+Go to the url in the logs and sign in.
+Select the sandbox or test mode that matches the [stripe secret key you set](#set-secrets-and-application-keys).
+Check the pairing code printed to the logs, and click Allow Access.
+
+Note that the Stripe CLI is currently only set to listen for checkout session completed events.
+If any additional events need to be forwarded, add them to the stripe-cli command in deployment/dev/docker-compose.yml.
 
 ## Running Linters and Tests
 
