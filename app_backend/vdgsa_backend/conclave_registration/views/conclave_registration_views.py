@@ -17,6 +17,7 @@ from django.db.models.base import Model
 from django.forms import widgets
 from django.forms.fields import BooleanField, IntegerField
 from django.forms.utils import ErrorDict
+from django.forms.widgets import ClearableFileInput
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -363,6 +364,10 @@ class YesNoMaybeRadioField(forms.ChoiceField):
         super().__init__(widget=widget, **kwargs)
 
 
+class ImageFieldWidgetWithPreview(ClearableFileInput):
+    template_name = 'registration/upload_image.html'
+
+
 class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = AdditionalRegistrationInfo
@@ -373,6 +378,8 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'age',
             'gender',
             'pronouns',
+            'user_image_file_name',
+            'user_image_opt_out',
             'include_in_whos_coming_to_conclave_list',
             'attended_conclave_before',
             'buddy_willingness',
@@ -388,6 +395,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
 
         widgets = {
             'other_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'user_image_file_name': ImageFieldWidgetWithPreview,
         }
 
         labels = {
@@ -400,9 +408,12 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'num_display_space_days': '',
             'photo_release_auth': '',
             'other_info': '',
+            'user_image_file_name': 'Picture to help organizers.',
+            'user_image_opt_out': 'I\'d rather not included a picture.',
         }
 
-    do_not_send_text_updates = BooleanField(required=False, label='I would like to opt-out of text reminders')
+    do_not_send_text_updates = BooleanField(
+        required=False, label='I would like to opt-out of text reminders')
     include_in_whos_coming_to_conclave_list = YesNoRadioField(label='')
     attended_conclave_before = YesNoRadioField(
         label='', no_label='No, this is my first Conclave!')
@@ -416,6 +427,23 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         label='',
     )
     wants_display_space = YesNoRadioField(label='')
+
+    def requirePicture(self) -> bool:
+        if self.registration_entry.program == Program.non_playing_attendee \
+                or self.registration_entry.program == Program.faculty_guest_other:
+            return False
+        return True
+
+    def clean(self) -> Dict[str, Any]:
+        cleaned_data = super().clean()
+        # If the user doesn't want to supply picture, the must check opt-out.
+
+        if self.requirePicture() \
+                and not cleaned_data.get('user_image_opt_out') \
+                and not cleaned_data.get('user_image_file_name'):
+            raise ValidationError({'user_image_opt_out': 'You must provide a photo or opt-out.'})
+
+        return cleaned_data
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
@@ -517,7 +545,6 @@ class WorkStudyApplicationView(_RegistrationStepViewBase):
             return self.registration_entry.work_study
 
         return None
-
 
 
 class SelfRatingInfoForm(_RegistrationStepFormBase, forms.ModelForm):
@@ -872,7 +899,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             return
 
         freebies_selected = all(choice.is_freebie for choice in choices)
-        if period ==Period.fourth:
+        if period == Period.fourth:
             # Allow < 3 choices for freebies and beginners
             if (len(choices) != 2 and not freebies_selected
                     and self.registration_entry.program != Program.beginners):
@@ -906,7 +933,6 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                     f'{format_period_long(period)}: You must select different classes for '
                     'your 1st, 2nd, and 3rd choices.'
                 )
-
 
     def _validate_extra_class_preferences(self) -> None:
         if not self.registration_entry.uses_flexible_class_selection:

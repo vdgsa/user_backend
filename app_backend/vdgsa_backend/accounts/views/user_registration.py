@@ -37,7 +37,6 @@ class UserRegistrationForm(PasswordResetForm):
 
 class UserRegistrationView(View):
 
-
     def get(self, request: HttpRequest) -> HttpResponse:
         return self._render_form(UserRegistrationForm())
 
@@ -46,8 +45,8 @@ class UserRegistrationView(View):
 
         if not form.is_valid():
             return self._render_form(form)
-        
-        else: 
+
+        else:
             email = form.cleaned_data['email']
             user, created = User.objects.update_or_create(
                 username=email,

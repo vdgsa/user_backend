@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from slugify import slugify
 from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
@@ -10,7 +11,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.functional import cached_property
-
+from django_resized import ResizedImageField
 from vdgsa_backend.accounts.models import User
 
 
@@ -50,6 +51,7 @@ class ConclaveRegistrationConfig(models.Model):
     code_of_conduct_markdown = models.TextField(blank=True)
     charge_card_date_markdown = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
+    user_image_file_name_text = models.TextField(blank=True)
 
     first_period_time_label = models.CharField(max_length=255, blank=True)
     second_period_time_label = models.CharField(max_length=255, blank=True)
@@ -355,6 +357,12 @@ class RegistrationEntry(models.Model):
 
 
 class AdditionalRegistrationInfo(models.Model):
+    def _user_image_file_folder(instance, filename) -> str:
+        # Use a slugified version of the fullname instead of the
+        # original filename to identify the picture file.
+        fullname = slugify(instance.registration_entry.user.get_full_name())
+        return f"user_image/{instance.registration_entry.conclave_config.year}/{fullname}.png"
+
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
@@ -397,6 +405,11 @@ class AdditionalRegistrationInfo(models.Model):
     photo_release_auth = models.TextField(choices=YesNo.choices)
 
     other_info = models.TextField(blank=True)
+
+    user_image_file_name = ResizedImageField(
+        size=[500, None], upload_to=_user_image_file_folder, blank=True, null=True,
+        force_format='PNG')
+    user_image_opt_out = models.BooleanField(blank=True, default=False)
 
     def clean(self) -> None:
         super().clean()

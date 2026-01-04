@@ -98,6 +98,8 @@ If you add/change/remove any files in `app_backend/static`, run the following to
 
 pip install django-recaptcha
 pip install python-dotenv
+pip install django-resized
+pip install python-slugify
 
 .env file contains key
 RECAPTCHA_PUBLIC_KEY = ''

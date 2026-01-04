@@ -39,6 +39,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'code_of_conduct_markdown',
             'charge_card_date_markdown',
             'photo_release_text',
+            'user_image_file_name_text',
 
             'first_period_time_label',
             'second_period_time_label',
@@ -107,8 +108,10 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'liability_release_text': 'Liability release text. Rendered as markdown',
             'covid_policy_markdown': 'Covid policy text. Rendered as markdown',
             'code_of_conduct_markdown': 'VdGSA code of Conduct acknowledgement text. '
-                'Rendered as markdown',
-            'charge_card_date_markdown': 'Information about when credit cards will begin to be charged. Rendered as markdown',
+            'Rendered as markdown',
+            'user_image_file_name_text': 'Text to explain adding photo to registration',
+            'charge_card_date_markdown': 'Information about when credit cards will begin'
+            'to be charged. Rendered as markdown',
             'housing_form_top_markdown': (
                 'Text to display at the top of the housing form. Rendered as markdown'),
             'housing_form_pre_arrival_markdown': (
@@ -142,6 +145,7 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'code_of_conduct_markdown': widgets.Textarea(attrs={'rows': 4, 'cols': None}),
             'charge_card_date_markdown': widgets.Textarea(attrs={'rows': 4, 'cols': None}),
 
+            'user_image_file_name_text': widgets.Textarea(attrs={'rows': 4, 'cols': None}),
             'housing_form_top_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'early_arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'arrival_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
@@ -248,6 +252,29 @@ class ListRegistrationEntriesView(LoginRequiredMixin, UserPassesTestMixin, ListV
             'tshirt_size_counts': dict(tshirt_size_counts),
             'program_counts': dict(program_counts),
         }
+
+    def test_func(self) -> bool | None:
+        return is_conclave_team(self.request.user)
+
+
+class RegistrationPhotosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    template_name = 'registration_config/list_registration_photos.html'
+
+    @cached_property
+    def conclave_config(self) -> ConclaveRegistrationConfig:
+        return get_object_or_404(ConclaveRegistrationConfig, pk=self.kwargs['conclave_config_pk'])
+
+    def get_queryset(self) -> QuerySet[RegistrationEntry]:
+        exclude_empty = Q(additional_info__user_image_file_name__isnull=True) | Q(
+            additional_info__user_image_file_name__exact='')
+
+        return self.conclave_config.registration_entries.exclude(exclude_empty)\
+            .order_by('user__last_name')
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['conclave_config'] = self.conclave_config
+        return context
 
     def test_func(self) -> bool | None:
         return is_conclave_team(self.request.user)

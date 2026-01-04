@@ -13,7 +13,7 @@
   </div>
 </div>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
   {% csrf_token %}
 
   <div class="row mt-3">
@@ -160,6 +160,28 @@
     </div>
   </div>
 
+  {% if form.requirePicture %}
+  <div class="row mt-3">
+    <div class="col-md-8" style="border: 1px solid slategray">
+      <div class="row mt-2">
+        <div class="col-auto">
+          {{registration_entry.conclave_config.user_image_file_name_text}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-md-6">
+          {{form.user_image_file_name}}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.user_image_opt_out %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  
   <div class="row mt-3">
     <div class="col-md-8" style="border: 1px solid slategray">
       <div class="row mt-2">
@@ -241,5 +263,23 @@
 <script>
   radio_button_hide('attended_conclave_before', '#buddy-willingness-wrapper');
   radio_button_hide('wants_display_space', '#num-display-space-days-wrapper');
+
+  var user_image_opt_out_toggle = function(){
+    if($('#id_user_image_opt_out')[0].checked){
+      $('#id_user_image_file_name').hide()
+      $('#user_image_file_name_current').hide()
+      $('#user_image_file_name-clear_id').val('on')
+    }else{
+      $('#id_user_image_file_name').show()
+      $('#user_image_file_name_current').show()
+      $('#user_image_file_name-clear_id').val('')
+    }
+  }
+  
+  $().ready(function() {
+    user_image_opt_out_toggle()
+    $('#id_user_image_opt_out').on('change',user_image_opt_out_toggle);
+  });
+
 </script>
 {% endblock %}
