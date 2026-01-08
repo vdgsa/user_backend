@@ -14,6 +14,7 @@ from .conclave_config_views import (
 )
 from .conclave_config_views import ListRegistrationEntriesView as ListRegistrationEntriesView
 from .conclave_config_views import RegistrationPhotosView as RegistrationPhotosView
+from .conclave_config_views import RegistrationPhotosDownloadZip as RegistrationPhotosDownloadZip
 
 from .conclave_registration_views import AdditionalInfoView as AdditionalInfoView
 from .conclave_registration_views import AdvancedProjectsView as AdvancedProjectsView

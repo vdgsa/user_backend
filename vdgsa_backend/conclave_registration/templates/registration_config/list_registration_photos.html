@@ -63,6 +63,14 @@
   </div>
 </div>
 
+<div class="container">
+  <div class="my-2">
+    <a href="{% url 'registration-photos-download' conclave_config_pk=conclave_config.pk %}">
+      Download All Photos as ZIP
+    </a>
+  </div>
+</div>
+<br>
 <div class="container" id="divContainer">
     {% for entry in object_list %}
     <div class="filterableDiv" onclick="window.location = '{% url 'conclave-basic-info' conclave_reg_pk=entry.pk %}'">

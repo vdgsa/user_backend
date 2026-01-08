@@ -360,7 +360,8 @@ class AdditionalRegistrationInfo(models.Model):
     def _user_image_file_folder(instance, filename) -> str:
         # Use a slugified version of the fullname instead of the
         # original filename to identify the picture file.
-        fullname = slugify(instance.registration_entry.user.get_full_name())
+        fullname = slugify(instance.registration_entry.user.last_name
+                           + '_' + instance.registration_entry.user.first_name)
         return f"user_image/{instance.registration_entry.conclave_config.year}/{fullname}.png"
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import csv
+from io import BytesIO
+from itertools import product
+import os
 import tempfile
+import zipfile
 from typing import Any, Counter
 
 from django import forms
@@ -17,6 +21,7 @@ from django.utils.functional import cached_property
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.views.generic.base import View
 
+from vdgsa_backend import settings
 from vdgsa_backend.conclave_registration.models import (
     Class, ConclaveRegistrationConfig, Housing, HousingRoomType, Period, RegistrationEntry,
     TShirts, WorkStudyApplication, YesNo, get_classes_by_period
@@ -278,6 +283,58 @@ class RegistrationPhotosView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
     def test_func(self) -> bool | None:
         return is_conclave_team(self.request.user)
+
+
+class RegistrationPhotosDownloadZip(LoginRequiredMixin, UserPassesTestMixin, View):
+
+    @cached_property
+    def conclave_config(self) -> ConclaveRegistrationConfig:
+        return get_object_or_404(ConclaveRegistrationConfig, pk=self.kwargs['conclave_config_pk'])
+
+    def get_queryset(self) -> QuerySet[RegistrationEntry]:
+        exclude_empty = Q(additional_info__user_image_file_name__isnull=True) | Q(
+            additional_info__user_image_file_name__exact='')
+
+        return self.conclave_config.registration_entries.exclude(exclude_empty)\
+            .order_by('user__last_name')
+
+    def test_func(self) -> bool | None:
+        return is_conclave_team(self.request.user)
+
+    def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        # 1. Fetch the objects you want to zip
+        # Example: get all products, or filter based on request parameters
+        registration_with_photo = self.get_queryset()
+
+        # 2. Create an in-memory buffer for the zip file
+        buffer = BytesIO()
+
+        # 3. Create the ZipFile object
+        with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for registration in registration_with_photo:
+                # Check if the image field has a file associated
+                if registration.additional_info.user_image_file_name:
+                    # Get the absolute path to the image file
+                    image_path = os.path.join(
+                        settings.MEDIA_ROOT,
+                        registration.additional_info.user_image_file_name.name)
+
+                    # Add the file to the zip archive with a custom name if desired
+                    # The arcname parameter specifies the name inside the zip file
+                    # zip_file.write(image_path, arcname=f"{user.first_name}_{user.last_name}.png")
+                    zip_file.write(
+                        image_path, arcname=registration.additional_info.user_image_file_name.name)
+        # 4. Prepare the HttpResponse
+        # Set the buffer's file-pointer to the beginning of the file
+        buffer.seek(0)
+
+        # Create the HTTP response object
+        response = HttpResponse(buffer.getvalue(), content_type='application/zip')
+
+        # Set the Content-Disposition header to prompt the user to download the file
+        response['Content-Disposition'] = 'attachment; filename="product_images.zip"'
+
+        return response
 
 
 class _PassThroughField(forms.Field):
