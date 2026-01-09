@@ -11,7 +11,7 @@ from typing import Any, Counter
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, F, Count
 from django.db.models.query import QuerySet
 from django.forms import widgets
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -24,7 +24,7 @@ from django.views.generic.base import View
 from vdgsa_backend import settings
 from vdgsa_backend.conclave_registration.models import (
     Class, ConclaveRegistrationConfig, Housing, HousingRoomType, Period, RegistrationEntry,
-    TShirts, WorkStudyApplication, YesNo, get_classes_by_period
+    TSHIRT_SIZES, TShirts, WorkStudyApplication, YesNo, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.views.permissions import is_conclave_team
 
@@ -216,46 +216,93 @@ class ListRegistrationEntriesView(LoginRequiredMixin, UserPassesTestMixin, ListV
     def get_queryset(self) -> QuerySet[RegistrationEntry]:
         return self.conclave_config.registration_entries.order_by('user__last_name')
 
+    def get_totals(self) -> QuerySet[RegistrationEntry]:
+        return self.conclave_config.registration_entries.order_by('user__last_name')
+
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['conclave_config'] = self.conclave_config
         context['stats'] = self.get_stats()
         return context
 
-    def get_stats(self) -> dict[str, object]:
-        num_single_rooms = Housing.objects.filter(
-            registration_entry__conclave_config=self.conclave_config,
-            room_type=HousingRoomType.single
-        ).count()
-        num_double_rooms = Housing.objects.filter(
-            registration_entry__conclave_config=self.conclave_config,
-            room_type=HousingRoomType.double
-        ).count()
-
+    def get_tshirt_size_stats(self) -> list[dict[str, Any]]:
+        """Returns t-shirt size statistics in table format"""
         tshirt_size_counts = Counter()
+        tshirt_size_counts_finalized = Counter()
+
         tshirt_objs = TShirts.objects.filter(
             registration_entry__conclave_config=self.conclave_config)
+
         for item in tshirt_objs:
             tshirt_size_counts.update([item.tshirt1, item.tshirt2])
-        tshirt_size_counts.pop('', None)
+            if item.registration_entry.is_finalized:
+                tshirt_size_counts_finalized.update([item.tshirt1, item.tshirt2])
 
-        program_counts = Counter()
-        for entry in self.conclave_config.registration_entries.all():
-            program_counts.update([entry.program])
+        # Remove empty strings
+        tshirt_size_counts.pop('', None)
+        tshirt_size_counts_finalized.pop('', None)
+
+        # Build table data with all available sizes
+        return [
+            {
+                'size': size,
+                'total': tshirt_size_counts.get(size, 0),
+                'finalized': tshirt_size_counts_finalized.get(size, 0)
+            }
+            for size in TSHIRT_SIZES
+        ]
+
+    def get_stats(self) -> dict[str, object]:
+
+        totals = RegistrationEntry.objects.filter(
+            conclave_config=self.conclave_config
+        ).values('program').annotate(
+            total_count=Count('id'),
+            finalized_count=Count('id', filter=Q(payment_info__stripe_payment_method_id__gt=''))
+        ).order_by('program')
+
+        num_rooms = Housing.objects.filter(
+            registration_entry__conclave_config=self.conclave_config
+        )
+
         return {
-            'num_registrations': self.conclave_config.registration_entries.count(),
-            'num_finalized_registrations': len([
-                entry for entry in self.conclave_config.registration_entries.all()
-                if entry.is_finalized
-            ]),
-            'num_work_study_applications': WorkStudyApplication.objects.filter(
-                registration_entry__conclave_config=self.conclave_config,
-                wants_work_study=YesNo.yes
-            ).count(),
-            'num_single_rooms': num_single_rooms,
-            'num_double_rooms': num_double_rooms,
-            'tshirt_size_counts': dict(tshirt_size_counts),
-            'program_counts': dict(program_counts),
+            "totals": totals,
+            "total": {
+                "num_registrations": self.conclave_config.registration_entries.count(),
+                "num_work_study_applications": WorkStudyApplication.objects.filter(
+                    registration_entry__conclave_config=self.conclave_config,
+                    wants_work_study=YesNo.yes,
+                ).count(),
+                "num_single_rooms": len(list(filter(lambda housing:
+                                                    housing.room_type == HousingRoomType.single,
+                                                    num_rooms))),
+                "num_double_rooms": len(list(filter(lambda housing:
+                                                    housing.room_type == HousingRoomType.double,
+                                                    num_rooms))),
+            },
+            "tshirt_sizes": self.get_tshirt_size_stats(),
+            "finalized": {
+                "num_registrations": len(
+                    [
+                        entry
+                        for entry in self.conclave_config.registration_entries.all()
+                        if entry.is_finalized
+                    ]
+                ),
+                "num_work_study_applications": WorkStudyApplication.objects.filter(
+                    registration_entry__conclave_config=self.conclave_config,
+                    wants_work_study=YesNo.yes,
+                    registration_entry__payment_info__stripe_payment_method_id__gt=''
+                ).count(),
+                "num_single_rooms": len(list(filter(lambda housing:
+                                                    housing.room_type == HousingRoomType.single
+                                                    and housing.registration_entry.is_finalized,
+                                                    num_rooms))),
+                "num_double_rooms": len(list(filter(lambda housing:
+                                                    housing.room_type == HousingRoomType.double
+                                                    and housing.registration_entry.is_finalized,
+                                                    num_rooms))),
+            },
         }
 
     def test_func(self) -> bool | None:
@@ -294,7 +341,6 @@ class RegistrationPhotosDownloadZip(LoginRequiredMixin, UserPassesTestMixin, Vie
     def get_queryset(self) -> QuerySet[RegistrationEntry]:
         exclude_empty = Q(additional_info__user_image_file_name__isnull=True) | Q(
             additional_info__user_image_file_name__exact='')
-
         return self.conclave_config.registration_entries.exclude(exclude_empty)\
             .order_by('user__last_name')
 
@@ -321,9 +367,10 @@ class RegistrationPhotosDownloadZip(LoginRequiredMixin, UserPassesTestMixin, Vie
 
                     # Add the file to the zip archive with a custom name if desired
                     # The arcname parameter specifies the name inside the zip file
-                    # zip_file.write(image_path, arcname=f"{user.first_name}_{user.last_name}.png")
-                    zip_file.write(
-                        image_path, arcname=registration.additional_info.user_image_file_name.name)
+
+                    filename = registration.additional_info.user_image_file_name.name.rsplit(
+                        '/', 1)[-1]
+                    zip_file.write(image_path, arcname=filename)
         # 4. Prepare the HttpResponse
         # Set the buffer's file-pointer to the beginning of the file
         buffer.seek(0)
@@ -332,7 +379,8 @@ class RegistrationPhotosDownloadZip(LoginRequiredMixin, UserPassesTestMixin, Vie
         response = HttpResponse(buffer.getvalue(), content_type='application/zip')
 
         # Set the Content-Disposition header to prompt the user to download the file
-        response['Content-Disposition'] = 'attachment; filename="product_images.zip"'
+        zipfile_name = f"conclave_reg_photos_{self.conclave_config.year}.zip"
+        response['Content-Disposition'] = f'attachment; filename="{zipfile_name}"'
 
         return response
 

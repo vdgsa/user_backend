@@ -356,9 +356,11 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
 
     do_not_send_text_updates = BooleanField(
         required=False, label='I would like to opt-out of text reminders')
-    include_in_whos_coming_to_conclave_list = YesNoRadioField(label='')
+    include_in_whos_coming_to_conclave_list = YesNoRadioField(label='',
+        required=False)
     attended_conclave_before = YesNoRadioField(
-        label='', no_label='No, this is my first Conclave!')
+        label='', no_label='No, this is my first Conclave!',
+        required=False)
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
     can_drive_loaners = YesNoMaybeRadioField(label='', required=False)
     liability_release = BooleanField(required=True, label='I agree')
@@ -378,17 +380,26 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
 
     def clean(self) -> Dict[str, Any]:
         cleaned_data = super().clean()
-        # If the user doesn't want to supply picture, the must check opt-out.
 
         if self.requirePicture() \
                 and not cleaned_data.get('user_image_opt_out') \
                 and not cleaned_data.get('user_image_file_name'):
-            raise ValidationError({'user_image_opt_out': 'You must provide a photo or opt-out.'})
+            raise ValidationError({'user_image_file_name': 'You must provide a photo or opt-out.'})
 
         return cleaned_data
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
+
+        if self.registration_entry.program != Program.faculty_guest_other:
+            self.fields['attended_conclave_before'].required = True
+            self.fields['include_in_whos_coming_to_conclave_list'].required = True
+
+        if self.requirePicture()\
+                and not self.data.get('user_image_opt_out') \
+                and not self.data.get('user_image_file_name'):
+            self.fields['user_image_file_name'].required = True
+
         # self.fields['liability_release'].required = True
 
 

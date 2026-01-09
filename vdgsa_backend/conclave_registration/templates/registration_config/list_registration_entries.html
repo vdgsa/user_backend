@@ -6,72 +6,186 @@
 
 <h3>Conclave {{conclave_config.year}} Registration Entries</h3>
 
-<div>
-  <a href="{% url 'download-registration-entries' conclave_config_pk=conclave_config.pk %}" download>
-    Download Registration Entries CSV
-  </a>
+<div class="container py-3">
+  <div class="d-flex justify-content-start mb-3">
+    <div class="p-2">
+    
+      <div>
+        <a href="{% url 'download-registration-entries' conclave_config_pk=conclave_config.pk %}" download>
+          Download Registration Entries CSV
+        </a>
+      </div>
+
+      <div>
+        <a href="{% url 'download-class-first-choices' conclave_config_pk=conclave_config.pk %}" download>
+          Download Class First Choices CSV
+        </a>
+      </div>
+
+      <div>
+        <a href="{% url 'registration-photos' conclave_config_pk=conclave_config.pk %}">
+          Photo directory
+        </a>
+      </div>
+
+    </div>
+  </div>
+  <div class="d-flex justify-content-center mb-3">
+    <div class="m-2">
+      <div class="card rounded-3 shadow-sm">
+        <div class="card-header py-3">
+          <h4 class="my-0 fw-normal">Registrations</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Total</th>
+                <th scope="col">Finalized</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-center">{{stats.total.num_registrations}}</td>
+                <td class="text-center">{{stats.finalized.num_registrations}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="m-2">
+      <div class="card rounded-3 shadow-sm">
+        <div class="card-header py-3">
+          <h4 class="my-0 fw-normal">Program Counts</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">Total</th>
+                <th scope="col">Finalized</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tot in stats.totals %}
+              <tr>
+                <td class="text-start text-nowrap">{{tot.program}} </td>
+                <td class="text-center">{{tot.total_count}}</td>
+                <td class="text-center">{{tot.finalized_count}}</td>
+              </tr>
+              {% endfor %}
+              <tr>
+                <td class="text-start">Work-Study Applications</td>
+                <td class="text-center">{{stats.total.num_work_study_applications}}</td>
+                <td class="text-center">{{stats.finalized.num_work_study_applications}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-2">
+      <div class="card rounded-3 shadow-sm">
+        <div class="card-header py-3">
+          <h4 class="my-0 fw-normal">Rooms</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">Total</th>
+                <th scope="col">Finalized</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-start">Single Rooms</td>
+                <td class="text-center">{{stats.total.num_single_rooms}}</td>
+                <td class="text-center">{{stats.finalized.num_single_rooms}}</td>
+              </tr>
+              <tr>
+                <td class="text-start">Double Rooms</td>
+                <td class="text-center">{{stats.total.num_double_rooms}}</td>
+                <td class="text-center">{{stats.finalized.num_double_rooms}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="m-2">
+      <div class="card rounded-3 shadow-sm">
+        <div class="card-header py-3">
+          <h4 class="my-0 fw-normal">T-Shirt Orders</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">All</th>
+                <th scope="col">Finalized</th>
+              </tr>
+            </thead>
+            {% for item in stats.tshirt_sizes %}
+            {% if item.total > 0 or item.finalized > 0 %}
+              <tr>
+                <td class="text-start text-nowrap">{{ item.size }}</td>
+                <td class="text-center">{{ item.total }}</td>
+                <td class="text-center">{{ item.finalized }}</td>
+              </tr>
+            {% endif %}
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div>
-  <a href="{% url 'download-class-first-choices' conclave_config_pk=conclave_config.pk %}" download>
-    Download Class First Choices CSV
-  </a>
+  <div class="d-flex justify-content-center mb-3">
+    <div class="m-2">
+      <div class="card rounded-3 shadow-sm">
+        <div class="card-header py-3">
+          <h4 class="my-0 fw-normal">Registration Entries</h4>
+        </div>
+        <div class="card-body">
+
+          <table class="table">
+            <thead>
+              <tr>
+                <td>User</td>
+                <td>Program</td>
+                <td>Finalized</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in object_list %}
+              <tr class="entry-row" onclick="window.location = '{% url 'conclave-basic-info' conclave_reg_pk=entry.pk %}'">
+                <td>{{entry.user | show_name_and_email}}</td>
+                <td>{{entry.program}}</td>
+                <td>{{entry.is_finalized}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<div>
-  <a href="{% url 'registration-photos' conclave_config_pk=conclave_config.pk %}" >
-    Photo directory
-  </a>
-</div>
-
-<div class="mt-3"><b>Stats</b></div>
-<div>
-  # of Registrations: {{stats.num_registrations}} total,
-  {{stats.num_finalized_registrations}} finalized
-</div>
-<div>Program Counts:</div>
-<ul>
-  {% for program, count in stats.program_counts.items %}
-  <li>{{program}}: {{count}}</li>
-  {% endfor %}
-</ul>
-<div># of Work-Study Applications: {{stats.num_work_study_applications}}</div>
-<div># of Single Rooms: {{stats.num_single_rooms}}</div>
-<div># of Double Rooms: {{stats.num_double_rooms}}</div>
-<div>T-Shirt Orders:</div>
-<ul>
-  {% for size, count in stats.tshirt_size_counts.items %}
-  <li>{{size}}: {{count}}</li>
-  {% endfor %}
-</ul>
-
-<table class="table">
-  <thead>
-    <tr>
-      <td>User</td>
-      <td>Program</td>
-      <td>Finalized</td>
-    </tr>
-  </thead>
-  <tbody>
-    {% for entry in object_list %}
-    <tr class="entry-row"
-        onclick="window.location = '{% url 'conclave-basic-info' conclave_reg_pk=entry.pk %}'">
-      <td>{{entry.user | show_name_and_email}}</td>
-      <td>{{entry.program}}</td>
-      <td>{{entry.is_finalized}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
 {% endblock %}
 
 {% block page_style %}
 <style>
-.entry-row:hover {
-  cursor: pointer;
-  background-color: rgb(240, 240, 240);
-}
+  .entry-row:hover {
+    cursor: pointer;
+    background-color: rgb(240, 240, 240);
+  }
 </style>
 {% endblock %}
