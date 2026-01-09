@@ -240,7 +240,11 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if (donation_charge := get_donation_charge(registration_entry)) is not None:
         charges.append(donation_charge)
 
-    if registration_entry.is_late and registration_entry.program != Program.faculty_guest_other:
+    print('registration_entry.is_late',registration_entry.is_late)
+    if registration_entry.is_late\
+        and registration_entry.program != Program.faculty_guest_other\
+        and not (registration_entry.program == Program.beginners\
+                and registration_entry.housing.room_type == HousingRoomType.off_campus):
         charges.append({
             'display_name': 'Late Registration Fee',
             'csv_label': 'Late Registration Fee',
@@ -356,7 +360,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
             assert False
 
 
-def _get_workshop_fee(conclave_config: ConclaveConfig, registration_entry: RegistrationEntry):
+def _get_workshop_fee(conclave_config: ConclaveRegistrationConfig, registration_entry: RegistrationEntry):
     if not hasattr(registration_entry, 'housing'):
         return conclave_config.workshop_fee
 
