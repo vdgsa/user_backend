@@ -4,8 +4,6 @@
 {% load vdgsa_tags %}
 {% load conclave_tags %}
 
-
-
 <script>
   function setupDivSearchFilter(inputSelector, containerSelector, divSelector) {
     const searchInput = document.querySelector(inputSelector);
@@ -57,42 +55,48 @@
 <div class="container py-3">
   <div class="d-flex justify-content-start mb-3">
     <div>
-    <div>
-    <a href="{% url 'registration-photos-download' conclave_config_pk=conclave_config.pk %}">
-      Download All Photos as ZIP
-    </a>
-  </div>
-  <div class="my-2">
-    <a href="{% url 'list-registration-entries' conclave_config_pk=conclave_config.pk %}">
-      Back to this year's registration entries
-    </a>
-  </div>
-  </div>
-  </div>
-  </div>
-
-  <div class="d-flex justify-content-center mb-3">
-    <div>
-      <input class="form-input" type="text" id="search-photo-input" placeholder="Search" />
-      <button class="btn btn-primary btn-sm" onclick="clearSearchFilter()">Clear</button>
+      <div>
+        <a href="{% url 'registration-photos-download' conclave_config_pk=conclave_config.pk %}">
+          Download All Photos as ZIP
+        </a>
+      </div>
+      <div class="my-2">
+        <a href="{% url 'list-registration-entries' conclave_config_pk=conclave_config.pk %}">
+          Back to this year's registration entries
+        </a>
+      </div>
     </div>
   </div>
-  <div class="d-flex justify-content-center mb-3" id="divContainer">
+</div>
 
-    {% for entry in object_list %}
-    <div class="filterableDiv" onclick="window.location = '{% url 'conclave-basic-info' conclave_reg_pk=entry.pk %}'">
-      <img src="/uploads/{{ entry.additional_info.user_image_file_name }}" alt="{{entry.user | show_name}}"
-        style="max-height: 200px;margin-left: 10px;" />
-      <p>{{entry.user | show_name_and_email}} ({{entry.program}})</p>
-    </div>
-    {% endfor %}
+<div class="d-flex justify-content-center mb-3">
+  <div>
+    <input class="form-input" type="text" id="search-photo-input" placeholder="Search" />
+    <button class="btn btn-primary btn-sm" onclick="clearSearchFilter()">Clear</button>
   </div>
+</div>
 
+<div class="flex justify-content-center mb-3" id="divContainer">
+
+  {% for entry in object_list %}
+  <div class="filterableDiv" onclick="window.location = '{% url 'conclave-basic-info' conclave_reg_pk=entry.pk %}'">
+    <img src="/uploads/{{ entry.additional_info.user_image_file_name }}" alt="{{entry.user | show_name}}"
+      style="max-height: 200px;margin-left: 10px;" />
+    <p>{{entry.user | show_name_and_email}} ({{entry.program}})</p>
   </div>
+  {% endfor %}
+</div>
+
+
 {% endblock %}
 
 {% block page_style %}
 <style>
+  #divContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 
   .filterableDiv {
     /* Optional: allows items to grow and fill available space */
