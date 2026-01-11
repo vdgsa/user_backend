@@ -25,33 +25,18 @@
     </div>
   </div>
 
-  <a href="#change-email-form"
-    id="show-change-email-form"
-    data-bs-toggle="collapse"
-    aria-expanded="false"
-    aria-controls="change-email-form"
-  >Change Email</a>
+  <a href="#change-email-form" id="show-change-email-form" data-bs-toggle="collapse" aria-expanded="false"
+    aria-controls="change-email-form">Change Email</a>
 
-  <form
-    id="change-email-form"
-    class="collapse"
-    method="post"
-    action="{% url 'change-email-request' pk=object.pk %}"
-  >
+  <form id="change-email-form" class="collapse" method="post" action="{% url 'change-email-request' pk=object.pk %}">
     {% include 'utils/form_body.tmpl' with form=change_email_form %}
 
     <div id="email-in-use-msg"></div>
 
     <div class="mt-2 mb-3">
       <button type="submit" class="btn btn-primary">Submit</button>
-      <button
-        id="change-email-cancel-button"
-        class="btn cancel-button"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#change-email-form"
-        aria-controls="change-email-form"
-      >
+      <button id="change-email-cancel-button" class="btn cancel-button" type="button" data-bs-toggle="collapse"
+        data-bs-target="#change-email-form" aria-controls="change-email-form">
         Cancel
       </button>
     </div>
@@ -81,112 +66,119 @@
 <script src="https://js.stripe.com/v3/"></script>
 
 <script>
-$().ready(function() {
-  setup_ajax_submit('change-email-form', {
-    before_submit: function() {
-      $('#email-in-use-msg').text('');
-    },
-    success: function(form, response_data) {
-      if (response_data.status === 'form_validation_error') {
-        update_form_body(form, response_data);
-        return;
-      }
-
-      if (response_data.status === 'other_error' && response_data.extra_data.username_in_use) {
-        $('#email-in-use-msg').text(
-          `The username "${response_data.extra_data.requested_username}" is in use by another account.`
-        );
-      }
-
-      if (response_data.extra_data.change_pending_msg) {
-        $('#change-email-msg').html(response_data.extra_data.change_pending_msg);
-      }
-
-      if (response_data.extra_data.new_username) {
-        $('#current-username').val(response_data.extra_data.new_username);
-      }
-
-      $('#id_new_email').val('');
-    }
-  });
-
-  setup_ajax_submit('user-profile-form', {
-    success: function(form, response_data) {
-      if (response_data.status === 'form_validation_error') {
-        update_form_body(form, response_data);
-      }
-      else if (response_data.status === 'success') {
-        $('#user-profile-form .last-saved').text(
-          `Saved at ${(new Date()).toLocaleTimeString()}`
-        );
-      }
-    }
-  });
-
-  function on_purchase_subscription_form_submit(event) {
-    event.preventDefault();
-    disable_form_buttons(purchase_subscription_form);
-
-    $.ajax(purchase_subscription_form.attr('action'), {
-      type: 'POST',
-      data: purchase_subscription_form.serialize(),
-      success: function(response_data) {
-        if (response_data.extra_data.stripe_session_id) {
-          $('#purchase-subscription-form button[type=submit]').text('Redirecting');
-          let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
-          stripe.redirectToCheckout({
-            sessionId: response_data.extra_data.stripe_session_id
-          });
-        }
-        else {
-          console.log(response_data);
-          $('#membership-subscription-wrapper').html(response_data.rendered_form);
-          $('#purchase-subscription-form').on('submit', on_purchase_subscription_form_submit);
-          reenable_form_buttons(purchase_subscription_form);
-        }
+  $().ready(function () {
+    setup_ajax_submit('change-email-form', {
+      before_submit: function () {
+        $('#email-in-use-msg').text('');
       },
-      error: function(response) {
-        console.log(response);
-        // TODO: detect network/other errors and adjust message
-        alert('An unexpected error occured');
-        reenable_form_buttons(purchase_subscription_form);
+      success: function (form, response_data) {
+        if (response_data.status === 'form_validation_error') {
+          update_form_body(form, response_data);
+          return;
+        }
+
+        if (response_data.status === 'other_error' && response_data.extra_data.username_in_use) {
+          $('#email-in-use-msg').text(
+            `The username "${response_data.extra_data.requested_username}" is in use by another account.`
+          );
+        }
+
+        if (response_data.extra_data.change_pending_msg) {
+          $('#change-email-msg').html(response_data.extra_data.change_pending_msg);
+        }
+
+        if (response_data.extra_data.new_username) {
+          $('#current-username').val(response_data.extra_data.new_username);
+        }
+
+        $('#id_new_email').val('');
       }
     });
-  }
 
-  let purchase_subscription_form = $('#purchase-subscription-form');
-  purchase_subscription_form.on('submit', on_purchase_subscription_form_submit);
-});
+    setup_ajax_submit('user-profile-form', {
+      success: function (form, response_data) {
+        if (response_data.status === 'form_validation_error') {
+          update_form_body(form, response_data);
+        }
+        else if (response_data.status === 'success') {
+          $('#user-profile-form .last-saved').text(
+            `Saved at ${(new Date()).toLocaleTimeString()}`
+          );
+        }
+      }
+    });
 
+    function on_purchase_subscription_form_submit(event) {
+      event.preventDefault();
+      disable_form_buttons(purchase_subscription_form);
 
-  const countrySelect = document.getElementById('id_address_country');
-  const subdivisionSelect = document.getElementById('id_address_state');
+      $.ajax(purchase_subscription_form.attr('action'), {
+        type: 'POST',
+        data: purchase_subscription_form.serialize(),
+        success: function (response_data) {
+          if (response_data.extra_data.stripe_session_id) {
+            $('#purchase-subscription-form button[type=submit]').text('Redirecting');
+            let stripe = Stripe('pk_test_exu8BRND2VeS4HJ8V2xEZDeK');
+            stripe.redirectToCheckout({
+              sessionId: response_data.extra_data.stripe_session_id
+            });
+          }
+          else {
+            console.log(response_data);
+            $('#membership-subscription-wrapper').html(response_data.rendered_form);
+            $('#purchase-subscription-form').on('submit', on_purchase_subscription_form_submit);
+            reenable_form_buttons(purchase_subscription_form);
+          }
+        },
+        error: function (response) {
+          console.log(response);
+          // TODO: detect network/other errors and adjust message
+          alert('An unexpected error occured');
+          reenable_form_buttons(purchase_subscription_form);
+        }
+      });
+    }
 
-  countrySelect.addEventListener('change', (event) => {
+    let purchase_subscription_form = $('#purchase-subscription-form');
+    purchase_subscription_form.on('submit', on_purchase_subscription_form_submit);
+
+    const countrySelect = document.getElementById('id_address_country');
+    const subdivisionSelect = document.getElementById('id_address_state');
+    const subdivisionSelectDiv = document.getElementById('address_state_div');
+
+    countrySelect.addEventListener('change', (event) => {
       const countryCode = event.target.value;
 
-      // Clear previous options
-      subdivisionSelect.innerHTML = '<option value="">Select a State/Province</option>';
-      subdivisionSelect.disabled = true;
-
       if (countryCode) {
-          fetch(`/accounts/subdivisions/?country=${countryCode}`)
-              .then(response => response.json())
-              .then(data => {
-                  if (data.length > 0) {
-                      data.forEach(sub => {
-                          const option = document.createElement('option');
-                          option.value = sub.code;
-                          option.textContent = sub.name;
-                          subdivisionSelect.appendChild(option);
-                      });
-                      subdivisionSelect.disabled = false;
-                  }
-              })
-              .catch(error => console.error('Error:', error));
+        fetch(`/accounts/subdivisions/?country=${countryCode}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.length > 0) {
+              subdivisionSelect.innerHTML = '<option value="">Select a State/Province</option>';
+              data.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub.code;
+                option.textContent = sub.name;
+                subdivisionSelect.appendChild(option);
+              });
+              subdivisionSelect.disabled = false;
+              subdivisionSelect.required = true;
+              subdivisionSelectDiv.classList.remove('d-none');
+            } else {
+              subdivisionSelect.innerHTML = '<option value="">N/A</option>';
+              subdivisionSelect.disabled = true;
+              subdivisionSelect.required = false;
+              subdivisionSelectDiv.classList.add('d-none');
+            }
+          })
+          .catch(error => console.error('Error:', error));
       }
-  });
+    });
 
+    countrySelect.dispatchEvent( new Event('change'));
+
+
+  });
 </script>
 
 {% endblock %}

@@ -33,6 +33,27 @@ class TeachingMemberType(models.TextChoices):
 class DirectorySearchForm(forms.Form):
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
+        # Populate state/country choices at runtime so they reflect DB values
+        state_qs = (
+            User.objects#.exclude(address_state__isnull=True)
+            .exclude(address_state="")
+            .annotate(state_upper=Upper("address_state"))
+            .values_list("state_upper", flat=True)
+            .distinct()
+            .order_by("state_upper")
+        )
+        country_qs = (
+            User.objects#.exclude(address_country__isnull=True)
+            .exclude(address_country="")
+            .annotate(country_upper=Upper("address_country"))
+            .values_list("country_upper", flat=True)
+            .distinct()
+            .order_by("country_upper")
+        )
+        state_choices = [("", "")] + [(val, val) for val in list(state_qs)]
+        country_choices = [("", "")] + [(val, val) for val in list(country_qs)]
+        self.fields["address_state"].widget.choices = state_choices
+        self.fields["address_country"].widget.choices = country_choices
 
     searchtext = forms.CharField(
         widget=forms.TextInput(attrs={'placeholder': 'Search Text for any field'}), label=False, required=False)
@@ -46,29 +67,12 @@ class DirectorySearchForm(forms.Form):
     address_state = forms.CharField(
         label="State/Province",
         required=False,
-        widget=forms.Select(
-            choices=[
-                (genre, genre)
-                for genre in list(
-                    User.objects.distinct()
-                    .order_by(Upper("address_state"))
-                    .values_list(Upper("address_state"), flat=True)
-                )
-            ]
-        ),
+        widget=forms.Select(choices=[]),
     )
     address_country = forms.CharField(
-        label="Country", required=False,
-        widget=forms.Select(
-            choices=[
-                (genre, genre)
-                for genre in list(
-                    User.objects.distinct()
-                    .order_by(Upper("address_country"))
-                    .values_list(Upper("address_country"), flat=True)
-                )
-            ]
-        )
+        label="Country",
+        required=False,
+        widget=forms.Select(choices=[]),
     )
 
     commercial_member_type = forms.MultipleChoiceField(

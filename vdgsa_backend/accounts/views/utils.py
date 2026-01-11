@@ -43,8 +43,22 @@ def get_ajax_form_response(
     )
 
 
-
 class LocationAddress():
+
+    COUNTRY_SUBDIVISION_WHITELIST = ['US', 'CA', 'MX', 'JP',
+                                     'BR', 'AU', 'NZ', 'CN', 'IT', 'MY', 'KR', 'VE']
+    # US: US (Alpha-2), USA (Alpha-3)
+    # Canada: CA, CAN
+    # Mexico: MX, MEX
+    # Japan: JP, JPN
+    # Brazil: BR, BRA
+    # Australia: AU, AUS
+    # New Zealand: NZ, NZL
+    # China: CN, CHN
+    # Italy: IT, ITA
+    # Malaysia: MY, MYS
+    # South Korea: KR, KOR
+    # Venezuela: VE, VEN
 
     def getCountries() -> List[Dict[str, object]]:
         # Get the iterable collection of country objects and convert it to a list
@@ -53,21 +67,20 @@ class LocationAddress():
         # Sort the list of country objects by their 'name' attribute
         sorted_countries = sorted(countries_list, key=lambda country: country.name)
         return sorted_countries
-    
-        
 
-    
     def getSubdivisions(country_code: str) -> List[Dict[str, object]]:
-        # Get all subdivisions for the United States ('US')
+        # Get all subdivisions for the specified country code
+        if country_code not in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
+            return
+
         subdivisions = pycountry.subdivisions.get(country_code=country_code)
 
-        if(not subdivisions):
+        if (not subdivisions):
             return []
-        
+
         # Filter the list to include only those with a type of 'State'
-        subdivisions = [sub for sub in subdivisions ]
+        subdivisions = [sub for sub in subdivisions]
 
         # Sort the list of state objects by name
         sorted_subdivisions = sorted(subdivisions, key=lambda state: state.name)
         return sorted_subdivisions
-    

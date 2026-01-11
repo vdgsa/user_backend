@@ -112,7 +112,7 @@ def get_subdivisions(request):
     AJAX endpoint to return subdivisions for a given country.
     """
     country_code = request.GET.get('country')
-    if country_code:
+    if country_code in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
         try:
             subdivisions = sorted(
                 [(s.code, s.name) for s in LocationAddress.getSubdivisions(country_code=country_code)],
