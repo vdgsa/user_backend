@@ -34,24 +34,19 @@ class DirectorySearchForm(forms.Form):
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         # Populate state/country choices at runtime so they reflect DB values
-        state_qs = (
-            User.objects#.exclude(address_state__isnull=True)
-            .exclude(address_state="")
-            .annotate(state_upper=Upper("address_state"))
-            .values_list("state_upper", flat=True)
-            .distinct()
-            .order_by("state_upper")
-        )
-        country_qs = (
-            User.objects#.exclude(address_country__isnull=True)
-            .exclude(address_country="")
-            .annotate(country_upper=Upper("address_country"))
-            .values_list("country_upper", flat=True)
-            .distinct()
-            .order_by("country_upper")
-        )
-        state_choices = [("", "")] + [(val, val) for val in list(state_qs)]
-        country_choices = [("", "")] + [(val, val) for val in list(country_qs)]
+
+        country_qs = LocationAddress.getCountries(filter_to_users=True)
+
+        if self.is_bound:
+            if self.data['address_country'] in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
+                state_qs = LocationAddress.getSubdivisions(self.data['address_country'],filter_to_users=True)
+            else:
+                state_qs =  []
+        else:
+            state_qs = LocationAddress.getSubdivisions('US', filter_to_users=True)
+
+        state_choices = [("", "")] + [(state.code.split('-')[1], state.name) for state in list(state_qs)]
+        country_choices = [("", "")] + [(country.alpha_2, country.name) for country in list(country_qs)]
         self.fields["address_state"].widget.choices = state_choices
         self.fields["address_country"].widget.choices = country_choices
 
@@ -89,10 +84,6 @@ class DirectorySearchForm(forms.Form):
     )
 
     page = forms.IntegerField(widget=forms.HiddenInput, initial=1, label=False)
-
-    def clean(self) -> Dict[str, Any]:
-        result = super().clean()
-        return result
 
 
 class DirectoryMemberDetailView(LoginRequiredMixin, UserPassesTestMixin, View):

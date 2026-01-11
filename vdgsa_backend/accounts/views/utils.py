@@ -60,15 +60,51 @@ class LocationAddress():
     # South Korea: KR, KOR
     # Venezuela: VE, VEN
 
-    def getCountries() -> List[Dict[str, object]]:
+    def getCountries(filter_to_users: bool = False) -> List[Dict[str, object]]:
         # Get the iterable collection of country objects and convert it to a list
         countries_list = list(pycountry.countries)
 
-        # Sort the list of country objects by their 'name' attribute
+        # If requested, filter to only countries that appear in User.address_country
+        if filter_to_users:
+            try:
+                # import here to avoid circular imports at module import time
+                from vdgsa_backend.accounts.models import User
+
+                codes_qs = (
+                    User.objects.exclude(address_country__isnull=True)
+                    .exclude(address_country="")
+                    .values_list("address_country", flat=True)
+                    .distinct()
+                )
+                codes = [c.strip() for c in list(codes_qs) if c and c.strip()]
+            except Exception:
+                codes = []
+
+            matched = []
+            for code in codes:
+                country = None
+                # Try alpha_2 match first
+                country = pycountry.countries.get(alpha_2=code.upper())
+                if not country:
+                    # Try alpha_3
+                    country = pycountry.countries.get(alpha_3=code.upper())
+                if not country:
+                    # Try matching by full name (case-insensitive)
+                    name_matches = [c for c in countries_list if getattr(c, "name", "").lower() == code.lower()]
+                    if name_matches:
+                        country = name_matches[0]
+
+                if country and country not in matched:
+                    matched.append(country)
+
+            sorted_countries = sorted(matched, key=lambda country: country.name)
+            return sorted_countries
+
+        # Default: return all countries sorted by name
         sorted_countries = sorted(countries_list, key=lambda country: country.name)
         return sorted_countries
 
-    def getSubdivisions(country_code: str) -> List[Dict[str, object]]:
+    def getSubdivisions(country_code: str, filter_to_users: bool = False) -> List[Dict[str, object]]:
         # Get all subdivisions for the specified country code
         if country_code not in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
             return
@@ -81,6 +117,42 @@ class LocationAddress():
         # Filter the list to include only those with a type of 'State'
         subdivisions = [sub for sub in subdivisions]
 
-        # Sort the list of state objects by name
+        # If requested, filter to only subdivisions that appear in User.address_state
+        if filter_to_users:
+            try:
+                # import here to avoid circular imports at module import time
+                from vdgsa_backend.accounts.models import User
+
+                states_qs = (
+                    User.objects.exclude(address_state__isnull=True)
+                    .exclude(address_state="")
+                    .values_list("address_state", flat=True)
+                    .distinct()
+                )
+                states = [s.strip() for s in list(states_qs) if s and s.strip()]
+            except Exception:
+                states = []
+
+            matched = []
+            for state_code in states:
+                subdivision = None
+                # Try matching by code (upper case)
+                subdivision = pycountry.subdivisions.get(code=f"{country_code}-{state_code.upper()}")
+                if not subdivision:
+                    # Try just the state code
+                    subdivision = pycountry.subdivisions.get(code=state_code.upper())
+                if not subdivision:
+                    # Try matching by name (case-insensitive)
+                    name_matches = [s for s in subdivisions if getattr(s, "name", "").lower() == state_code.lower()]
+                    if name_matches:
+                        subdivision = name_matches[0]
+
+                if subdivision and subdivision not in matched:
+                    matched.append(subdivision)
+
+            sorted_subdivisions = sorted(matched, key=lambda state: state.name)
+            return sorted_subdivisions
+
+        # Default: return all subdivisions sorted by name
         sorted_subdivisions = sorted(subdivisions, key=lambda state: state.name)
         return sorted_subdivisions

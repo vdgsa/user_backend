@@ -90,8 +90,6 @@ class UserProfileForm(ModelForm):
         self.fields['address_postal_code'].required = True
         self.fields['address_country'].required = True
         
-        #
-        print('UserProfileForm init', self.instance.address_country, self.authorized_user.address_country)
         if self.instance.address_country in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
             self.fields['address_state'].widget.choices = [('', 'Select State/Province')]+[(c.code.split('-')[1], c.name)
             for c in LocationAddress.getSubdivisions(self.instance.address_country)]
