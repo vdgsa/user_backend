@@ -4,8 +4,8 @@
 {% load vdgsa_tags %}
 {% load markdownify %}
 
-<h3 data-testid="registration_section_header">Additional Info</h3>
 
+<h3 data-testid="registration_section_header">Additional Info</h3>
 
 <div class="row mt-3">
   <div class="col-md-6">
@@ -70,6 +70,15 @@
       <div class="col-md-3">
         {% include 'utils/form_field.tmpl' with field=form.do_not_send_text_updates %}
       </div>
+    </div>
+  </div>
+  
+  <div class="row mt-2">
+    <div class="col-md-4">
+      {% include 'utils/form_field.tmpl' with field=form.emergency_contact_name %}
+    </div>
+    <div class="col-md-2">
+      {% include 'utils/form_field.tmpl' with field=form.emergency_contact_phone %}
     </div>
   </div>
 

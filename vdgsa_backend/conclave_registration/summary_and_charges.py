@@ -240,7 +240,7 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if (donation_charge := get_donation_charge(registration_entry)) is not None:
         charges.append(donation_charge)
 
-    print('registration_entry.is_late',registration_entry.is_late)
+    print('registration_entry.is_late', registration_entry.is_late)
     if registration_entry.is_late\
         and registration_entry.program != Program.faculty_guest_other\
         and not (registration_entry.program == Program.beginners\
@@ -510,7 +510,8 @@ def _room_and_board_charge(
             'amount': early_arrival_room_rate * num_early_arrival_nights
         })
 
-    if num_nights == FULL_WEEK_NUM_NIGHTS:
+    if num_nights == FULL_WEEK_NUM_NIGHTS\
+            or num_nights >= MAX_PRORATED_NUM_NIGHTS:
         charges.append({
             'display_name': f'Full Week Room and Board: {formatted_room_type}',
             'csv_label': 'Room and Board',
