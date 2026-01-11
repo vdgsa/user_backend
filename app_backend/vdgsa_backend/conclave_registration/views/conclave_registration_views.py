@@ -375,6 +375,8 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'nickname',
             'phone',
             'do_not_send_text_updates',
+            'emergency_contact_name',
+            'emergency_contact_phone',
             'age',
             'gender',
             'pronouns',
@@ -401,6 +403,8 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         labels = {
             'nickname': '',
             'phone': '',
+            'emergency_contact_name': 'Emergency Contact: Name',
+            'emergency_contact_phone': 'Telephone number',
             'include_in_whos_coming_to_conclave_list': '',
             'attended_conclave_before': '',
             'buddy_willingness': '',
@@ -457,6 +461,9 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
                 and not self.data.get('user_image_opt_out') \
                 and not self.data.get('user_image_file_name'):
             self.fields['user_image_file_name'].required = True
+
+        self.fields['emergency_contact_name'].required = True
+        self.fields['emergency_contact_phone'].required = True
 
         # self.fields['liability_release'].required = True
 
