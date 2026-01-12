@@ -8,8 +8,8 @@
     <div class="container">
         <p class="h2">{{ member.first_name }} {{ member.last_name }}</p>
         {% if member.include_email_in_membership_directory and member.email %}<p>{{ member.email }}</p>{% endif %}
-        {% if member.include_phone_in_membership_directory and member.phone1 %}<p>phone: {{ member.phone1 }}</p>{% endif
-        %}
+        {% if member.include_phone_in_membership_directory and member.phone1 %}<p>phone: {{ member.phone1 }}</p>
+        {% endif %}
         {% if member.include_address_in_membership_directory %}
         <address>
             {% if member.address_line_1 %}{{member.address_line_1}}<br>{% endif%}
@@ -30,10 +30,9 @@
         <p>{{ member | teacher_affiliation | join:", " }}</p>
         <p>{{ member.teacher_description }}</p>
     </div>
-    {% endif%}
+    {% endif %}
 
-    {% if member.commercial_description or member.is_instrument_maker or member.is_bow_maker or member.is_repairer or
-    member.is_publisher or member.other_commercial %}
+    {% if member.commercial_description or member.is_instrument_maker or member.is_bow_maker or member.is_repairer or member.is_publisher or member.other_commercial %}
     <div class="container mt-5">
         <legend>Commercial Member</legend>
         <hr>
