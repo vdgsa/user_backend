@@ -41,6 +41,7 @@ The script `dev_scripts/compose_dev` is an alias for `docker compose -f deployme
 ```
 
 This will start the compose stack in watch mode.
+The site will be available at localhost:1680.
 Changes to the python code and most configuration files should cause the running app to update automatically.
 If you change `docker-compose.yml`, or if you change another config file and the change doesn't seem to get picked up, stop the running watch command, [stop the stack](#stopping-the-stack), re-build, and re-run the watch command.
 

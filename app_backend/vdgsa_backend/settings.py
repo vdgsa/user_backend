@@ -44,6 +44,10 @@ def get_docker_secret(secret_name: str) -> str:
 if _deployment_mode == 'prod':
     RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
     RECAPTCHA_PRIVATE_KEY = get_docker_secret('recaptcha_private_key')
+elif _deployment_mode in ['dev', 'unit_test']:
+    # Needed for versions of django-recaptcha newer than version 2
+    # https://pypi.org/project/django-recaptcha/#local-development-and-functional-testing
+    SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,7 +62,7 @@ STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
 SECRET_KEY = get_docker_secret('django_app_secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = _deployment_mode in ['dev', 'unit_test']
 
 # Change the email backend in production
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

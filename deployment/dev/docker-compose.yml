@@ -49,7 +49,6 @@ services:
 
     secrets:
       - postgres_password
-      - recaptcha_private_key
       - stripe_private_key
       - django_app_secret_key
 
@@ -102,8 +101,6 @@ services:
 secrets:
   postgres_password:
     file: ./secrets/postgres_password
-  recaptcha_private_key:
-    file: ./secrets/recaptcha_private_key
   stripe_private_key:
     file: ./secrets/stripe_private_key
   django_app_secret_key:
