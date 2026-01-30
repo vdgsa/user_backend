@@ -1,0 +1,110 @@
+# DEVELOPMENT ONLY. DO NOT USE IN PRODUCTION.
+
+services:
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    container_name: vdgsa_nginx
+    ports:
+      - "1680:80"
+
+    build:
+      dockerfile_inline: |
+        FROM nginx:latest
+        COPY nginx.conf /etc/nginx/conf.d/default.conf
+      context: ./nginx
+
+    depends_on:
+      - django
+
+    volumes:
+      - ./volumes/static:/usr/src/static
+
+    develop:
+      watch:
+        - path: nginx/nginx.conf
+          action: rebuild
+
+  django:
+    container_name: vdgsa_django
+    restart: unless-stopped
+    build:
+      # Set the build context to the top-level directory of the repo.
+      # The directory of the dockerfile below and paths in the actual
+      # Dockerfile are relative to this.
+      context: ../../app_backend
+      dockerfile: ../deployment/dev/Dockerfile-django
+      args:
+        - DEPLOYMENT_MODE=dev
+    ports:
+      - "127.0.0.1:8080:8000"
+    command: |
+      gunicorn --reload vdgsa_backend.wsgi:application --bind 0.0.0.0:8000 --error-logfile=- --access-logfile=-
+    environment:
+      DEPLOYMENT_MODE: dev
+    env_file: .env
+    volumes:
+      - ./volumes/media_root:/usr/src/uploads
+      - ./volumes/static:/usr/src/static
+
+    secrets:
+      - postgres_password
+      - stripe_private_key
+      - django_app_secret_key
+
+    develop:
+      watch:
+        - path: ../../app_backend
+          target: /usr/src/app
+          action: sync
+        - path: ../../app_backend/Pipfile.lock
+          action: rebuild
+        - path: .env
+          action: restart
+
+  postgres:
+    container_name: vdgsa_postgres
+    restart: unless-stopped
+    image: postgres:17
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: vdgsa_postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+
+    secrets:
+      - postgres_password
+
+  stripe-cli:
+    build:
+      context: stripe-cli
+
+    command: listen --forward-to django:8000/accounts/stripe_webhook/
+
+    # After authenticating, the stripe-cli container will exit.
+    # This should cause it to restart automatically.
+    restart: unless-stopped
+
+    volumes:
+      - ./stripe-cli/volumes/stripe-config://root/.config/stripe/
+      - ./stripe-cli/volumes/stripe-gpg://root/.gnupg/
+      - ./stripe-cli/volumes/stripe-pass://root/.password-store/
+
+  # We need 2 of these to forward events to both of our endpoints.
+  stripe-cli2:
+    extends: stripe-cli
+    command: listen --forward-to django:8000/stripe_emails/send_officer_emails/
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
+  stripe_private_key:
+    file: ./secrets/stripe_private_key
+  django_app_secret_key:
+    file: ./secrets/django_app_secret_key
+
+volumes:
+  pgdata: {}

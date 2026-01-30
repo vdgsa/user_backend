@@ -12,37 +12,65 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 from typing import List
-from dotenv import load_dotenv
 import os
 
 import stripe  # type: ignore
 from bleach.sanitizer import ALLOWED_ATTRIBUTES  # type: ignore
 from django.urls.base import reverse_lazy
 
-load_dotenv()
 
-RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
-RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
+_deployment_mode = os.environ.get('DEPLOYMENT_MODE')
+if _deployment_mode is not None:
+    _deployment_mode = _deployment_mode.strip()
+_allowed_deployment_modes = ['prod', 'dev', 'unit_test']
+if _deployment_mode not in _allowed_deployment_modes:
+    raise ValueError(
+        'DEPLOYMENT_MODE environment var must be one of: '
+        f'{", ".join(_allowed_deployment_modes)}'
+    )
+
+
+def get_docker_secret(secret_name: str) -> str:
+    secret_file = f'/run/secrets/{secret_name}'
+    if not os.path.isfile(secret_file):
+        raise FileNotFoundError(f'Secret file "{secret_name}" not found.')
+
+    with open(secret_file) as f:
+        return f.read().strip()
+
+
+# django-recaptcha has default values for development,
+# so we only need to set these in production
+if _deployment_mode == 'prod':
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
+    RECAPTCHA_PRIVATE_KEY = get_docker_secret('recaptcha_private_key')
+elif _deployment_mode in ['dev', 'unit_test']:
+    # Needed for versions of django-recaptcha newer than version 2
+    # https://pypi.org/project/django-recaptcha/#local-development-and-functional-testing
+    SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-with open(BASE_DIR / 'stripe_key') as f:
-    stripe.api_key = f.read().strip()
+stripe.api_key = get_docker_secret('stripe_private_key')
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ftty4_3b^64x%nubicrpz9qf(xr%h2w+3h#!)@be5c(l)f_xlj'
+SECRET_KEY = get_docker_secret('django_app_secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = _deployment_mode in ['dev', 'unit_test']
 
 # Change the email backend in production
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-ALLOWED_HOSTS: List[str] = ['localhost', '127.0.0.1']
+if _deployment_mode == 'dev':
+    ALLOWED_HOSTS: List[str] = ['*']
+elif _deployment_mode == 'prod':
+    ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = reverse_lazy('login')
@@ -116,8 +144,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'vdgsa_postgres',
         'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': '127.0.0.1',
+        'PASSWORD': get_docker_secret('postgres_password'),
+        'HOST': 'postgres',
         'PORT': '5432'
     }
 }
