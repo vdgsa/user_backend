@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+<style>
+  #advancedOptionsButton {
+    color: white !important;
+  }
+</style>
+
+<script>
+  $().ready(function () {
+    document.getElementById('directorySearchForm').addEventListener('keypress', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        submitForm()
+      }
+    })
+
+    if (document.getElementById("id_isAdvancedSearch").value == "True") {
+      document.getElementById("advancedOptions").classList.add('show')
+    } else {
+      document.getElementById("advancedOptions").classList.remove('show')
+    }
+
+
+    const countrySelect = document.getElementById('id_address_country');
+    const subdivisionSelect = document.getElementById('id_address_state');
+    const changeCountry = function (event) {
+      const countryCode = event.target.value;
+
+      if (countryCode) {
+        fetch(`/accounts/subdivisions/?country=${countryCode}`)
+          .then(response => response.json())
+          .then(data => { 
+            subdivisionSelect.innerHTML = '<option value=""></option>';
+            if (data.length > 0) {
+              data.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub.code;
+                option.textContent = sub.name;
+                subdivisionSelect.appendChild(option);
+              });
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }
+    };
+    countrySelect.addEventListener('change', changeCountry)
+  });
+
+  const toggleAdvancedOptions = function () {
+    const element = document.getElementById("advancedOptions");
+    if (element.classList.contains("show")) {
+      document.getElementById("id_isAdvancedSearch").value = 'True';
+    } else {
+      document.getElementById("id_isAdvancedSearch").value = 'False';
+    }
+  }
+
+  const submitForm = function (page) {
+    if (page) {
+      document.getElementById("id_page").value = page;
+    }
+    toggleAdvancedOptions()
+    document.getElementById("directorySearchForm").submit();
+  }
+
+
+</script>
+
+<div>
+  <h3>Membership Directory</h3>
+
+  <form method="post" id="directorySearchForm">
+    {% csrf_token %}
+    {% include 'utils/form_field.tmpl' with field=form.isAdvancedSearch %}
+    {% include 'utils/form_field.tmpl' with field=form.page %}
+    <div class="row">
+      <div class="col-md-12">
+        {% include 'utils/form_field.tmpl' with field=form.searchtext %}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+
+        <a class="btn btn-sm btn-secondary" data-bs-toggle="collapse" href="#advancedOptions" role="button"
+          aria-expanded="false" aria-controls="advancedOptions" id="advancedOptionsButton">
+          Advanced options
+        </a>
+
+
+        <div class="collapse" id="advancedOptions">
+
+          <div class="card card-body">
+
+            <div class="row">
+              <div class="col-md-3">
+                {% include 'utils/form_field.tmpl' with field=form.first_name %}
+              </div>
+              <div class="col-md-3">
+                {% include 'utils/form_field.tmpl' with field=form.last_name %}
+              </div>
+
+              <div class="col-md-3">
+                {% include 'utils/form_field.tmpl' with field=form.teaching_member_type %}
+              </div>
+              <div class="col-md-3">
+                {% include 'utils/form_field.tmpl' with field=form.commercial_member_type %}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-3">
+                {% include 'utils/form_field.tmpl' with field=form.address_city %}
+              </div>
+              <div class="col-md-3">
+                {% include 'utils/form_field.tmpl' with field=form.address_state %}
+              </div>
+
+              <div class="col-md-3">
+                {% include 'utils/form_field.tmpl' with field=form.address_country %}
+              </div>
+              <div class="col-md-3">
+                <div>
+                  <button type="button" class="btn btn-secondary m-2"
+                    onclick="window.location = '{% url 'clearDirectory' %}'">Clear Search Terms</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="mt-2">
+              <button onClick="submitForm(1)" type="button" class="btn btn-primary m-2">Search</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- <div class="row mt-4">
+        <div class="col-auto ">
+            {% include 'utils/form_body.tmpl' with form=form %}
+        </div>
+    </div> -->
+    {% if results %}
+    <table class="table">
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Address</th>
+        <th>Teacher/Commercial affiliation</th>
+        <th class="text-center">Info</th>
+      </tr>
+      {% for item in results %}
+      <tr>
+        <td>{{ item.first_name }} {{ item.last_name }}</td>
+        <td>{% if item.include_email_in_membership_directory %}{{ item.email }} {% endif %}</td>
+        <td>{% if item.include_phone_in_membership_directory %}{{ item.phone1 }} {% endif %}</td>
+        <td>{% if item.include_address_in_membership_directory %}
+          {% if item.address_line_1 %}{{item.address_line_1}}<br>{% endif%}
+          {% if item.address_line_2 %}{{item.address_line_2}}<br>{% endif%}
+          {% if item.address_city %}
+          {{item.address_city}}, {{item.address_state}} {{item.address_postal_code}}
+          {% if item.address_country %}{{item.address_country}}{% endif%}
+          {% endif%}
+          {% endif %}</td>
+        <td>{{ item | all_affiliation | join:", " }}</td>
+        <td><a class="btn btn-default btn-xs float-end me-2" onClick="show_detail_modal({{ item.pk }})"><i
+              class="bi bi-card-text"></i></a></td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <div>
+      <span>
+        {% if results.has_previous %}
+        <button class="btn btn-sm btn-secondary"
+          onclick="submitForm( {{ results.previous_page_number }} )">Previous</button>
+        {% endif %}
+        <span>
+          Page {{ results.number }} of {{ results.paginator.num_pages }}.
+        </span>
+        {% if results.has_next %}
+        <button class="btn btn-sm btn-secondary" onclick="submitForm( {{ results.next_page_number }} )">Next</button>
+        {% endif %}
+      </span>
+    </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    <div class="non-field-errors">
+      {% for err in form.non_field_errors %}
+      <p class="form-error">{{ err }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </form>
+
+</div>
+
+
+<div class="row mt-4">
+  <div class="col-auto">
+    <em>Note: Members control what contact information they wish to publish in this
+      directory, and may opt out of appearing entirely.</br>
+      Click the Info icon to get more information for teachers and commercial members.</em>
+  </div>
+</div>
+
+
+
+<script>
+
+  function show_detail_modal(pk) {
+
+    $.ajax({
+      url: "detail/" + pk
+    }).done(function (data) {
+      $('#member-detail-modal').html(data)
+      $("#directoryDetailModal").modal("show");
+    });
+
+
+  }
+
+
+</script>
+<div class="modal fade" id="directoryDetailModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Member Detail</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="member-detail-modal">
+          <!-- ajax memberDetail  -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -65,7 +65,9 @@ SECRET_KEY = get_docker_secret('django_app_secret_key')
 DEBUG = _deployment_mode in ['dev', 'unit_test']
 
 # Change the email backend in production
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = "./emails.log"
 
 if _deployment_mode == 'dev':
     ALLOWED_HOSTS: List[str] = ['*']
@@ -90,6 +92,7 @@ INSTALLED_APPS = [
     'vdgsa_backend.api_schema',
     'vdgsa_backend.emails',
     'vdgsa_backend.rental_viols',
+    'vdgsa_backend.directory',
     'vdgsa_backend.stripe_wix_proxy',
     'vdgsa_backend.stripe_email_webhook',
     'vdgsa_backend.conclave_registration',

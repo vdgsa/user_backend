@@ -35,5 +35,34 @@
     <button type="submit" class="btn btn-primary">Submit</button>
   </div>
 </form>
+<script>
 
+  const countrySelect = document.getElementById('id_address_country');
+  const subdivisionSelect = document.getElementById('id_address_state');
+
+  countrySelect.addEventListener('change', (event) => {
+      const countryCode = event.target.value;
+
+      // Clear previous options
+      subdivisionSelect.innerHTML = '<option value="">Select a State/Province</option>';
+      subdivisionSelect.disabled = true;
+
+      if (countryCode) {
+          fetch(`/accounts/subdivisions/?country=${countryCode}`)
+              .then(response => response.json())
+              .then(data => {
+                  if (data.length > 0) {
+                      data.forEach(sub => {
+                          const option = document.createElement('option');
+                          option.value = sub.code;
+                          option.textContent = sub.name;
+                          subdivisionSelect.appendChild(option);
+                      });
+                      subdivisionSelect.disabled = false;
+                  }
+              })
+              .catch(error => console.error('Error:', error));
+      }
+  });
+</script>
 {% endblock %}

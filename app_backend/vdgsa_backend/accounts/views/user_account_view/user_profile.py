@@ -6,8 +6,9 @@ page.
 
 from typing import Any, Dict, Final, Optional, Sequence, cast
 
+from django.core.exceptions import ValidationError
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.forms import BaseModelForm, ModelForm, Textarea
+from django.forms import BaseModelForm, ModelForm, Textarea, Select
 from django.http.response import HttpResponse
 from django.urls.base import reverse
 from django.utils.functional import cached_property
@@ -17,7 +18,7 @@ from vdgsa_backend.accounts.models import User
 from vdgsa_backend.accounts.views.permissions import (
     is_membership_secretary, is_requested_user_or_membership_secretary
 )
-from vdgsa_backend.accounts.views.utils import get_ajax_form_response
+from vdgsa_backend.accounts.views.utils import get_ajax_form_response, LocationAddress
 
 
 class UserProfileForm(ModelForm):
@@ -65,6 +66,8 @@ class UserProfileForm(ModelForm):
         widgets = {
             'teacher_description': Textarea(attrs={'rows': 5, 'cols': None}),
             'notes': Textarea(attrs={'rows': 5, 'cols': None}),
+            'address_state': Select(),
+            'address_country': Select(),
         }
 
     def __init__(self, *args: Any, authorized_user: User, **kwargs: Any):
@@ -84,10 +87,29 @@ class UserProfileForm(ModelForm):
 
         self.fields['address_line_1'].required = True
         self.fields['address_city'].required = True
-        self.fields['address_state'].required = True
         self.fields['address_postal_code'].required = True
         self.fields['address_country'].required = True
+        
+        if self.instance.address_country in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
+            self.fields['address_state'].widget.choices = [('', 'Select State/Province')]+[(c.code.split('-')[1], c.name)
+            for c in LocationAddress.getSubdivisions(self.instance.address_country)]
+        else:
+            self.fields['address_state'].widget.choices = [('', 'N/A - No Subdivisions')]
+        
+        self.fields['address_country'].widget.choices = [
+            (c.alpha_2, c.name) for c in LocationAddress.getCountries()]
+    
+    def clean(self):
+        # Example cross-field validation
+        cleaned_data = super().clean()
+        address_state_data = cleaned_data.get('address_state')
+        address_country_data = cleaned_data.get('address_country')
 
+        if address_country_data in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST\
+            and (not address_state_data or address_state_data == ''):
+            raise ValidationError("Please select a valid state/province for the selected country.")
+        return cleaned_data
+    
     _membership_secretary_only_fields: Final[Sequence[str]] = [
         'is_deceased',
         'receives_expiration_reminder_emails',
@@ -121,6 +143,7 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse('user-account', kwargs={'pk': self.requested_user.pk})
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        print('form valid',form.errors)
         super().form_valid(form)
         return get_ajax_form_response(
             'success',
@@ -130,6 +153,7 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         )
 
     def form_invalid(self, form: BaseModelForm) -> HttpResponse:
+        print('form invalid',form.errors)
         return get_ajax_form_response(
             'form_validation_error',
             form,
