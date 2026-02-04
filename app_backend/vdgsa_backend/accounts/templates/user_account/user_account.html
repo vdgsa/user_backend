@@ -66,58 +66,7 @@
 <script src="https://js.stripe.com/v3/"></script>
 
 <script>
-
-$().ready(function() {
-  setup_ajax_submit('change-email-form', {
-    before_submit: function() {
-      $('#email-in-use-msg').text('');
-    },
-    success: function(form, response_data) {
-      if (response_data.status === 'form_validation_error') {
-        update_form_body(form, response_data);
-        return;
-      }
-
-      if (response_data.status === 'other_error' && response_data.extra_data.username_in_use) {
-        $('#email-in-use-msg').text(
-          `The username "${response_data.extra_data.requested_username}" is in use by another account.`
-        );
-      }
-
-      if (response_data.extra_data.change_pending_msg) {
-        $('#change-email-msg').html(response_data.extra_data.change_pending_msg);
-      }
-
-      if (response_data.extra_data.new_username) {
-        $('#current-username').val(response_data.extra_data.new_username);
-      }
-
-      $('#id_new_email').val('');
-    }
-  });
-
-  function on_purchase_subscription_form_submit(event) {
-    event.preventDefault();
-    disable_form_buttons(purchase_subscription_form);
-
-    $.ajax(purchase_subscription_form.attr('action'), {
-      type: 'POST',
-      data: purchase_subscription_form.serialize(),
-      success: function(response_data) {
-        if (response_data.extra_data.stripe_session_id) {
-          $('#purchase-subscription-form button[type=submit]').text('Redirecting');
-          let stripe = Stripe('{{stripe_public_key}}');
-          stripe.redirectToCheckout({
-            sessionId: response_data.extra_data.stripe_session_id
-          });
-        }
-        else {
-          console.log(response_data);
-          $('#membership-subscription-wrapper').html(response_data.rendered_form);
-          $('#purchase-subscription-form').on('submit', on_purchase_subscription_form_submit);
-          reenable_form_buttons(purchase_subscription_form);
-        }
-
+  $().ready(function () {
     setup_ajax_submit('change-email-form', {
       before_submit: function () {
         $('#email-in-use-msg').text('');
@@ -126,11 +75,6 @@ $().ready(function() {
         if (response_data.status === 'form_validation_error') {
           update_form_body(form, response_data);
           return;
-        }
-        else if (response_data.status === 'success') {
-          $('#user-profile-form .last-saved').text(
-            `Saved at ${(new Date()).toLocaleTimeString()}`
-          );
         }
 
         if (response_data.status === 'other_error' && response_data.extra_data.username_in_use) {
@@ -198,13 +142,15 @@ $().ready(function() {
     let purchase_subscription_form = $('#purchase-subscription-form');
     purchase_subscription_form.on('submit', on_purchase_subscription_form_submit);
 
+    
+    
     const countrySelect = document.getElementById('id_address_country');
     const subdivisionSelect = document.getElementById('id_address_state');
     const subdivisionSelectDiv = document.getElementById('address_state_div');
 
     countrySelect.addEventListener('change', (event) => {
       const countryCode = event.target.value;
-
+      let subdivision = subdivisionSelect.value
       if (countryCode) {
         fetch(`/accounts/subdivisions/?country=${countryCode}`)
           .then(response => response.json())
@@ -215,6 +161,9 @@ $().ready(function() {
                 const option = document.createElement('option');
                 option.value = sub.code;
                 option.textContent = sub.name;
+                if(subdivision == sub.code){
+                  option.selected = true
+                }
                 subdivisionSelect.appendChild(option);
               });
               subdivisionSelect.disabled = false;
@@ -232,7 +181,6 @@ $().ready(function() {
     });
 
     countrySelect.dispatchEvent( new Event('change'));
-
 
   });
 </script>
