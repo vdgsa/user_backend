@@ -181,17 +181,69 @@ class _RegistrationStepFormBase:
     Base class to provide some common initialization for our forms
     corresponding to registration steps (e.g., basic info, class selection).
     """
-    def __init__(self, registration_entry: RegistrationEntry, *args: Any, **kwargs: Any):
+    def __init__(
+        self,
+        registration_entry: RegistrationEntry,
+        *args: Any,
+        editor: User,
+        **kwargs: Any
+    ):
         super().__init__(*args, **kwargs)  # type: ignore
         self.registration_entry = registration_entry
+        self.editor = editor
+
+        import copy
+        self._original_instance = copy.deepcopy(self.instance)
 
     def save(self, commit: bool = True) -> Any:
         obj = super().save(commit=False)  # type: ignore
         obj.registration_entry = self.registration_entry
         if commit:
             obj.save()
+            self._send_change_email()
 
         return obj
+
+    def _send_change_email(self) -> Optional[str]:
+        if self.editor == self.registration_entry.user:
+            return None
+
+        if not self.changed_data:
+            return
+
+        year = self.registration_entry.conclave_config.year
+
+        preamble = (
+            f'Conclave registration "{self.__class__.__name__}" '
+            f'for {show_name_and_email(self.registration_entry.user)} '
+            f'edited by {show_name_and_email(self.editor)}:\n\n'
+        )
+
+        send_mail(
+            subject=(
+                f'Conclave {self.registration_entry.conclave_config.year} '
+                f'Registration Updated for {show_name_and_email(self.registration_entry.user)} '
+                f'by {show_name_and_email(self.editor)}'
+            ),
+            from_email=None,
+            recipient_list=[
+                'conclave.manager@vdgsa.org',
+                'musicdirector@vdgsa.org',
+                'conclave.manager@gmail.com',
+                'treasurer@vdgsa.org',
+            ],
+            message=self._make_change_email_body(preamble=preamble)
+        )
+
+    def _make_change_email_body(self, preamble: Optional[str] = None) -> str:
+        email_body = preamble if preamble is not None else ''
+
+        for field_name in self.changed_data:
+            old_value = getattr(self._original_instance, field_name)
+            new_value = getattr(self.instance, field_name)
+            email_body += (f'{field_name}: "{old_value}" -> "{new_value}"\n')
+
+        return email_body
 
 
 class _RegistrationStepViewBase(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin, View):
@@ -212,7 +264,11 @@ class _RegistrationStepViewBase(LoginRequiredMixin, UserPassesTestMixin, SingleO
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
         assert self.form_class is not None, 'You must provide a value for "form_class"'
         return self.render_page(
-            self.form_class(self.registration_entry, instance=self.get_step_instance())
+            self.form_class(
+                self.registration_entry,
+                editor=self.request.user,
+                instance=self.get_step_instance()
+            )
         )
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -226,7 +282,11 @@ class _RegistrationStepViewBase(LoginRequiredMixin, UserPassesTestMixin, SingleO
     def get_form(self) -> _RegistrationStepFormBase:
         assert self.form_class is not None, 'You must provide a value for "form_class"'
         return self.form_class(
-            self.registration_entry, self.request.POST, instance=self.get_step_instance())
+            self.registration_entry,
+            self.request.POST,
+            editor=self.request.user,
+            instance=self.get_step_instance()
+        )
 
     @abstractmethod
     def get_step_instance(self) -> Model | None:
@@ -524,6 +584,12 @@ class InstrumentBringingForm(_RegistrationStepFormBase, forms.ModelForm):
             self.initial['clefs'] = self.instance.clefs
 
 
+    def _make_change_email_body(self, preamble: Optional[str] = None) -> str:
+        email_body = preamble if preamble is not None else ''
+        email_body += f'Instrument added: {self.instance}'
+        return email_body
+
+
 class BeginnerInstrumentsForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
         model = BeginnerInstrumentInfo
@@ -564,13 +630,14 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
         if self.registration_entry.program in BEGINNER_PROGRAMS:
             return super().get(*args, **kwargs)
 
-        return self.render_page(self.form_class(self.registration_entry))
+        return self.render_page(self.form_class(self.registration_entry, editor=self.request.user))
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         if self.registration_entry.program in BEGINNER_PROGRAMS:
             return super().post(*args, **kwargs)
 
-        form = self.form_class(self.registration_entry, self.request.POST)
+        form = self.form_class(
+            self.registration_entry, self.request.POST, editor=self.request.user)
         if not form.is_valid():  # type: ignore
             return get_ajax_form_response(
                 'form_validation_error',
@@ -604,6 +671,30 @@ class InstrumentsBringingView(_RegistrationStepViewBase):
 class DeleteInstrumentView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         self.instrument.delete()
+
+        registrant = self.instrument.registration_entry.user
+        year = self.instrument.registration_entry.conclave_config.year
+        if self.request.user != registrant:
+            send_mail(
+                subject=(
+                    f'Conclave {year} '
+                    f'Registration Updated for {show_name_and_email(registrant)} '
+                    f'by {show_name_and_email(self.request.user)}'
+                ),
+                from_email=None,
+                recipient_list=[
+                    'conclave.manager@vdgsa.org',
+                    'musicdirector@vdgsa.org',
+                    'conclave.manager@gmail.com',
+                    'treasurer@vdgsa.org',
+                ],
+                message=(
+                    f'Conclave registration for {show_name_and_email(registrant)} '
+                    f'edited by {show_name_and_email(self.request.user)}:\n\n'
+                    f'Instrument "{self.instrument}" deleted.'
+                )
+            )
+
         return HttpResponse(status=204)
 
     @cached_property
@@ -779,7 +870,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                 'please select up to 3 Freebie options.'
             )
             return
-        
+
         freebies_selected = all(choice.is_freebie for choice in choices)
         if period ==Period.fourth:
             # Allow < 3 choices for freebies and beginners
@@ -797,7 +888,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                     None,
                     f'{format_period_long(period)}: You must select different classes for '
                     'your 1st and 2nd choices.'
-                )  
+                )
         else:
             # Allow < 3 choices for freebies and beginners
             if (len(choices) != 3 and not freebies_selected
@@ -1194,7 +1285,9 @@ class PaymentView(_RegistrationStepViewBase):
     next_step_url_name = 'conclave-done'
 
     def get(self, *args: Any, **kwargs: Any) -> HttpResponse:
-        return self.render_page(PaymentForm(self.registration_entry))
+        return self.render_page(
+            PaymentForm(self.registration_entry, editor=self.request.user)
+        )
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         form = self.get_form()
