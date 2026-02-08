@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, Literal
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models.query import QuerySet
+from django.forms import Select
 from django.http.response import HttpResponse
 from django.urls.base import reverse
 from django.views.generic.base import View
@@ -17,6 +18,7 @@ from django.views.generic.list import ListView
 
 from vdgsa_backend.accounts.views.permissions import is_membership_secretary
 from vdgsa_backend.templatetags.filters import format_datetime_impl
+from vdgsa_backend.accounts.views.utils import LocationAddress
 
 from ..models import User
 
@@ -37,6 +39,14 @@ class AddUserForm(forms.ModelForm):
             'phone1',
             'phone2',
         ]
+        widgets = {
+            'address_state': Select(
+                
+            ),
+            'address_country': Select(
+                choices=[(c.alpha_2, c.name) for c in LocationAddress.getCountries()]
+            ),
+        }
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
@@ -48,7 +58,6 @@ class AddUserForm(forms.ModelForm):
         self.fields['address_city'].required = True
         self.fields['address_state'].required = True
         self.fields['address_postal_code'].required = True
-        self.fields['address_country'].required = True
 
 
 class AddUserView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -86,7 +95,16 @@ class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView)
     @property
     def all_users(self) -> bool:
         return self.request.GET.get('all_users', 'false').lower() == 'true'
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Access the instance being updated via self.object
 
+        print('mem sec get_form', self.model.address_country)
+
+        form.fields['address_state'].choices = [(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions(self.model.address_country)]
+        return form
+    
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['all_users'] = self.all_users
