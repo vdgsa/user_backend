@@ -240,7 +240,11 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if (donation_charge := get_donation_charge(registration_entry)) is not None:
         charges.append(donation_charge)
 
-    if registration_entry.is_late:
+    print('registration_entry.is_late', registration_entry.is_late)
+    if registration_entry.is_late\
+        and registration_entry.program != Program.faculty_guest_other\
+        and not (registration_entry.program == Program.beginners\
+                and registration_entry.housing.room_type == HousingRoomType.off_campus):
         charges.append({
             'display_name': 'Late Registration Fee',
             'csv_label': 'Late Registration Fee',
@@ -258,7 +262,11 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     apply_housing_subsidy = (
         hasattr(registration_entry, 'housing')
         and registration_entry.housing.wants_housing_subsidy
+        and not registration_entry.is_late
+        and _get_stay_duration(conclave_config, registration_entry.housing)
+        .num_nights >= FULL_WEEK_NUM_NIGHTS
     )
+
     apply_2023_housing_subsidy = (
         hasattr(registration_entry, 'housing')
         and registration_entry.housing.wants_2023_supplemental_discount
@@ -338,7 +346,7 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
                 'display_name': display_name,
                 'csv_label': 'Tuition',
                 'amount': 0 if staying_off_campus
-                            else _get_workshop_fee(conclave_config, registration_entry)
+                else _get_workshop_fee(conclave_config, registration_entry)
             }
         case Program.faculty_guest_other:
             return None
@@ -352,14 +360,15 @@ def get_tuition_charge(registration_entry: RegistrationEntry) -> ChargeInfo | No
             assert False
 
 
-def _get_workshop_fee(conclave_config: ConclaveConfig, registration_entry: RegistrationEntry):
+def _get_workshop_fee(conclave_config: ConclaveRegistrationConfig, registration_entry: RegistrationEntry):
     if not hasattr(registration_entry, 'housing'):
         return conclave_config.workshop_fee
 
     housing = registration_entry.housing
     stay_duration = _get_stay_duration(conclave_config, housing)
 
-    if stay_duration.num_nights == FULL_WEEK_NUM_NIGHTS:
+    if stay_duration.num_nights == FULL_WEEK_NUM_NIGHTS \
+            or stay_duration.num_nights >= MAX_PRORATED_NUM_NIGHTS:
         return conclave_config.workshop_fee
     else:
         return conclave_config.prorated_workshop_fee * stay_duration.num_nights
@@ -467,6 +476,7 @@ def get_housing_charges(registration_entry: RegistrationEntry) -> list[ChargeInf
 
 
 FULL_WEEK_NUM_NIGHTS: Final = 7
+MAX_PRORATED_NUM_NIGHTS: Final = 5
 
 
 def _room_and_board_charge(
@@ -500,7 +510,8 @@ def _room_and_board_charge(
             'amount': early_arrival_room_rate * num_early_arrival_nights
         })
 
-    if num_nights == FULL_WEEK_NUM_NIGHTS:
+    if num_nights == FULL_WEEK_NUM_NIGHTS\
+            or num_nights >= MAX_PRORATED_NUM_NIGHTS:
         charges.append({
             'display_name': f'Full Week Room and Board: {formatted_room_type}',
             'csv_label': 'Room and Board',

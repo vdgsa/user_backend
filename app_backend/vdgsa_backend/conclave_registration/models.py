@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from io import BytesIO
+from slugify import slugify
 from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
 from django.core.exceptions import ValidationError
+from django.core.files.base import File
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.functional import cached_property
-
+from django_resized import ResizedImageField
 from vdgsa_backend.accounts.models import User
+
+from PIL import Image, ExifTags
 
 
 class RegistrationPhase(models.TextChoices):
@@ -50,6 +55,7 @@ class ConclaveRegistrationConfig(models.Model):
     code_of_conduct_markdown = models.TextField(blank=True)
     charge_card_date_markdown = models.TextField(blank=True)
     photo_release_text = models.TextField(blank=True)
+    user_image_file_name_text = models.TextField(blank=True)
 
     first_period_time_label = models.CharField(max_length=255, blank=True)
     second_period_time_label = models.CharField(max_length=255, blank=True)
@@ -355,6 +361,13 @@ class RegistrationEntry(models.Model):
 
 
 class AdditionalRegistrationInfo(models.Model):
+    def _user_image_file_folder(instance, filename) -> str:
+        # Use a slugified version of the fullname instead of the
+        # original filename to identify the picture file.
+        fullname = slugify(instance.registration_entry.user.last_name
+                           + '_' + instance.registration_entry.user.first_name)
+        return f"user_image/{instance.registration_entry.conclave_config.year}/{fullname}.png"
+
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
@@ -366,8 +379,10 @@ class AdditionalRegistrationInfo(models.Model):
 
     nickname = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=30)
+    emergency_contact_name = models.CharField(max_length=255, blank=True)
+    emergency_contact_phone = models.CharField(max_length=30, blank=True)
     do_not_send_text_updates = models.BooleanField(null=True, blank=True)
-    include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices)
+    include_in_whos_coming_to_conclave_list = models.TextField(choices=YesNo.choices, blank=True)
 
     age = models.TextField(choices=[
         ('18-35', '18-35'),
@@ -384,7 +399,7 @@ class AdditionalRegistrationInfo(models.Model):
     ])
     pronouns = models.CharField(max_length=255, blank=True)
 
-    attended_conclave_before = models.TextField(choices=YesNo.choices)
+    attended_conclave_before = models.TextField(choices=YesNo.choices, blank=True)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
     can_drive_loaners = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
@@ -398,10 +413,44 @@ class AdditionalRegistrationInfo(models.Model):
 
     other_info = models.TextField(blank=True)
 
+    user_image_file_name = ResizedImageField(
+        size=[500, None], upload_to=_user_image_file_folder, blank=True, null=True,
+        force_format='PNG')
+    user_image_opt_out = models.BooleanField(blank=True, default=False)
+
     def clean(self) -> None:
         super().clean()
         if self.attended_conclave_before == YesNo.yes and not self.buddy_willingness:
             raise ValidationError({'buddy_willingness': 'This field is required.'})
+
+    # Override save to handle image rotation based on EXIF data
+    def save(self, *args, **kwargs):
+
+        if self.user_image_file_name:
+            # Open the image using Pillow
+            image = Image.open(self.user_image_file_name)
+
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation] == 'Orientation':
+                    break
+
+            if hasattr(image, '_getexif') and image._getexif() is not None:
+                exif = dict(image._getexif().items())
+
+                if exif[orientation] == 3:
+                    image = image.transpose(Image.ROTATE_180)
+                elif exif[orientation] == 6:
+                    image = image.transpose(Image.ROTATE_270)
+                elif exif[orientation] == 8:
+                    image = image.transpose(Image.ROTATE_90)
+
+                rotated_io = BytesIO()
+                image.save(rotated_io, format='PNG', quality=85)
+
+                self.user_image_file_name.save(
+                    f'manipulated_{self.user_image_file_name.name}', File(rotated_io), save=False)
+
+        super().save(*args, **kwargs)
 
 
 class WorkStudyJob(models.TextChoices):

@@ -35,11 +35,9 @@ class GroupAdminForm(forms.ModelForm):
             initial_users = self.instance.user_set.values_list('pk', flat=True)
             self.initial['users'] = initial_users
 
-
     def save(self, *args, **kwargs):
         kwargs['commit'] = True
         return super(GroupAdminForm, self).save(*args, **kwargs)
-
 
     def save_m2m(self):
         self.instance.user_set.clear()
@@ -58,4 +56,3 @@ admin.site.register(User, UserAdmin)
 admin.site.register(MembershipSubscription, MembershipSubscriptionAdmin)
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
-

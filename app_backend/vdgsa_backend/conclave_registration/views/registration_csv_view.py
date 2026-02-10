@@ -123,6 +123,10 @@ def user_info_to_dict(entry: RegistrationEntry) -> dict[str, object]:
         'address_postal_code': entry.user.address_postal_code,
         'address_country': entry.user.address_country,
         'conclave_phone': entry.additional_info.phone,
+
+        'emergency_contact_name': info.emergency_contact_name,
+        'emergency_contact_phone': info.emergency_contact_phone,
+
         'phone1': entry.user.phone1,
         'phone2': entry.user.phone2,
 
@@ -311,6 +315,8 @@ CSV_HEADERS = [
     'address_postal_code',
     'address_country',
     'conclave_phone',
+    'emergency_contact_name',
+    'emergency_contact_phone',
     'phone1',
     'phone2',
     'age',
