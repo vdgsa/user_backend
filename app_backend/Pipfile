@@ -25,6 +25,7 @@ django-markdownify = "*"
 python-dateutil = "*"
 python-dotenv = "*"
 django-recaptcha = "*"
+django-resized = "*"
 
 [requires]
 python_version = "3.10"

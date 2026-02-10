@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from io import BytesIO
-from slugify import slugify
+from django.utils.text import slugify
 from typing import Any, Final, TypedDict
 
 from django.contrib.postgres.fields.array import ArrayField
