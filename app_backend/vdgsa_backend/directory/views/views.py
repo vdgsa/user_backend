@@ -38,15 +38,17 @@ class DirectorySearchForm(forms.Form):
         country_qs = LocationAddress.getCountries(filter_to_users=True)
 
         if self.is_bound:
-            if self.data['address_country'] in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
+            if self.data['address_country'] == '' or self.data['address_country'] is None:
+                state_qs = LocationAddress.getSubdivisions('United States',filter_to_users=True)
+            elif self.data['address_country'] in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
                 state_qs = LocationAddress.getSubdivisions(self.data['address_country'],filter_to_users=True)
             else:
                 state_qs =  []
         else:
-            state_qs = LocationAddress.getSubdivisions('US', filter_to_users=True)
+            state_qs = LocationAddress.getSubdivisions('United States',filter_to_users=True)
 
         state_choices = [("", "")] + [(state.code.split('-')[1], state.name) for state in list(state_qs)]
-        country_choices = [("", "")] + [(country.alpha_2, country.name) for country in list(country_qs)]
+        country_choices = [("", "")] + [(country.name, country.name) for country in list(country_qs)]
         self.fields["address_state"].widget.choices = state_choices
         self.fields["address_country"].widget.choices = country_choices
 
