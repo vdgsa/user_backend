@@ -1,11 +1,7 @@
 {
     "_meta": {
         "hash": {
-<<<<<<< HEAD
-            "sha256": "0cf28e37528f65ff94f700fead06165bc244bfb77a11c6157d520e72f77c5b23"
-=======
-            "sha256": "7f45c13b4b86e4d792f8c9bcbbeda4a54ecb38a98f7707dc995ad71c896eed9e"
->>>>>>> 0e2036d (removed slugify updated pipfile with django_resized)
+            "sha256": "9e4cce5a64c75753e39b6658f70839c77d43fd64186672b1a9fdfbed4c5027ec"
         },
         "pipfile-spec": 6,
         "requires": {
