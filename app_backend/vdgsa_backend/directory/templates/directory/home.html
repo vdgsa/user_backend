@@ -27,10 +27,10 @@
     const countrySelect = document.getElementById('id_address_country');
     const subdivisionSelect = document.getElementById('id_address_state');
     const changeCountry = function (event) {
-      const countryCode = event.target.value;
+    const countryName = event.target.value;
 
-      if (countryCode) {
-        fetch(`/accounts/subdivisions/?country=${countryCode}`)
+      if (countryName) {
+        fetch(`/accounts/subdivisions/?country=${countryName}`)
           .then(response => response.json())
           .then(data => { 
             subdivisionSelect.innerHTML = '<option value=""></option>';
