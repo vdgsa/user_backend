@@ -34,7 +34,7 @@ services:
       - postgres_password
       - stripe_private_key
       - django_app_secret_key
-      - recaptcha_secret_key
+      - recaptcha_private_key
 
   postgres:
     container_name: vdgsa_postgres
@@ -63,8 +63,8 @@ secrets:
     file: ./secrets/stripe_private_key
   django_app_secret_key:
     file: ./secrets/django_app_secret_key
-  recaptcha_secret_key:
-    file: ./secrets/recaptcha_secret_key
+  recaptcha_private_key:
+    file: ./secrets/recaptcha_private_key
 
 volumes:
   vdgsa_pgdata: {}
