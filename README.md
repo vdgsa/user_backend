@@ -96,9 +96,16 @@ If you add/change/remove any files in `app_backend/static`, run the following to
 
 ## Deploying to Production
 
-pip install django-recaptcha
-pip install python-dotenv
+### Set Secrets & Application Public Keys
 
-.env file contains key
-RECAPTCHA_PUBLIC_KEY = ''
-RECAPTCHA_PRIVATE_KEY = ''
+#### Application Public Keys
+In `deployment/prod/.env`, set the following environment variables:
+- STRIPE_PUBLIC_KEY to the publishable key for your selected Stripe sandbox.
+- RECAPTCHA_PUBLIC_KEY to the recaptcha public key.
+
+#### Secrets
+Write these values to files with the names specified below.
+1. Postgres password (this can be any random string): `deployment/prod/secrets/postgres_password`
+1. Stripe secret key (use the key for your stripe sandbox): `deployment/prod/secrets/stripe_private_key`
+1. Django app secret key (this can be any random string of letters): `deployment/prod/secrets/django_app_secret_key`
+1. Recaptcha secret key: `deployment/prod/secrets/recaptcha_secret_key`
