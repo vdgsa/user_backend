@@ -18,7 +18,7 @@ services:
       # The directory of the dockerfile below and paths in the actual
       # Dockerfile are relative to the build context directory.
       context: ../../app_backend
-      dockerfile: ../deployment/dev/Dockerfile-django
+      dockerfile: ../deployment/prod/Dockerfile-django
     ports:
       - "127.0.0.1:8080:8000"
     command: /usr/local/bin/uwsgi --ini /usr/src/app/uwsgi.ini --static-map /static=/usr/src/static
