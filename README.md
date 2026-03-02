@@ -108,4 +108,4 @@ Write these values to files with the names specified below.
 1. Postgres password (this can be any random string): `deployment/prod/secrets/postgres_password`
 1. Stripe secret key (use the key for your stripe sandbox): `deployment/prod/secrets/stripe_private_key`
 1. Django app secret key (this can be any random string of letters): `deployment/prod/secrets/django_app_secret_key`
-1. Recaptcha secret key: `deployment/prod/secrets/recaptcha_secret_key`
+1. Recaptcha private key: `deployment/prod/secrets/recaptcha_private_key`
