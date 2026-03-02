@@ -1,5 +1,7 @@
 FROM python:3.10
 
+ARG DEPLOYMENT_MODE
+
 WORKDIR /usr/src/app
 
 RUN pip install uwsgi
