@@ -64,15 +64,24 @@ SECRET_KEY = get_docker_secret('django_app_secret_key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = _deployment_mode in ['dev', 'unit_test']
 
-# Change the email backend in production
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = "./emails.log"
-
 if _deployment_mode == 'dev':
     ALLOWED_HOSTS: List[str] = ['*']
+    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+    EMAIL_FILE_PATH = "./emails.log"
 elif _deployment_mode == 'prod':
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ['hume.vdgsa.org']
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_DOMAIN = '.vdgsa.org'
+    CORS_ALLOWED_ORIGINS = [
+        'https://www.members.vdgsa.org',
+        'https://members.vdgsa.org',
+        'https://www.public.vdgsa.org',
+        'https://public.vdgsa.org',
+    ]
+    CORS_ALLOW_CREDENTIALS = True
+    CORS_ALLOW_METHODS = ['GET']
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'mail.sandwich.net'
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = reverse_lazy('login')

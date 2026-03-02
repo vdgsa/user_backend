@@ -31,7 +31,7 @@ services:
     build:
       # Set the build context to the top-level directory of the repo.
       # The directory of the dockerfile below and paths in the actual
-      # Dockerfile are relative to this.
+      # Dockerfile are relative to the build context directory.
       context: ../../app_backend
       dockerfile: ../deployment/dev/Dockerfile-django
       args:
