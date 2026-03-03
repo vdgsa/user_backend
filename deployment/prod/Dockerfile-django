@@ -13,4 +13,4 @@ RUN pipenv install --system
 
 COPY . /usr/src/app
 
-RUN ./manage.py collectstatic --noinput
+# RUN ./manage.py collectstatic --noinput
