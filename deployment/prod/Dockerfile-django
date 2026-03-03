@@ -12,5 +12,3 @@ COPY ./Pipfile.lock .
 RUN pipenv install --system
 
 COPY . /usr/src/app
-
-# RUN ./manage.py collectstatic --noinput
