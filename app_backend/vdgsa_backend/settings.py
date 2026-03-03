@@ -154,7 +154,7 @@ WSGI_APPLICATION = 'vdgsa_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'vdgsa_postgres',
+        'NAME': 'postgres' if _deployment_mode == 'prod' else 'vdgsa_postgres',
         'USER': 'postgres',
         'PASSWORD': get_docker_secret('postgres_password'),
         'HOST': 'postgres',
