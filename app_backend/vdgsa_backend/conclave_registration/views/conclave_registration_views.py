@@ -285,6 +285,7 @@ class _RegistrationStepViewBase(LoginRequiredMixin, UserPassesTestMixin, SingleO
         return self.form_class(
             self.registration_entry,
             self.request.POST,
+            self.request.FILES,
             editor=self.request.user,
             instance=self.get_step_instance()
         )
