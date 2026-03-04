@@ -12,3 +12,5 @@ COPY ./Pipfile.lock .
 RUN pipenv install --system
 
 COPY . /usr/src/app
+
+RUN mkdir -p /usr/src/static
