@@ -240,7 +240,6 @@ def get_charges_summary(registration_entry: RegistrationEntry) -> ChargesSummary
     if (donation_charge := get_donation_charge(registration_entry)) is not None:
         charges.append(donation_charge)
 
-    print('registration_entry.is_late', registration_entry.is_late)
     if registration_entry.is_late\
         and registration_entry.program != Program.faculty_guest_other\
         and not (registration_entry.program == Program.beginners\

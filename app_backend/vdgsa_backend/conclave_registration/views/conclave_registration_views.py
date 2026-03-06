@@ -386,6 +386,12 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'include_in_whos_coming_to_conclave_list',
             'attended_conclave_before',
             'buddy_willingness',
+            'newbie_how_long_playing',
+            'newbie_play_regularly',
+            'newbie_taken_lessons',
+            'newbie_repertoire',
+            'newbie_other_info',
+
             'can_drive_loaners',
             # 'willing_to_help_with_small_jobs',
             'wants_display_space',
@@ -409,6 +415,11 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'include_in_whos_coming_to_conclave_list': '',
             'attended_conclave_before': '',
             'buddy_willingness': '',
+            'newbie_how_long_playing': 'How long have you been playing? Did you come from another instrument?',
+            'newbie_play_regularly': 'Have you taken lessons? Whom have you worked with? If you\'re willing to provide their contact information, that could be very helpful.',
+            'newbie_taken_lessons': 'Do you play regularly with others? What do you think are your strengths and weaknesses as an ensemble player?',
+            'newbie_repertoire': 'What repertoire have you been playing lately? What do you particularly enjoy?',
+            'newbie_other_info': 'Is there anything else you’d like to share with the Music Director?',
             'wants_display_space': '',
             'num_display_space_days': '',
             'photo_release_auth': '',
@@ -449,8 +460,14 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
                 and not cleaned_data.get('user_image_file_name'):
             raise ValidationError({'user_image_file_name': 'You must provide a photo or opt-out.'})
 
-        return cleaned_data
+        content = cleaned_data['user_image_file_name']
+        print(f"File size must be under 10 MB. Uploaded file size: {content.size} bytes.")
+        MAX_SIZE = 10 * 1024 * 1024 # 10 MB
+        if content.size > MAX_SIZE:
+            raise forms.ValidationError(f"File size must be under 10 MB. Uploaded file size: {content.size} bytes.")
 
+        return cleaned_data
+    
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 

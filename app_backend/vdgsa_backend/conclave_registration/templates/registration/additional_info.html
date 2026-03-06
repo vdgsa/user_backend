@@ -16,6 +16,14 @@
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
 
+  {% if form.non_field_errors %}
+    <div class="form-field-errors mt-1">
+        {% for error in form.non_field_errors %}
+            <strong>{{ error }}</strong>
+        {% endfor %}
+    </div>
+  {% endif %}
+
   <div class="row mt-3">
     <div class="col-md-6">
       If you would like to specify how your name appears on your name tag,
@@ -121,6 +129,40 @@
       </div>
     </div>
 
+    <div id="newbie-wrapper">
+
+      <div class="row">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.newbie_how_long_playing %}
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.newbie_play_regularly %}
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.newbie_taken_lessons %}
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.newbie_repertoire %}
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6">
+          {% include 'utils/form_field.tmpl' with field=form.newbie_other_info %}
+        </div>
+      </div>
+      
+    </div>
+
   {% endif %}
 
   <div id="willing-to-drive-loaner-instruments">
@@ -174,25 +216,32 @@
   </div>
 
   {% if form.requirePicture %}
-  <div class="row mt-3">
-    <div class="col-md-8" style="border: 1px solid slategray">
-      <div class="row mt-2">
-        <div class="col-auto">
-          {{registration_entry.conclave_config.user_image_file_name_text}}
+    <div class="row mt-3">
+      <div class="col-md-8" style="border: 1px solid slategray">
+        {% if form.non_field_errors %}
+          <div class="form-field-errors mt-1">
+              {% for error in form.non_field_errors %}
+                  <strong>{{ error }}</strong>
+              {% endfor %}
+          </div>
+        {% endif %}
+        <div class="row mt-2">
+          <div class="col-auto">
+            {{registration_entry.conclave_config.user_image_file_name_text}}
+          </div>
         </div>
-      </div>
-      <div class="row mt-1">
-        <div class="col-md-6">
-          {{form.user_image_file_name}}
+        <div class="row mt-1">
+          <div class="col-md-6">
+            {{form.user_image_file_name}}
+          </div>
         </div>
-      </div>
-      <div class="row mt-1">
-        <div class="col-md-6">
-          {% include 'utils/form_field.tmpl' with field=form.user_image_opt_out %}
+        <div class="row mt-1">
+          <div class="col-md-6">
+            {% include 'utils/form_field.tmpl' with field=form.user_image_opt_out %}
+          </div>
         </div>
       </div>
     </div>
-  </div>
   {% endif %}
   
   <div class="row mt-3">
@@ -290,10 +339,21 @@
       $('#id_user_image_file_name').required = true;
     }
   }
-  
+
+  var hide_show_newbie = function(){
+    var isNewbie = $('input[name="attended_conclave_before"]:checked').val()=='no';
+    if(isNewbie){
+      $('#newbie-wrapper').show()
+    }else{
+      $('#newbie-wrapper').hide()
+    }
+  }
+
   $().ready(function() {
-    user_image_opt_out_toggle()
     $('#id_user_image_opt_out').on('change',user_image_opt_out_toggle);
+    $('input[name="attended_conclave_before"]').on('change',hide_show_newbie);
+    user_image_opt_out_toggle()
+    hide_show_newbie()
   });
 
 </script>

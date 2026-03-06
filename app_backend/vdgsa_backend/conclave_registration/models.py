@@ -401,6 +401,13 @@ class AdditionalRegistrationInfo(models.Model):
 
     attended_conclave_before = models.TextField(choices=YesNo.choices, blank=True)
     buddy_willingness = models.TextField(choices=YesNoMaybe.choices, blank=True)
+    #Newbie specific fields
+    newbie_how_long_playing = models.TextField(blank=True)
+    newbie_play_regularly = models.TextField(blank=True)
+    newbie_taken_lessons = models.TextField(blank=True)
+    newbie_repertoire = models.TextField(blank=True)
+    newbie_other_info = models.TextField(blank=True)
+
     can_drive_loaners = models.TextField(choices=YesNoMaybe.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
