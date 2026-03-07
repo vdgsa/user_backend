@@ -117,6 +117,9 @@ class LocationAddress():
         sorted_countries = sorted(countries_list, key=lambda country: country.name)
         return sorted_countries
 
+    def isCountry( country_name: str) -> bool:
+        return country_name in (c.name for c in LocationAddress.getCountries())
+
     def getSubdivisions(country_name: str, filter_to_users: bool = False) -> List[Dict[str, object]]:
         # Get all subdivisions for the specified country code
         if country_name not in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:

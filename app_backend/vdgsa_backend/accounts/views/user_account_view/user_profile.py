@@ -105,8 +105,7 @@ class UserProfileForm(ModelForm):
         address_state_data = cleaned_data.get('address_state')
         address_country_data = cleaned_data.get('address_country')
 
-        print(address_country_data)
-        if address_country_data not in LocationAddress.getCountries():
+        if not LocationAddress.isCountry(address_country_data):
             raise ValidationError("Please select a valid country")
 
         if address_country_data in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST\
