@@ -95,21 +95,24 @@ class UserProfileForm(ModelForm):
             for c in LocationAddress.getSubdivisions(self.instance.address_country)]
         else:
             self.fields['address_state'].widget.choices = [('', 'N/A - No Subdivisions')]
-        
+
         self.fields['address_country'].widget.choices = [
             (c.name, c.name) for c in LocationAddress.getCountries()]
-    
+
     def clean(self):
         # Example cross-field validation
         cleaned_data = super().clean()
         address_state_data = cleaned_data.get('address_state')
         address_country_data = cleaned_data.get('address_country')
 
+        if address_country_data not in LocationAddress.getCountries():
+            raise ValidationError("Please select a valid country")
+
         if address_country_data in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST\
             and (not address_state_data or address_state_data == ''):
             raise ValidationError("Please select a valid state/province for the selected country.")
         return cleaned_data
-    
+
     _membership_secretary_only_fields: Final[Sequence[str]] = [
         'is_deceased',
         'receives_expiration_reminder_emails',
