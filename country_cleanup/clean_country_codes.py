@@ -5,7 +5,7 @@ Run this by piping it to a Django shell
 in the django container of the running stack.
 We recommend redirecting the output to a file to look over.
 ```
-docker exec -it $django_container python3 manage.py shell < clean_country_codes.py &> output
+docker exec -i $django_container python3 manage.py shell < clean_country_codes.py &> output
 ```
 
 This script *should* be idempotent, so if we need to
