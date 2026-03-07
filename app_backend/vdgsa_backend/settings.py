@@ -111,8 +111,6 @@ INSTALLED_APPS = [
     'markdownify.apps.MarkdownifyConfig',
 ]
 
-CORS_ALLOWED_ORIGINS: List[str] = []
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
