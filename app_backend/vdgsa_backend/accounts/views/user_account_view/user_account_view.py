@@ -102,7 +102,7 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class LocationForm(Form):
     country = ChoiceField(
         choices=([('', 'Select a Country')] + LocationAddress.getCountries()),
-        widget=Select(attrs={'id': 'id_country'})
+        widget=Select(attrs={'id_country': 'id_country'})
     )
     subdivision = ChoiceField(
         choices=[('', 'Select a Subdivision')],
@@ -113,11 +113,11 @@ def get_subdivisions(request):
     """
     AJAX endpoint to return subdivisions for a given country.
     """
-    country_code = request.GET.get('country')
-    if country_code in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
+    country_name = request.GET.get('country')
+    if country_name in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
         try:
             subdivisions = sorted(
-                [(s.code, s.name) for s in LocationAddress.getSubdivisions(country_code=country_code)],
+                [(s.code, s.name) for s in LocationAddress.getSubdivisions(country_name)],
                 key=lambda x: x[1]
             )
             data = [{'code': code.split('-')[1], 'name': name} for code, name in subdivisions]

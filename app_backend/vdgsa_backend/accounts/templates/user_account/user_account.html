@@ -149,10 +149,10 @@
     const subdivisionSelectDiv = document.getElementById('address_state_div');
 
     countrySelect.addEventListener('change', (event) => {
-      const countryCode = event.target.value;
+      const countryName = event.target.value;
       let subdivision = subdivisionSelect.value
-      if (countryCode) {
-        fetch(`/accounts/subdivisions/?country=${countryCode}`)
+      if (countryName) {
+        fetch(`/accounts/subdivisions/?country=${countryName}`)
           .then(response => response.json())
           .then(data => {
             if (data.length > 0) {

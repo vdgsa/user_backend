@@ -45,8 +45,12 @@ def get_ajax_form_response(
 
 class LocationAddress():
 
-    COUNTRY_SUBDIVISION_WHITELIST = ['US', 'CA', 'MX', 'JP',
-                                     'BR', 'AU', 'NZ', 'CN', 'IT', 'MY', 'KR', 'VE']
+    # COUNTRY_SUBDIVISION_WHITELIST = ['US', 'CA', 'MX', 'JP',
+    #                                  'BR', 'AU', 'NZ', 'CN', 'IT', 'MY', 'KR', 'VE']
+
+    COUNTRY_SUBDIVISION_WHITELIST = ['United States', 'Canada', 'Mexico', 'Japan',
+                                     'Brazil', 'Australia', 'New Zealand', 'China', 'Italy', 'Malaysia', 'South Korea', 'Venezuela']
+    
     # US: US (Alpha-2), USA (Alpha-3)
     # Canada: CA, CAN
     # Mexico: MX, MEX
@@ -71,26 +75,34 @@ class LocationAddress():
                 from vdgsa_backend.accounts.models import User
 
                 codes_qs = (
-                    User.objects.exclude(address_country__isnull=True)
+                    User.objects
+                    .exclude(address_country__isnull=True)
                     .exclude(address_country="")
+                    .order_by("address_country")
                     .values_list("address_country", flat=True)
-                    .distinct()
+                    .distinct("address_country")
+                   
                 )
-                codes = [c.strip() for c in list(codes_qs) if c and c.strip()]
+
+                countries_list = [c.strip() for c in list(codes_qs) if c and c.strip()]
+               
             except Exception:
-                codes = []
+                countries_list = []
 
             matched = []
-            for code in codes:
+            for countryName in countries_list:
                 country = None
+                # Try name match first
+                country = pycountry.countries.lookup(countryName)
+                if not country:
                 # Try alpha_2 match first
-                country = pycountry.countries.get(alpha_2=code.upper())
+                    country = pycountry.countries.get(alpha_2=countryName.upper())
                 if not country:
                     # Try alpha_3
-                    country = pycountry.countries.get(alpha_3=code.upper())
+                    country = pycountry.countries.get(alpha_3=countryName.upper())
                 if not country:
                     # Try matching by full name (case-insensitive)
-                    name_matches = [c for c in countries_list if getattr(c, "name", "").lower() == code.lower()]
+                    name_matches = [c for c in countries_list if getattr(c, "name", "").lower() == countryName.lower()]
                     if name_matches:
                         country = name_matches[0]
 
@@ -104,12 +116,13 @@ class LocationAddress():
         sorted_countries = sorted(countries_list, key=lambda country: country.name)
         return sorted_countries
 
-    def getSubdivisions(country_code: str, filter_to_users: bool = False) -> List[Dict[str, object]]:
+    def getSubdivisions(country_name: str, filter_to_users: bool = False) -> List[Dict[str, object]]:
         # Get all subdivisions for the specified country code
-        if country_code not in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
+        if country_name not in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
             return
-
-        subdivisions = pycountry.subdivisions.get(country_code=country_code)
+        
+        country = pycountry.countries.lookup(country_name)
+        subdivisions = pycountry.subdivisions.get(country_code=country.alpha_2)
 
         if (not subdivisions):
             return []
@@ -124,10 +137,12 @@ class LocationAddress():
                 from vdgsa_backend.accounts.models import User
 
                 states_qs = (
-                    User.objects.exclude(address_state__isnull=True)
+                    User.objects
+                    .exclude(address_state__isnull=True)
                     .exclude(address_state="")
+                    .order_by("address_state")
                     .values_list("address_state", flat=True)
-                    .distinct()
+                    .distinct("address_state")
                 )
                 states = [s.strip() for s in list(states_qs) if s and s.strip()]
             except Exception:
@@ -137,7 +152,7 @@ class LocationAddress():
             for state_code in states:
                 subdivision = None
                 # Try matching by code (upper case)
-                subdivision = pycountry.subdivisions.get(code=f"{country_code}-{state_code.upper()}")
+                subdivision = pycountry.subdivisions.get(code=f"{country.alpha_2}-{state_code.upper()}")
                 if not subdivision:
                     # Try just the state code
                     subdivision = pycountry.subdivisions.get(code=state_code.upper())

@@ -41,14 +41,14 @@
   const subdivisionSelect = document.getElementById('id_address_state');
 
   countrySelect.addEventListener('change', (event) => {
-      const countryCode = event.target.value;
+      const countryName = event.target.value;
 
       // Clear previous options
       subdivisionSelect.innerHTML = '<option value="">Select a State/Province</option>';
       subdivisionSelect.disabled = true;
 
-      if (countryCode) {
-          fetch(`/accounts/subdivisions/?country=${countryCode}`)
+      if (countryName) {
+          fetch(`/accounts/subdivisions/?country=${countryName}`)
               .then(response => response.json())
               .then(data => {
                   if (data.length > 0) {

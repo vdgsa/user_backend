@@ -89,7 +89,7 @@ class UserProfileForm(ModelForm):
         self.fields['address_city'].required = True
         self.fields['address_postal_code'].required = True
         self.fields['address_country'].required = True
-        
+
         if self.instance.address_country in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
             self.fields['address_state'].widget.choices = [('', 'Select State/Province')]+[(c.code.split('-')[1], c.name)
             for c in LocationAddress.getSubdivisions(self.instance.address_country)]
@@ -97,7 +97,7 @@ class UserProfileForm(ModelForm):
             self.fields['address_state'].widget.choices = [('', 'N/A - No Subdivisions')]
         
         self.fields['address_country'].widget.choices = [
-            (c.alpha_2, c.name) for c in LocationAddress.getCountries()]
+            (c.name, c.name) for c in LocationAddress.getCountries()]
     
     def clean(self):
         # Example cross-field validation
