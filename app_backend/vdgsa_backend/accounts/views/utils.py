@@ -50,7 +50,7 @@ class LocationAddress():
 
     COUNTRY_SUBDIVISION_WHITELIST = ['United States', 'Canada', 'Mexico', 'Japan',
                                      'Brazil', 'Australia', 'New Zealand', 'China', 'Italy', 'Malaysia', 'South Korea', 'Venezuela']
-    
+
     # US: US (Alpha-2), USA (Alpha-3)
     # Canada: CA, CAN
     # Mexico: MX, MEX
@@ -81,11 +81,11 @@ class LocationAddress():
                     .order_by("address_country")
                     .values_list("address_country", flat=True)
                     .distinct("address_country")
-                   
+
                 )
 
                 countries_list = [c.strip() for c in list(codes_qs) if c and c.strip()]
-               
+
             except Exception:
                 countries_list = []
 
@@ -93,7 +93,7 @@ class LocationAddress():
             for countryName in countries_list:
                 country = None
                 # Try name match first
-                country = pycountry.countries.lookup(countryName)
+                country = pycountry.countries.get(name=countryName)
                 if not country:
                 # Try alpha_2 match first
                     country = pycountry.countries.get(alpha_2=countryName.upper())
@@ -120,7 +120,7 @@ class LocationAddress():
         # Get all subdivisions for the specified country code
         if country_name not in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
             return
-        
+
         country = pycountry.countries.lookup(country_name)
         subdivisions = pycountry.subdivisions.get(country_code=country.alpha_2)
 
