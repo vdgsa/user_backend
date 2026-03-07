@@ -67,6 +67,7 @@ class LocationAddress():
     def getCountries(filter_to_users: bool = False) -> List[Dict[str, object]]:
         # Get the iterable collection of country objects and convert it to a list
         countries_list = list(pycountry.countries)
+        return countries_list
 
         # If requested, filter to only countries that appear in User.address_country
         if filter_to_users:
