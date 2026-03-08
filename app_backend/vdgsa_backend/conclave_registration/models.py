@@ -443,13 +443,13 @@ class AdditionalRegistrationInfo(models.Model):
 
             if hasattr(image, '_getexif') and image._getexif() is not None:
                 exif = dict(image._getexif().items())
-
-                if exif[orientation] == 3:
-                    image = image.transpose(Image.ROTATE_180)
-                elif exif[orientation] == 6:
-                    image = image.transpose(Image.ROTATE_270)
-                elif exif[orientation] == 8:
-                    image = image.transpose(Image.ROTATE_90)
+                if orientation in exif:
+                    if exif[orientation] == 3:
+                        image = image.transpose(Image.ROTATE_180)
+                    elif exif[orientation] == 6:
+                        image = image.transpose(Image.ROTATE_270)
+                    elif exif[orientation] == 8:
+                        image = image.transpose(Image.ROTATE_90)
 
                 rotated_io = BytesIO()
                 image.save(rotated_io, format='PNG', quality=85)
