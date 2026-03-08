@@ -331,12 +331,14 @@
       $('#id_user_image_file_name').hide()
       $('#user_image_file_name_current').hide()
       $('#user_image_file_name-clear_id').val('on')
-      $('#id_user_image_file_name').required = false;
+      $('#id_user_image_file_name').removeAttr('required');
+
     }else{
       $('#id_user_image_file_name').show()
       $('#user_image_file_name_current').show()
       $('#user_image_file_name-clear_id').val('')
-      $('#id_user_image_file_name').required = true;
+      $('#id_user_image_file_name').prop('required', true);
+
     }
   }
 

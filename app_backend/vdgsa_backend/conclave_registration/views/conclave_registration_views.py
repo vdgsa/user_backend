@@ -460,11 +460,11 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
                 and not cleaned_data.get('user_image_file_name'):
             raise ValidationError({'user_image_file_name': 'You must provide a photo or opt-out.'})
 
-        content = cleaned_data['user_image_file_name']
+        imagefile = cleaned_data.get('user_image_file_name', None)
 
         MAX_SIZE = 10 * 1024 * 1024 # 10 MB
-        if content.size > MAX_SIZE:
-            raise forms.ValidationError(f"File size must be under 10 MB. Uploaded file size: {content.size} bytes.")
+        if imagefile and hasattr(imagefile, "size") and imagefile.size > MAX_SIZE:
+            raise ValidationError(f"File size must be under 10 MB. Uploaded file size: {imagefile.size} bytes.")
 
         return cleaned_data
     
