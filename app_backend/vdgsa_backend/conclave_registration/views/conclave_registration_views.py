@@ -425,7 +425,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'photo_release_auth': '',
             'other_info': '',
             'user_image_file_name': 'Picture to help organizers.',
-            'user_image_opt_out': 'I\'d rather not included a picture.',
+            'user_image_opt_out': 'I\'d rather not include a picture.',
         }
 
     do_not_send_text_updates = BooleanField(
