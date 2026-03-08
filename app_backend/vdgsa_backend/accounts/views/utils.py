@@ -50,7 +50,7 @@ class LocationAddress():
 
     COUNTRY_SUBDIVISION_WHITELIST = ['United States', 'Canada', 'Mexico', 'Japan',
                                      'Brazil', 'Australia', 'New Zealand', 'China', 'Italy', 'Malaysia', 'South Korea', 'Venezuela']
-    
+
     # US: US (Alpha-2), USA (Alpha-3)
     # Canada: CA, CAN
     # Mexico: MX, MEX
@@ -67,6 +67,7 @@ class LocationAddress():
     def getCountries(filter_to_users: bool = False) -> List[Dict[str, object]]:
         # Get the iterable collection of country objects and convert it to a list
         countries_list = list(pycountry.countries)
+        return countries_list
 
         # If requested, filter to only countries that appear in User.address_country
         if filter_to_users:
@@ -81,11 +82,11 @@ class LocationAddress():
                     .order_by("address_country")
                     .values_list("address_country", flat=True)
                     .distinct("address_country")
-                   
+
                 )
 
                 countries_list = [c.strip() for c in list(codes_qs) if c and c.strip()]
-               
+
             except Exception:
                 countries_list = []
 
@@ -93,7 +94,7 @@ class LocationAddress():
             for countryName in countries_list:
                 country = None
                 # Try name match first
-                country = pycountry.countries.lookup(countryName)
+                country = pycountry.countries.get(name=countryName)
                 if not country:
                 # Try alpha_2 match first
                     country = pycountry.countries.get(alpha_2=countryName.upper())
@@ -116,11 +117,14 @@ class LocationAddress():
         sorted_countries = sorted(countries_list, key=lambda country: country.name)
         return sorted_countries
 
+    def isCountry( country_name: str) -> bool:
+        return country_name in (c.name for c in LocationAddress.getCountries())
+
     def getSubdivisions(country_name: str, filter_to_users: bool = False) -> List[Dict[str, object]]:
         # Get all subdivisions for the specified country code
         if country_name not in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
             return
-        
+
         country = pycountry.countries.lookup(country_name)
         subdivisions = pycountry.subdivisions.get(country_code=country.alpha_2)
 
