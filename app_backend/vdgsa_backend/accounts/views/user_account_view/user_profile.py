@@ -143,7 +143,6 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse('user-account', kwargs={'pk': self.requested_user.pk})
 
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
-        print('form valid',form.errors)
         super().form_valid(form)
         return get_ajax_form_response(
             'success',
@@ -153,7 +152,6 @@ class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         )
 
     def form_invalid(self, form: BaseModelForm) -> HttpResponse:
-        print('form invalid',form.errors)
         return get_ajax_form_response(
             'form_validation_error',
             form,

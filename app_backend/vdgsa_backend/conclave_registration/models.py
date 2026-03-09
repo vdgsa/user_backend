@@ -454,8 +454,12 @@ class AdditionalRegistrationInfo(models.Model):
                 rotated_io = BytesIO()
                 image.save(rotated_io, format='PNG', quality=85)
 
+                self.user_image_file_name.save(self.user_image_file_name.name, File(rotated_io), save=False)
+            else:
+                # If there's no EXIF data, just save the original image
                 self.user_image_file_name.save(
-                    f'manipulated_{self.user_image_file_name.name}', File(rotated_io), save=False)
+                    self.user_image_file_name.name, self.user_image_file_name.file, save=False)
+
 
         super().save(*args, **kwargs)
 
