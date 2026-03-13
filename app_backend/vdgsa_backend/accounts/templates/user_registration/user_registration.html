@@ -64,5 +64,7 @@
               .catch(error => console.error('Error:', error));
       }
   });
+
+  countrySelect.dispatchEvent( new Event('change'));
 </script>
 {% endblock %}
