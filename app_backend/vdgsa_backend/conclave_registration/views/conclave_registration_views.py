@@ -36,7 +36,7 @@ from vdgsa_backend.conclave_registration.models import (
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing,
     HousingRoomType, InstrumentBringing, InstrumentPurpose, PaymentInfo, Period, Program,
     RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, SelfRatingInfo, TShirts,
-    WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
+    WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, YesNoMaybeNa, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.summary_and_charges import (
     get_charges_summary, get_registration_summary
@@ -364,6 +364,15 @@ class YesNoMaybeRadioField(forms.ChoiceField):
         kwargs['choices'] = YesNoMaybe.choices
         super().__init__(widget=widget, **kwargs)
 
+class YesNoMaybeNaRadioField(forms.ChoiceField):
+    def __init__(
+        self,
+        widget: widgets.Widget | Type[widgets.Widget] | None = forms.RadioSelect,
+        **kwargs: Any
+    ) -> None:
+        kwargs['choices'] = YesNoMaybeNa.choices
+        super().__init__(widget=widget, **kwargs)
+
 
 class ImageFieldWidgetWithPreview(ClearableFileInput):
     template_name = 'registration/upload_image.html'
@@ -436,7 +445,7 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         label='', no_label='No, this is my first Conclave!',
         required=False)
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
-    can_drive_loaners = YesNoMaybeRadioField(label='', required=False)
+    can_drive_loaners = YesNoMaybeNaRadioField(label='', required=False)
     liability_release = BooleanField(required=True, label='I agree')
     covid_policy = BooleanField(required=True, label='I agree')
     photo_release_auth = YesNoRadioField(
@@ -450,7 +459,13 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
         if self.registration_entry.program == Program.non_playing_attendee \
                 or self.registration_entry.program == Program.faculty_guest_other:
             return False
-        return True
+        return True    
+    
+    def ask_newbie_questions(self) -> bool:
+        if self.registration_entry.program == Program.regular \
+                or self.registration_entry.program == Program.part_time :
+            return True
+        return False
 
     def clean(self) -> Dict[str, Any]:
         cleaned_data = super().clean()
@@ -1451,7 +1466,7 @@ class PaymentView(_RegistrationStepViewBase):
 
         if not hasattr(self.registration_entry, 'housing'):
             missing_sections.append('Housing')
-
+        
         return missing_sections
 
 

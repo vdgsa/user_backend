@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 from io import BytesIO
-from itertools import product
 import os
 import tempfile
 import zipfile
@@ -11,7 +10,7 @@ from typing import Any, Counter
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import transaction
-from django.db.models import Q, F, Count
+from django.db.models import Q, Count
 from django.db.models.query import QuerySet
 from django.forms import widgets
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -95,6 +94,9 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'vendor_table_cost_per_day',
 
             'confirmation_email_intro_text',
+            'newbie_welcome_text',
+            'work_study_explanatory_text',
+            'class_selection_text',
         ]
 
         labels = {
@@ -139,7 +141,10 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             ),
             'workshop_fee': 'Conference fee (for non-playing attendees and on-campus beginners).',
             'prorated_workshop_fee': 'Prorated conference fee for partial-week (for non-playing '
-                                     'attendees and on-campus beginners).'
+                                     'attendees and on-campus beginners).',
+            'newbie_welcome_text':'Text before newbie questions.',
+            'work_study_explanatory_text':'Text on work study page.',
+            'class_selection_text':'Text on class selection page.',
         }
 
         widgets = {
@@ -157,6 +162,10 @@ class ConclaveRegistrationConfigForm(forms.ModelForm):
             'departure_date_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'banquet_food_options': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
             'housing_form_pre_arrival_markdown': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'newbie_welcome_text': widgets.Textarea(attrs={'rows': 4, 'cols': None}),
+            'work_study_explanatory_text': widgets.Textarea(attrs={'rows': 4, 'cols': None}),
+            'class_selection_text': widgets.Textarea(attrs={'rows': 4, 'cols': None}),
+            
         }
 
 

@@ -15,7 +15,7 @@
 
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
-
+  <input type="hidden" name="ask_newbie_questions" id="ask_newbie_questions" value="{{ form.ask_newbie_questions }}"> 
   {% if form.non_field_errors %}
     <div class="form-field-errors mt-1">
         {% for error in form.non_field_errors %}
@@ -94,7 +94,7 @@
   
     <div class="row mt-2">
       <div class="col-md-6">
-        Would you like your name to be included in the "who's coming to Conclave" list,
+        Would you like your name to be included in the "Who's coming to Conclave" list,
         visible on the Members' Area of our website?
       </div>
     </div>
@@ -131,6 +131,12 @@
 
     <div id="newbie-wrapper">
 
+      <div class="row">
+        <div class="col-md-6">
+          {{registration_entry.conclave_config.newbie_welcome_text | markdownify}}
+        </div>
+      </div>
+            
       <div class="row">
         <div class="col-md-6">
           {% include 'utils/form_field.tmpl' with field=form.newbie_how_long_playing %}
@@ -327,24 +333,29 @@
   radio_button_hide('wants_display_space', '#num-display-space-days-wrapper');
 
   var user_image_opt_out_toggle = function(){
-    if($('#id_user_image_opt_out')[0].checked){
+    if($('#id_user_image_file_name').length &&
+        $('#id_user_image_opt_out')[0].checked){
       $('#id_user_image_file_name').hide()
       $('#user_image_file_name_current').hide()
       $('#user_image_file_name-clear_id').val('on')
       $('#id_user_image_file_name').removeAttr('required');
 
     }else{
+      if ($("#user_image_file_name-clear_id_saved").length){ //existing photo 
+        $('#id_user_image_file_name').removeAttr('required');
+      }else{
+        $('#id_user_image_file_name').prop('required', true);
+      }
       $('#id_user_image_file_name').show()
       $('#user_image_file_name_current').show()
       $('#user_image_file_name-clear_id').val('')
-      $('#id_user_image_file_name').prop('required', true);
-
     }
   }
 
   var hide_show_newbie = function(){
     var isNewbie = $('input[name="attended_conclave_before"]:checked').val()=='no';
-    if(isNewbie){
+    var askNewbieQuestions = $('#ask_newbie_questions').val()=='True'
+    if(isNewbie && askNewbieQuestions){
       $('#newbie-wrapper').show()
     }else{
       $('#newbie-wrapper').hide()
@@ -356,6 +367,18 @@
     $('input[name="attended_conclave_before"]').on('change',hide_show_newbie);
     user_image_opt_out_toggle()
     hide_show_newbie()
+
+    const fileInput = document.getElementById('id_user_image_file_name');
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file && file.size > 10 * 1024 * 1024) {
+            alert('File is too large! Max size is 10MB.');
+            fileInput.value = ''; // Clear the input
+        }
+    });
+
+
+
   });
 
 </script>

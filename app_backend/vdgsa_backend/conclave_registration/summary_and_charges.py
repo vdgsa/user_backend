@@ -14,8 +14,8 @@ from typing import Final, Literal, TypedDict, get_args
 from vdgsa_backend.conclave_registration.models import (
     NOT_ATTENDING_BANQUET_SENTINEL, AdditionalRegistrationInfo, BeginnerInstrumentInfo,
     ClassChoiceDict, ConclaveRegistrationConfig, DietaryNeeds, Housing, HousingRoomType,
-    InstrumentBringing, InstrumentChoices, InstrumentPurpose, Period, Program, RegistrationEntry,
-    RegularProgramClassChoices, TShirts, YesNo
+    InstrumentBringing, InstrumentChoices, InstrumentPurpose, RelativeInstrumentLevel, Period, Program, RegistrationEntry,
+    RegularProgramClassChoices, SelfRatingInfo, TShirts, YesNo
 )
 
 
@@ -40,6 +40,7 @@ def get_registration_summary(registration_entry: RegistrationEntry) -> Registrat
     return {
         'program': Program(registration_entry.program),
         'applying_for_work_study': registration_entry.is_applying_for_work_study,
+        'self_rating': get_self_rating_summary(registration_entry),
         'instruments': get_instruments_summary(registration_entry),
         'classes': get_class_summary(registration_entry),
         'housing': get_housing_summary(registration_entry),
@@ -47,6 +48,12 @@ def get_registration_summary(registration_entry: RegistrationEntry) -> Registrat
         'vendors': get_vendor_summary(registration_entry),
     }
 
+
+def get_self_rating_summary(registration_entry: RegistrationEntry) -> list[str]:
+    if not hasattr(registration_entry, 'self_rating'):
+        return None
+    else:
+        return registration_entry.self_rating
 
 def get_instruments_summary(registration_entry: RegistrationEntry) -> list[str]:
     match(registration_entry.program):
@@ -58,7 +65,8 @@ def get_instruments_summary(registration_entry: RegistrationEntry) -> list[str]:
                 return [InstrumentChoices(beginner_instruments.instrument_bringing).label]
         case _:
             return [
-                str(instrument) + f' ({InstrumentPurpose(instrument.purpose).label})'
+                str(instrument) + f' ({InstrumentPurpose(instrument.purpose).label})' \
+                    + f' ({RelativeInstrumentLevel(instrument.relative_level).label})'
                 for instrument in registration_entry.instruments_bringing.all()
             ]
     assert False  # suppress mypy warning

@@ -129,6 +129,10 @@ class ConclaveRegistrationConfig(models.Model):
 
     vendor_table_cost_per_day = models.IntegerField(blank=True, default=25)
 
+    newbie_welcome_text = models.TextField(blank=True, default='newbie_welcome_text')
+    work_study_explanatory_text = models.TextField(blank=True, default='work_study_explanatory_text')
+    class_selection_text = models.TextField(blank=True, default='class_selection_text')
+
     # NOT markdown. Use <br> on each separate line where you want a blank line
     confirmation_email_intro_text = models.TextField(
         blank=True,
@@ -257,7 +261,11 @@ class YesNoMaybe(models.TextChoices):
     no = 'no'
     maybe = 'maybe'
 
-
+class YesNoMaybeNa(models.TextChoices):
+    yes = 'yes'
+    no = 'no'
+    maybe = 'maybe'
+    na = 'N/A', 'N/A' 
 class Program(models.TextChoices):
     regular = 'regular', 'Regular Curriculum Full-time (2-3 classes + optional "Freebie")'
     part_time = 'part_time', 'Regular Curriculum Part-time (1 class only)'
@@ -408,7 +416,7 @@ class AdditionalRegistrationInfo(models.Model):
     newbie_repertoire = models.TextField(blank=True)
     newbie_other_info = models.TextField(blank=True)
 
-    can_drive_loaners = models.TextField(choices=YesNoMaybe.choices, blank=True)
+    can_drive_loaners = models.TextField(choices=YesNoMaybeNa.choices, blank=True)
     # willing_to_help_with_small_jobs = models.BooleanField(blank=True)
     wants_display_space = models.TextField(choices=YesNo.choices)
     num_display_space_days = models.IntegerField(
@@ -629,8 +637,9 @@ class InstrumentChoices(models.TextChoices):
     tenor = 'tenor'
     bass = 'bass', '6-string Bass'
     bass_7_string = 'bass_7_string', '7-string Bass'
+    renaissance_viol = 'renaissance_viol', 'Renaissance Viol'
     vielle = 'vielle'
-    other = 'other', 'Other Instrument or Renaissance Viol'
+    other = 'other', 'Other Instrument (specify below)'
 
 
 class InstrumentPurpose(models.TextChoices):
@@ -676,6 +685,8 @@ class InstrumentBringing(models.Model):
     def __str__(self) -> str:
         if self.size == InstrumentChoices.other:
             return self.name_if_other
+        elif self.size == InstrumentChoices.renaissance_viol:
+            return f'Renaissance viol {self.name_if_other}'
 
         return InstrumentChoices(self.size).label
 
@@ -861,6 +872,7 @@ class DietaryNeeds(models.TextChoices):
     gluten_free = 'gluten_free'
     nut_allergy = 'nut_allergy'
     shellfish_allergy = 'shellfish_allergy'
+    no_restrictions = 'no_restrictions'
 
 
 class Housing(models.Model):

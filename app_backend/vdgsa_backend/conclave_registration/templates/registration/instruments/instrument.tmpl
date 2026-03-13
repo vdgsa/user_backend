@@ -3,6 +3,8 @@
 <div>
   {% if instrument.size == 'other' %}
   {{instrument.name_if_other}}
+  {% elif instrument.size == 'renaissance_viol' %}
+  {{instrument.size | format_instrument_size}} {{instrument.name_if_other}}
   {% else %}
   {{instrument.size | format_instrument_size}}
   {% endif %}

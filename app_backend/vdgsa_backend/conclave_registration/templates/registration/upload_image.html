@@ -1,5 +1,6 @@
 {% if widget.is_initial %} 
     <img src="{{ widget.value.url }}" alt="Current image" id="{{ widget.name }}_current" style="max-height: 200px;margin: 10px;"/><br>
+    <input type="hidden" name="{{ widget.checkbox_name }}_saved" id="{{ widget.checkbox_id }}_saved"> 
 {% endif %}
 
 <input class="form-control" type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>

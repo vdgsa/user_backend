@@ -1,6 +1,7 @@
 {% extends 'registration/registration_base.html' %}
 {% block content %}
 
+{% load markdownify %}
 {% load vdgsa_tags %}
 
 <h3>Work-Study</h3>
@@ -79,19 +80,9 @@
 
     <div class="row mt-4 mb-2">
       <div class="col-md-8" style="border: 1px solid slategray; padding: .5rem .75rem">
-        All custodes are expected on site at Conclave at least from 10am on the opening Sunday to 1pm on the
-        closing Sunday. We will have our kickoff / custos orientation meeting at 10am on Sunday. Setting up
-        signage, setting up and running registration, helping people move in and out of the dorms, and cleaning up
-        after everyone else leaves are vital parts of the Custos contribution. Exceptions can be made, but we need
-        to know in advance so we can plan.
-        <br>
-        Please take a moment to explore the travel options available to you, and if you're flying, keep in mind that
-        you'll also need travel time to get from the airport to campus.
-        <br>
-        There are a few openings available for custodes to arrive a day or two early (on Friday or Saturday) before
-        Conclave, in exchange for helping with setup before everyone else arrives. This can be a great option if
-        time zones or other travel logistics make it difficult for you to arrive on time for the 10am kickoff on
-        Sunday.
+
+          {{registration_entry.conclave_config.work_study_explanatory_text | markdownify}}
+
       </div>
     </div>
 
