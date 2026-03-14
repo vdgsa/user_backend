@@ -25,6 +25,12 @@
   </a>
 </div>
 
+<div>
+  <a href="{% url 'registration-photos' conclave_config_pk=object.pk %}" >
+    Photo directory
+  </a>
+</div>
+
 <h3 class="mt-4">Classes</h3>
 <div><a href="{% url 'create-class' conclave_config_pk=object.pk %}">Add a class</a></div>
 <div>

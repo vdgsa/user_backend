@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load vdgsa_tags %}
+{% load conclave_tags %}
+
+<script>
+  function setupDivSearchFilter(inputSelector, containerSelector, divSelector) {
+    const searchInput = document.querySelector(inputSelector);
+    // Use the container to limit the scope of the search for divs
+    const container = document.querySelector(containerSelector);
+    if (!searchInput || !container) {
+      console.error("Missing input or container elements.");
+      return;
+    }
+    const divsToFilter = container.querySelectorAll(divSelector);
+
+    // 2. Define the filtering logic
+    const filterDivs = () => {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+
+      divsToFilter.forEach(div => {
+        const divText = div.textContent.toLowerCase();
+        // Check if the div's text content includes the search term
+        if (divText.includes(searchTerm)) {
+          div.style.display = ''; // Show the element (resets to default display, e.g., block/flex)
+        } else {
+          div.style.display = 'none'; // Hide the element
+        }
+      });
+    };
+
+    // 3. Attach an event listener to the input field
+    // 'input' event is best as it fires immediately as the user types, pastes, or clears the field
+    searchInput.addEventListener('input', filterDivs);
+
+    // Optional: Run once on page load if the input might have a default value
+    filterDivs();
+  }
+
+  function clearSearchFilter() {
+    const searchInput = document.querySelector('#search-photo-input');
+    searchInput.value = '';
+    var event = new Event('input');
+    searchInput.dispatchEvent(event);
+  }
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setupDivSearchFilter('#search-photo-input', '#divContainer', '.filterableDiv');
+  });
+
+</script>
+<h3>Conclave {{conclave_config.year}} Registration Photos</h3>
+<div class="container py-3">
+  <div class="d-flex justify-content-start mb-3">
+    <div>
+      <div>
+        <a href="{% url 'registration-photos-download' conclave_config_pk=conclave_config.pk %}">
+          Download All Photos as ZIP
+        </a>
+      </div>
+      <div class="my-2">
+        <a href="{% url 'list-registration-entries' conclave_config_pk=conclave_config.pk %}">
+          Back to this year's registration entries
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-center mb-3">
+  <div>
+    <input class="form-input" type="text" id="search-photo-input" placeholder="Search" />
+    <button class="btn btn-primary btn-sm" onclick="clearSearchFilter()">Clear</button>
+  </div>
+</div>
+
+<div class="flex justify-content-center mb-3" id="divContainer">
+
+  {% for entry in object_list %}
+  <div class="filterableDiv" onclick="window.location = '{% url 'conclave-basic-info' conclave_reg_pk=entry.pk %}'">
+    <img src="/uploads/{{ entry.additional_info.user_image_file_name }}" alt="{{entry.user | show_name}}"
+      style="max-height: 200px;margin-left: 10px;" />
+    <p>{{entry.user | show_name_and_email}} ({{entry.program}})</p>
+  </div>
+  {% endfor %}
+</div>
+
+
+{% endblock %}
+
+{% block page_style %}
+<style>
+  #divContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .filterableDiv {
+    /* Optional: allows items to grow and fill available space */
+    flex: 1;
+    /* Optional: ensures minimum width on larger screens to prevent shrinking too much */
+    min-width: 400px;
+    max-width: 400px;
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+  }
+
+  .filterableDiv:hover {
+    cursor: pointer;
+    background-color: rgb(240, 240, 240);
+  }
+</style>
+{% endblock %}
