@@ -96,10 +96,76 @@ If you add/change/remove any files in `app_backend/static`, run the following to
 
 ## Deploying to Production
 
-pip install django-recaptcha
-pip install python-dotenv
-pip install django-resized
+### Set Secrets & Application Public Keys
 
-.env file contains key
-RECAPTCHA_PUBLIC_KEY = ''
-RECAPTCHA_PRIVATE_KEY = ''
+#### Application Public Keys
+In `deployment/prod/.env`, set the following environment variables:
+- STRIPE_PUBLIC_KEY to the publishable key for your selected Stripe sandbox.
+- RECAPTCHA_PUBLIC_KEY to the recaptcha public key.
+
+#### Secrets
+Write these values to files with the names specified below.
+1. Postgres password (this can be any random string): `deployment/prod/secrets/postgres_password`
+1. Stripe secret key (use the key for your stripe sandbox): `deployment/prod/secrets/stripe_private_key`
+1. Django app secret key (this can be any random string of letters): `deployment/prod/secrets/django_app_secret_key`
+1. Recaptcha private key: `deployment/prod/secrets/recaptcha_private_key`
+
+## Setting Up Read-Only Remote DB Access
+Things to know:
+- The nginx-acme directory has:
+  - The nginx config for a webserver that the acme challenge can send requests to (conf.d/default.conf)
+  - The directory for the acme challenge file to be written to (acme-challenge)
+- The directory letsencrypt/certificates is where the SSL cert will be saved to.
+
+### Create a Read-only postgres user
+```
+docker exec -it vdgsa_prod_postgres psql -U postgres
+```
+Then in the postgres shell (replace <password> with an actual password):
+```
+CREATE ROLE hex_read_only WITH LOGIN PASSWORD '<password>';
+\connect postgres;
+
+GRANT CONNECT ON DATABASE postgres TO hex_read_only;
+GRANT USAGE ON SCHEMA public TO hex_read_only;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO hex_read_only;
+```
+Note that the "public" schema exists by default.
+Since we haven't configured anything otherwise, all our tables are in the "public" schema.
+
+### Obtain an SSL Cert with Let's Encrypt
+If it doesn't exist already, create a "letsencrypt" directory that the cert will be added to.
+```
+mkdir -p /home/vdgsaapi/letsencrypt
+```
+
+Using the Docker version of the LEGO acme client, obtain the cert:
+```
+docker run -i -v /home/vdgsaapi/letsencrypt:/.lego -v /home/vdgsaapi/nginx-acme/acme-webroot:/webroot goacme/lego --http.webroot /webroot  --email="webmaster@vdgsa.org" --domains="marais.vdgsa.org" --http run
+```
+
+### Set Up a Cron Job to Renew the Cert
+Open crontab with `crontab -e`, then add the following:
+```0 3 1 * * docker run -i --rm -v /home/vdgsaapi/letsencrypt:/.lego -v /home/vdgsaapi/nginx-acme/acme-webroot:/webroot goacme/lego --http.webroot /webroot  --email="webmaster@vdgsa.org" --domains="marais.vdgsa.org" --http renew &>> /home/vdgsaapi/crontablog.dbcert.log && docker exec -it -u postgres vdgsa_prod_postgres pg_ctl reload
+
+### Update postgres.conf to use the cert
+If it doesn't exist already, make a copy of the default postgres.conf file.
+```
+mkdir -p /home/vdgsaapi/postgres
+if ! test -f /home/vdgsaapi/postgres/postgresql.conf; then
+  docker exec -it vdgsa_prod_postgres cat /usr/share/postgresql/postgresql.conf.sample > /home/vdgsaapi/postgres/postgresql.conf
+fi
+```
+Then find and update the following settings in postgresql.conf:
+```
+listen_addresses = '*'
+ssl = on
+ssl_cert_file = '/letsencrypt/marais.vdgsa.org.crt'
+ssl_key_file = '/letsencrypt/marais.vdgsa.org.key'
+```
+
+### Re-up the Postgres Service
+```
+cd vdgsa_backend/deployment/prod
+docker compose stop postgres
+docker compose up -d postgres

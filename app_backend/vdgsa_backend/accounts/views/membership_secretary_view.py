@@ -44,7 +44,7 @@ class AddUserForm(forms.ModelForm):
                 
             ),
             'address_country': Select(
-                choices=[(c.alpha_2, c.name) for c in LocationAddress.getCountries()]
+                choices=[(c.name, c.name) for c in LocationAddress.getCountries()]
             ),
         }
 
