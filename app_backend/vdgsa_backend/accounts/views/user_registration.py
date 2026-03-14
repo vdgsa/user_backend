@@ -21,9 +21,10 @@ class UserRegistrationForm(PasswordResetForm):
     address_line_1 = forms.CharField()
     address_line_2 = forms.CharField(required=False)
     address_city = forms.CharField(label='City')
-    address_state = forms.ChoiceField(
-            choices=[('','Select State/Province')]+[(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions('United States')],
-            label="State/Province"
+    address_state = forms.Field(
+            label="State/Province",
+            widget=forms.Select(choices=[('','Select State/Province')]+[(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions('United States')],
+            )
         )
     address_postal_code = forms.CharField(label='ZIP/Postal Code')
     address_country = forms.ChoiceField(
