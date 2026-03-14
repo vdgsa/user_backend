@@ -145,3 +145,6 @@ stripe_key
 deployment/**/secrets
 deployment/**/public_keys
 deployment/**/volumes
+
+# mac files
+.DS_Store

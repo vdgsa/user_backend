@@ -31,7 +31,6 @@ def current_user_account_view(request: HttpRequest) -> HttpResponse:
     return redirect(reverse('user-account', kwargs={'pk': request.user.pk}))
 
 
-
 class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = User
     form_class = UserProfileForm
@@ -71,7 +70,8 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         if self.requested_user.subscription.membership_type == MembershipType.lifetime:
             return False
 
-        return date.today() > self.requested_user.subscription.valid_until.date() - relativedelta(months=6)
+        return date.today() > (self.requested_user.subscription.valid_until.date()
+                               - relativedelta(months=6))
 
     def test_func(self) -> Optional[bool]:
         return is_requested_user_or_membership_secretary(

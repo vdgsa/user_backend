@@ -15,7 +15,10 @@
 {% endif %}
 
 {% if registration_summary.instruments %}
-<div class="fs-5 mt-2">Instruments</div>
+<div class="fs-5 mt-2">Self Rating & Instruments</div>
+<div id="self_rating-summary" class="ps-3" >
+  Self Rating: {{registration_summary.self_rating.level}}
+</div>
 <div id="instruments-summary">
   <ul>
   {% for instrument in registration_summary.instruments %}
@@ -24,6 +27,8 @@
   </ul>
 </div>
 {% endif %}
+
+
 
 {% if registration_summary.classes %}
 <div class="fs-5 mt-2">Classes</div>

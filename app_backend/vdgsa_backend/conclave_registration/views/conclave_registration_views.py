@@ -17,6 +17,7 @@ from django.db.models.base import Model
 from django.forms import widgets
 from django.forms.fields import BooleanField, IntegerField
 from django.forms.utils import ErrorDict
+from django.forms.widgets import ClearableFileInput
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -35,7 +36,7 @@ from vdgsa_backend.conclave_registration.models import (
     BeginnerInstrumentInfo, Class, Clef, ConclaveRegistrationConfig, DietaryNeeds, Housing,
     HousingRoomType, InstrumentBringing, InstrumentPurpose, PaymentInfo, Period, Program,
     RegistrationEntry, RegistrationPhase, RegularProgramClassChoices, SelfRatingInfo, TShirts,
-    WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, get_classes_by_period
+    WorkStudyApplication, WorkStudyJob, YesNo, YesNoMaybe, YesNoMaybeNa, get_classes_by_period
 )
 from vdgsa_backend.conclave_registration.summary_and_charges import (
     get_charges_summary, get_registration_summary
@@ -284,6 +285,7 @@ class _RegistrationStepViewBase(LoginRequiredMixin, UserPassesTestMixin, SingleO
         return self.form_class(
             self.registration_entry,
             self.request.POST,
+            self.request.FILES,
             editor=self.request.user,
             instance=self.get_step_instance()
         )
@@ -362,6 +364,19 @@ class YesNoMaybeRadioField(forms.ChoiceField):
         kwargs['choices'] = YesNoMaybe.choices
         super().__init__(widget=widget, **kwargs)
 
+class YesNoMaybeNaRadioField(forms.ChoiceField):
+    def __init__(
+        self,
+        widget: widgets.Widget | Type[widgets.Widget] | None = forms.RadioSelect,
+        **kwargs: Any
+    ) -> None:
+        kwargs['choices'] = YesNoMaybeNa.choices
+        super().__init__(widget=widget, **kwargs)
+
+
+class ImageFieldWidgetWithPreview(ClearableFileInput):
+    template_name = 'registration/upload_image.html'
+
 
 class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     class Meta:
@@ -370,12 +385,22 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
             'nickname',
             'phone',
             'do_not_send_text_updates',
+            'emergency_contact_name',
+            'emergency_contact_phone',
             'age',
             'gender',
             'pronouns',
+            'user_image_file_name',
+            'user_image_opt_out',
             'include_in_whos_coming_to_conclave_list',
             'attended_conclave_before',
             'buddy_willingness',
+            'newbie_how_long_playing',
+            'newbie_play_regularly',
+            'newbie_taken_lessons',
+            'newbie_repertoire',
+            'newbie_other_info',
+
             'can_drive_loaners',
             # 'willing_to_help_with_small_jobs',
             'wants_display_space',
@@ -388,26 +413,39 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
 
         widgets = {
             'other_info': widgets.Textarea(attrs={'rows': 5, 'cols': None}),
+            'user_image_file_name': ImageFieldWidgetWithPreview,
         }
 
         labels = {
             'nickname': '',
             'phone': '',
+            'emergency_contact_name': 'Emergency Contact: Name',
+            'emergency_contact_phone': 'Telephone number',
             'include_in_whos_coming_to_conclave_list': '',
             'attended_conclave_before': '',
             'buddy_willingness': '',
+            'newbie_how_long_playing': 'How long have you been playing? Did you come from another instrument?',
+            'newbie_play_regularly': 'Do you play regularly with others? What do you think are your strengths and weaknesses as an ensemble player?',
+            'newbie_taken_lessons': 'Have you taken lessons? Whom have you worked with? If you\'re willing to provide their contact information, that could be very helpful.',
+            'newbie_repertoire': 'What repertoire have you been playing lately? What do you particularly enjoy?',
+            'newbie_other_info': 'Is there anything else you’d like to share with the Music Director?',
             'wants_display_space': '',
             'num_display_space_days': '',
             'photo_release_auth': '',
             'other_info': '',
+            'user_image_file_name': 'Picture to help organizers.',
+            'user_image_opt_out': 'I\'d rather not include a picture.',
         }
 
-    do_not_send_text_updates = BooleanField(required=False, label='I would like to opt-out of text reminders')
-    include_in_whos_coming_to_conclave_list = YesNoRadioField(label='')
+    do_not_send_text_updates = BooleanField(
+        required=False, label='I would like to opt-out of text reminders')
+    include_in_whos_coming_to_conclave_list = YesNoRadioField(label='',
+        required=False)
     attended_conclave_before = YesNoRadioField(
-        label='', no_label='No, this is my first Conclave!')
+        label='', no_label='No, this is my first Conclave!',
+        required=False)
     buddy_willingness = YesNoMaybeRadioField(label='', required=False)
-    can_drive_loaners = YesNoMaybeRadioField(label='', required=False)
+    can_drive_loaners = YesNoMaybeNaRadioField(label='', required=False)
     liability_release = BooleanField(required=True, label='I agree')
     covid_policy = BooleanField(required=True, label='I agree')
     photo_release_auth = YesNoRadioField(
@@ -417,8 +455,49 @@ class AdditionalInfoForm(_RegistrationStepFormBase, forms.ModelForm):
     )
     wants_display_space = YesNoRadioField(label='')
 
+    def requirePicture(self) -> bool:
+        if self.registration_entry.program == Program.non_playing_attendee \
+                or self.registration_entry.program == Program.faculty_guest_other:
+            return False
+        return True    
+    
+    def ask_newbie_questions(self) -> bool:
+        if self.registration_entry.program == Program.regular \
+                or self.registration_entry.program == Program.part_time :
+            return True
+        return False
+
+    def clean(self) -> Dict[str, Any]:
+        cleaned_data = super().clean()
+
+        if self.requirePicture() \
+                and not cleaned_data.get('user_image_opt_out') \
+                and not cleaned_data.get('user_image_file_name'):
+            raise ValidationError({'user_image_file_name': 'You must provide a photo or opt-out.'})
+
+        imagefile = cleaned_data.get('user_image_file_name', None)
+
+        MAX_SIZE = 10 * 1024 * 1024 # 10 MB
+        if imagefile and hasattr(imagefile, "size") and imagefile.size > MAX_SIZE:
+            raise ValidationError(f"File size must be under 10 MB. Uploaded file size: {imagefile.size} bytes.")
+
+        return cleaned_data
+    
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
+
+        if self.registration_entry.program != Program.faculty_guest_other:
+            self.fields['attended_conclave_before'].required = True
+            self.fields['include_in_whos_coming_to_conclave_list'].required = True
+
+        if self.requirePicture()\
+                and not self.data.get('user_image_opt_out') \
+                and not self.data.get('user_image_file_name'):
+            self.fields['user_image_file_name'].required = True
+
+        self.fields['emergency_contact_name'].required = True
+        self.fields['emergency_contact_phone'].required = True
+
         # self.fields['liability_release'].required = True
 
 
@@ -517,7 +596,6 @@ class WorkStudyApplicationView(_RegistrationStepViewBase):
             return self.registration_entry.work_study
 
         return None
-
 
 
 class SelfRatingInfoForm(_RegistrationStepFormBase, forms.ModelForm):
@@ -872,7 +950,7 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
             return
 
         freebies_selected = all(choice.is_freebie for choice in choices)
-        if period ==Period.fourth:
+        if period == Period.fourth:
             # Allow < 3 choices for freebies and beginners
             if (len(choices) != 2 and not freebies_selected
                     and self.registration_entry.program != Program.beginners):
@@ -906,7 +984,6 @@ class RegularProgramClassSelectionForm(_RegistrationStepFormBase, forms.ModelFor
                     f'{format_period_long(period)}: You must select different classes for '
                     'your 1st, 2nd, and 3rd choices.'
                 )
-
 
     def _validate_extra_class_preferences(self) -> None:
         if not self.registration_entry.uses_flexible_class_selection:
@@ -1389,7 +1466,7 @@ class PaymentView(_RegistrationStepViewBase):
 
         if not hasattr(self.registration_entry, 'housing'):
             missing_sections.append('Housing')
-
+        
         return missing_sections
 
 

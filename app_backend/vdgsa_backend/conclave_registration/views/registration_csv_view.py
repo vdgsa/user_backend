@@ -123,6 +123,10 @@ def user_info_to_dict(entry: RegistrationEntry) -> dict[str, object]:
         'address_postal_code': entry.user.address_postal_code,
         'address_country': entry.user.address_country,
         'conclave_phone': entry.additional_info.phone,
+
+        'emergency_contact_name': info.emergency_contact_name,
+        'emergency_contact_phone': info.emergency_contact_phone,
+
         'phone1': entry.user.phone1,
         'phone2': entry.user.phone2,
 
@@ -133,6 +137,13 @@ def user_info_to_dict(entry: RegistrationEntry) -> dict[str, object]:
         'do_not_send_text_updates': info.do_not_send_text_updates,
         'include_in_whos_coming_to_conclave_list': info.include_in_whos_coming_to_conclave_list,
         'attended_conclave_before': info.attended_conclave_before,
+
+        'newbie_how_long_playing':info.newbie_how_long_playing,
+        'newbie_taken_lessons':info.newbie_taken_lessons,
+        'newbie_play_regularly':info.newbie_play_regularly,
+        'newbie_repertoire':info.newbie_repertoire,
+        'newbie_other_info':info.newbie_other_info,
+        
         'buddy_willingness': info.buddy_willingness,
         'can_drive_loaners': info.can_drive_loaners,
         'wants_display_space': info.wants_display_space,
@@ -311,6 +322,8 @@ CSV_HEADERS = [
     'address_postal_code',
     'address_country',
     'conclave_phone',
+    'emergency_contact_name',
+    'emergency_contact_phone',
     'phone1',
     'phone2',
     'age',
@@ -319,6 +332,11 @@ CSV_HEADERS = [
     'do_not_send_text_updates',
     'include_in_whos_coming_to_conclave_list',
     'attended_conclave_before',
+    'newbie_how_long_playing',
+    'newbie_taken_lessons',
+    'newbie_play_regularly',
+    'newbie_repertoire',
+    'newbie_other_info',
     'buddy_willingness',
     'can_drive_loaners',
     'wants_display_space',
