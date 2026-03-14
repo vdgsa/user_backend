@@ -126,8 +126,8 @@ class LocationAddress():
             return
 
         country = pycountry.countries.lookup(country_name)
-        subdivisions = pycountry.subdivisions.get(country_code=country.alpha_2)
-
+        subdivisions = [s for s in pycountry.subdivisions if s.country_code == country.alpha_2]
+    
         if (not subdivisions):
             return []
 

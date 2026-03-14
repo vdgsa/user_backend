@@ -21,9 +21,10 @@ class UserRegistrationForm(PasswordResetForm):
     address_line_1 = forms.CharField()
     address_line_2 = forms.CharField(required=False)
     address_city = forms.CharField(label='City')
-    address_state = forms.ChoiceField(
-            choices=[('','Select State/Province')]+[(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions('United States')],
-            label="State/Province"
+    address_state = forms.Field(
+            label="State/Province",
+            widget=forms.Select(choices=[('','Select State/Province')]+[(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions('United States')],
+            )
         )
     address_postal_code = forms.CharField(label='ZIP/Postal Code')
     address_country = forms.ChoiceField(
@@ -37,6 +38,7 @@ class UserRegistrationForm(PasswordResetForm):
 
 class UserRegistrationView(View):
 
+
     def get(self, request: HttpRequest) -> HttpResponse:
         return self._render_form(UserRegistrationForm())
 
@@ -45,8 +47,8 @@ class UserRegistrationView(View):
 
         if not form.is_valid():
             return self._render_form(form)
-
-        else:
+        
+        else: 
             email = form.cleaned_data['email']
             user, created = User.objects.update_or_create(
                 username=email,
