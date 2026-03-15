@@ -53,6 +53,7 @@ elif _deployment_mode in ['dev', 'unit_test']:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 stripe.api_key = get_docker_secret('stripe_private_key')
+stripe.api_version = '2013-12-03'
 STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
 
 # Quick-start development settings - unsuitable for production
