@@ -371,8 +371,8 @@
     const fileInput = document.getElementById('id_user_image_file_name');
     fileInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
-        if (file && file.size > 10 * 1024 * 1024) {
-            alert('File is too large! Max size is 10MB.');
+        if (file && file.size > 1 * 1024 * 1024) {
+            alert('File is too large! Max size is 1MB.');
             fileInput.value = ''; // Clear the input
         }
     });
