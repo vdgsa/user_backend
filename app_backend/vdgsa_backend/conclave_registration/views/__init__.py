@@ -45,3 +45,5 @@ from .registration_csv_view import (
 from .registration_csv_view import (
     DownloadRegistrationEntriesCSVView as DownloadRegistrationEntriesCSVView
 )
+
+from .conclave_registration_views import ImageView as ImageView

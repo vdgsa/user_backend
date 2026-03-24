@@ -66,6 +66,9 @@ urlpatterns = [
     path('<int:conclave_config_pk>/register/', views.ConclaveRegistrationLandingPage.as_view(),
          name='conclave-reg-landing'),
 
+    path('register/<int:conclave_reg_pk>/image', views.ImageView.as_view(),
+         name='conclave-reg-image'),
+
     # redirect registration for current year
     # (only show link in navbar if there's an open registration)
     re_path('^$', views.current_year_conclave_redirect_view,
