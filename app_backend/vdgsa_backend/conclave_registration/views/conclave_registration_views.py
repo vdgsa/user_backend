@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import mimetypes
 import itertools
 from abc import abstractmethod
 from datetime import datetime
@@ -1594,3 +1595,22 @@ def _send_instrument_loan_email_impl(
             recipient_list=['rentalviol@vdgsa.org'],
             message=message
         )
+
+class ImageView(LoginRequiredMixin, SingleObjectMixin, View):
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+        try:
+            registration_entry = RegistrationEntry.objects.get(pk=self.kwargs['conclave_reg_pk'])
+            file_mime, encoding = mimetypes.guess_type(registration_entry.additional_info.user_image_file_name.name)
+            return HttpResponse(registration_entry.additional_info.user_image_file_name.open(mode='rb'), content_type=file_mime)
+        except IOError:
+            red = RegistrationEntry.new('RGBA', (1, 1), (255, 0, 0, 0))
+            response = HttpResponse(content_type="image/jpeg")
+            red.save(response, "JPEG")
+            return response
+
+    def test_func(self) -> bool:
+        if is_conclave_team(self.request.user):
+            return True
+        return False
+
