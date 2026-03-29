@@ -169,3 +169,25 @@ ssl_key_file = '/letsencrypt/marais.vdgsa.org.key'
 cd vdgsa_backend/deployment/prod
 docker compose stop postgres
 docker compose up -d postgres
+
+## Backing Up the Database
+
+Run the following commands to save the current contents of the database.
+Check settings.py for what the name of the database is.
+Replace the "FIXME" placeholders with the correct values.
+```
+postgres_container=FIXME
+db_name=FIXME
+dumpfile_name=FIXME
+docker exec -it ${postgres_container} pg_dump --username=postgres --format=c ${db_name} -f /${dumpfile_name}
+docker cp ${postgres_container}:/${dumpfile_name} .
+```
+
+### Restoring the Database from a Backup Dump
+
+postgres_container=FIXME
+db_name=FIXME
+dumpfile_name=FIXME
+
+docker cp ${dumpfile_name} ${postgres_container}:/
+docker exec -i ${postgres_container} pg_restore --username=postgres --format=c -d ${db_name} /${dumpfile_name}
