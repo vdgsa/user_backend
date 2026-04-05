@@ -1610,7 +1610,5 @@ class ImageView(LoginRequiredMixin, SingleObjectMixin, View):
             return response
 
     def test_func(self) -> bool:
-        if is_conclave_team(self.request.user):
-            return True
-        return False
+        return is_conclave_team(self.request.user)
 
