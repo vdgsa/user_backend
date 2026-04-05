@@ -1601,8 +1601,7 @@ class ImageView(LoginRequiredMixin, SingleObjectMixin, View):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
         try:
             registration_entry = RegistrationEntry.objects.get(pk=self.kwargs['conclave_reg_pk'])
-            file_mime, encoding = mimetypes.guess_type(registration_entry.additional_info.user_image_file_name.name)
-            return HttpResponse(registration_entry.additional_info.user_image_file_name.open(mode='rb'), content_type=file_mime)
+            return FileResponse(registration_entry.additional_info.user_image_file_name.open(mode='rb'))
         except IOError:
             red = RegistrationEntry.new('RGBA', (1, 1), (255, 0, 0, 0))
             response = HttpResponse(content_type="image/jpeg")
