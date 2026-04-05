@@ -102,22 +102,9 @@ class DirectoryMemberDetailView(LoginRequiredMixin, UserPassesTestMixin, View):
     def getMember(self, pk, **kwargs):
         q_objects = Q(pk=pk)
         q_objects &= Q(is_deceased=False) & Q(include_name_in_membership_directory=True)
-        subscr_member = (
-            Q(owned_subscription__membership_type=MembershipType.regular)
-            | Q(owned_subscription__membership_type=MembershipType.student)
-            | Q(owned_subscription__membership_type=MembershipType.international)
-            | Q(owned_subscription__membership_type=MembershipType.complementary)
-            | Q(owned_subscription__membership_type=MembershipType.organization)
-        )
-
-        subscr_member &= Q(owned_subscription__valid_until__gt=timezone.now())
-
-        q_objects &= Q(
-            subscr_member
-            | Q(owned_subscription__membership_type=MembershipType.lifetime)
-        )
-
-        return User.objects.filter(q_objects).first()
+        member = User.objects.filter(q_objects).first()
+        if member.subscription_is_current:
+            return member
 
     def test_func(self) -> bool:
         return is_active_member(self.request.user)
@@ -134,20 +121,6 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
     def getFiltered(self, form, **kwargs):
         q_objects = Q(is_deceased=False)
         q_objects &= Q(include_name_in_membership_directory=True)
-
-        subscr_member = (
-            Q(owned_subscription__membership_type=MembershipType.regular)
-            | Q(owned_subscription__membership_type=MembershipType.student)
-            | Q(owned_subscription__membership_type=MembershipType.international)
-            | Q(owned_subscription__membership_type=MembershipType.complementary)
-            | Q(owned_subscription__membership_type=MembershipType.organization)
-        )
-        subscr_member &= Q(owned_subscription__valid_until__gt=timezone.now())
-
-        q_objects &= Q(
-            subscr_member
-            | Q(owned_subscription__membership_type=MembershipType.lifetime)
-        )
 
         if form.cleaned_data["searchtext"]:
             q_objects &= (
@@ -215,7 +188,10 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
                     )
                 q_objects &= commercial_member
 
-        return User.objects.filter(q_objects).order_by("last_name")
+        queryset = User.objects.select_related( 'subscription_is_family_member_for', 'owned_subscription').filter(q_objects).order_by("last_name")
+
+        return list(filter(lambda membership: membership.subscription_is_current, queryset))
+
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         form = DirectorySearchForm(self.request.POST)
