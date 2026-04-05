@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import mimetypes
 import itertools
 from abc import abstractmethod
 from datetime import datetime
