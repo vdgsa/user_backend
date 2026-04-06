@@ -15,11 +15,12 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail
 from django.db.models.base import Model
 from django.forms import widgets
-from django.forms.fields import BooleanField, IntegerField
+from django.forms.fields import BooleanField
 from django.forms.utils import ErrorDict
 from django.forms.widgets import ClearableFileInput
 from django.http.request import HttpRequest
-from django.http.response import HttpResponse, HttpResponseRedirect
+from django.http.response import HttpResponse, HttpResponseRedirect, FileResponse
+from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls.base import reverse
@@ -1594,3 +1595,25 @@ def _send_instrument_loan_email_impl(
             recipient_list=['rentalviol@vdgsa.org'],
             message=message
         )
+
+class ImageView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin, View):
+
+    def get(self, *args: Any, **kwargs: Any):
+        try:
+            registration_entry = RegistrationEntry.objects.get(pk=self.kwargs['conclave_reg_pk'])
+            if not hasattr(registration_entry, 'additional_info') or not registration_entry.additional_info.user_image_file_name:
+                raise Http404("Image not provided")
+  
+            user_image = registration_entry.additional_info.user_image_file_name
+            if hasattr(user_image, 'open'):
+                return FileResponse(user_image.open(mode='rb'))
+            else:
+                # Assume it's a string path
+                return FileResponse(open(user_image, 'rb'))
+
+        except (FileNotFoundError, OSError, Exception):
+            raise Http404("Image not found")
+
+    def test_func(self) -> bool:
+        return is_conclave_team(self.request.user)
+
