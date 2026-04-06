@@ -1596,14 +1596,22 @@ def _send_instrument_loan_email_impl(
             message=message
         )
 
-class ImageView(LoginRequiredMixin, SingleObjectMixin, View):
+class ImageView(LoginRequiredMixin, UserPassesTestMixin, SingleObjectMixin, View):
 
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any):
+    def get(self, *args: Any, **kwargs: Any):
         try:
             registration_entry = RegistrationEntry.objects.get(pk=self.kwargs['conclave_reg_pk'])
-            return FileResponse(registration_entry.additional_info.user_image_file_name.open(mode='rb'))
+            if not hasattr(registration_entry, 'additional_info') or not registration_entry.additional_info.user_image_file_name:
+                raise Http404("Image not provided")
+  
+            user_image = registration_entry.additional_info.user_image_file_name
+            if hasattr(user_image, 'open'):
+                return FileResponse(user_image.open(mode='rb'))
+            else:
+                # Assume it's a string path
+                return FileResponse(open(user_image, 'rb'))
 
-        except(FileNotFoundError):
+        except (FileNotFoundError, OSError, Exception):
             raise Http404("Image not found")
 
     def test_func(self) -> bool:
