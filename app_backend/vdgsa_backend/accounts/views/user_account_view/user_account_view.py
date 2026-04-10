@@ -101,7 +101,7 @@ class UserAccountView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class LocationForm(Form):
     country = ChoiceField(
-        choices=([('', 'Select a Country')] + LocationAddress.getCountries()),
+        choices=([('', 'Select a Country')] + LocationAddress.get_countries()),
         widget=Select(attrs={'id_country': 'id_country'})
     )
     subdivision = ChoiceField(
@@ -117,7 +117,7 @@ def get_subdivisions(request):
     if country_name in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
         try:
             subdivisions = sorted(
-                [(s.code, s.name) for s in LocationAddress.getSubdivisions(country_name)],
+                [(s.code, s.name) for s in LocationAddress.get_subdivisions(country_name)],
                 key=lambda x: x[1]
             )
             data = [{'code': code.split('-')[1], 'name': name} for code, name in subdivisions]

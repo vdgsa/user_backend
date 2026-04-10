@@ -35,17 +35,17 @@ class DirectorySearchForm(forms.Form):
         super().__init__(*args, **kwargs)
         # Populate state/country choices at runtime so they reflect DB values
 
-        country_qs = LocationAddress.getCountries(filter_to_users=True)
+        country_qs = LocationAddress.get_countries(filter_to_users=True)
 
         if self.is_bound:
             if self.data['address_country'] == '' or self.data['address_country'] is None:
-                state_qs = LocationAddress.getSubdivisions('United States',filter_to_users=True)
+                state_qs = LocationAddress.get_subdivisions('United States')
             elif self.data['address_country'] in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
-                state_qs = LocationAddress.getSubdivisions(self.data['address_country'],filter_to_users=True)
+                state_qs = LocationAddress.get_subdivisions(self.data['address_country'])
             else:
                 state_qs =  []
         else:
-            state_qs = LocationAddress.getSubdivisions('United States',filter_to_users=True)
+            state_qs = LocationAddress.get_subdivisions('United States')
 
         state_choices = [("", "")] + [(state.code.split('-')[1], state.name) for state in list(state_qs)]
         country_choices = [("", "")] + [(country.name, country.name) for country in list(country_qs)]
