@@ -44,7 +44,7 @@ class AddUserForm(forms.ModelForm):
                 
             ),
             'address_country': Select(
-                choices=[(c.name, c.name) for c in LocationAddress.getCountries()]
+                choices=[(c.name, c.name) for c in LocationAddress.get_countries()]
             ),
         }
 
@@ -100,7 +100,7 @@ class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView)
         form = super().get_form(form_class)
         # Access the instance being updated via self.object
 
-        form.fields['address_state'].choices = [(c.code.split('-')[1], c.name) for c in LocationAddress.getSubdivisions(self.model.address_country)]
+        form.fields['address_state'].choices = [(c.code.split('-')[1], c.name) for c in LocationAddress.get_subdivisions(self.model.address_country)]
         return form
     
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:

@@ -35,29 +35,29 @@ class DirectorySearchForm(forms.Form):
         super().__init__(*args, **kwargs)
         # Populate state/country choices at runtime so they reflect DB values
 
-        country_qs = LocationAddress.getCountries(filter_to_users=True)
+        country_qs = LocationAddress.get_countries(filter_to_users=True)
 
         if self.is_bound:
             if self.data['address_country'] == '' or self.data['address_country'] is None:
-                state_qs = LocationAddress.getSubdivisions('United States',filter_to_users=True)
+                state_qs = LocationAddress.get_subdivisions('United States')
             elif self.data['address_country'] in LocationAddress.COUNTRY_SUBDIVISION_WHITELIST:
-                state_qs = LocationAddress.getSubdivisions(self.data['address_country'],filter_to_users=True)
+                state_qs = LocationAddress.get_subdivisions(
+                    self.data['address_country'])
             else:
-                state_qs =  []
+                state_qs = []
         else:
-            state_qs = LocationAddress.getSubdivisions('United States',filter_to_users=True)
+            state_qs = LocationAddress.get_subdivisions('United States')
 
-        state_choices = [("", "")] + [(state.code.split('-')[1], state.name) for state in list(state_qs)]
-        country_choices = [("", "")] + [(country.name, country.name) for country in list(country_qs)]
+        state_choices = [("", "")] + [(state.code.split('-')
+                                       [1], state.name) for state in list(state_qs)]
+        country_choices = [("", "")] + [(country.name, country.name)
+                                        for country in list(country_qs)]
         self.fields["address_state"].widget.choices = state_choices
         self.fields["address_country"].widget.choices = country_choices
 
     searchtext = forms.CharField(
-        widget=forms.TextInput(attrs={'placeholder': 'Search Text for any field'}), label=False, required=False)
+        widget=forms.TextInput(attrs={'placeholder': 'Search name or address'}), label='Search', required=False)
 
-    isAdvancedSearch = forms.BooleanField(
-        widget=forms.HiddenInput, required=False, initial=False, label=False
-    )
     first_name = forms.CharField(label="First", required=False)
     last_name = forms.CharField(label="Last", required=False)
     address_city = forms.CharField(label="City", required=False)
@@ -101,23 +101,11 @@ class DirectoryMemberDetailView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def getMember(self, pk, **kwargs):
         q_objects = Q(pk=pk)
-        q_objects &= Q(is_deceased=False) & Q(include_name_in_membership_directory=True)
-        subscr_member = (
-            Q(owned_subscription__membership_type=MembershipType.regular)
-            | Q(owned_subscription__membership_type=MembershipType.student)
-            | Q(owned_subscription__membership_type=MembershipType.international)
-            | Q(owned_subscription__membership_type=MembershipType.complementary)
-            | Q(owned_subscription__membership_type=MembershipType.organization)
-        )
-
-        subscr_member &= Q(owned_subscription__valid_until__gt=timezone.now())
-
-        q_objects &= Q(
-            subscr_member
-            | Q(owned_subscription__membership_type=MembershipType.lifetime)
-        )
-
-        return User.objects.filter(q_objects).first()
+        q_objects &= Q(is_deceased=False) & Q(
+            include_name_in_membership_directory=True)
+        member = User.objects.filter(q_objects).first()
+        if member.subscription_is_current:
+            return member
 
     def test_func(self) -> bool:
         return is_active_member(self.request.user)
@@ -134,20 +122,6 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
     def getFiltered(self, form, **kwargs):
         q_objects = Q(is_deceased=False)
         q_objects &= Q(include_name_in_membership_directory=True)
-
-        subscr_member = (
-            Q(owned_subscription__membership_type=MembershipType.regular)
-            | Q(owned_subscription__membership_type=MembershipType.student)
-            | Q(owned_subscription__membership_type=MembershipType.international)
-            | Q(owned_subscription__membership_type=MembershipType.complementary)
-            | Q(owned_subscription__membership_type=MembershipType.organization)
-        )
-        subscr_member &= Q(owned_subscription__valid_until__gt=timezone.now())
-
-        q_objects &= Q(
-            subscr_member
-            | Q(owned_subscription__membership_type=MembershipType.lifetime)
-        )
 
         if form.cleaned_data["searchtext"]:
             q_objects &= (
@@ -171,51 +145,54 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
                 )
             )
 
-        if form.cleaned_data["isAdvancedSearch"]:
-            if form.cleaned_data["first_name"]:
-                q_objects &= Q(first_name__icontains=form.cleaned_data["first_name"])
-            if form.cleaned_data["last_name"]:
-                q_objects &= Q(last_name__icontains=form.cleaned_data["last_name"])
-            if form.cleaned_data["address_city"]:
-                q_objects &= Q(include_address_in_membership_directory=True) & Q(
-                    address_city__icontains=form.cleaned_data["address_city"]
-                )
-            if form.cleaned_data["address_state"]:
-                q_objects &= Q(include_address_in_membership_directory=True) & Q(
-                    address_state__icontains=form.cleaned_data["address_state"]
-                )
-            if form.cleaned_data["address_country"]:
-                q_objects &= Q(include_address_in_membership_directory=True) & Q(
-                    address_country__icontains=form.cleaned_data["address_country"]
-                )
+        if form.cleaned_data["first_name"]:
+            q_objects &= Q(
+                first_name__icontains=form.cleaned_data["first_name"])
+        if form.cleaned_data["last_name"]:
+            q_objects &= Q(last_name__icontains=form.cleaned_data["last_name"])
+        if form.cleaned_data["address_city"]:
+            q_objects &= Q(include_address_in_membership_directory=True) & Q(
+                address_city__icontains=form.cleaned_data["address_city"]
+            )
+        if form.cleaned_data["address_state"]:
+            q_objects &= Q(include_address_in_membership_directory=True) & Q(
+                address_state__icontains=form.cleaned_data["address_state"]
+            )
+        if form.cleaned_data["address_country"]:
+            q_objects &= Q(include_address_in_membership_directory=True) & Q(
+                address_country__icontains=form.cleaned_data["address_country"]
+            )
 
-            if len(form.cleaned_data["teaching_member_type"]) > 0:
-                teaching_member = Q()
-                if "I" in form.cleaned_data["teaching_member_type"]:
-                    teaching_member |= Q(is_teacher=True)
-                if "R" in form.cleaned_data["teaching_member_type"]:
-                    teaching_member |= Q(is_remote_teacher=True)
-                # if('C' in form.cleaned_data['teaching_member_type']):
-                #     teaching_member |= Q(is_teacher=True)
-                q_objects &= teaching_member
+        if len(form.cleaned_data["teaching_member_type"]) > 0:
+            teaching_member = Q()
+            if "I" in form.cleaned_data["teaching_member_type"]:
+                teaching_member |= Q(is_teacher=True)
+            if "R" in form.cleaned_data["teaching_member_type"]:
+                teaching_member |= Q(is_remote_teacher=True)
+            # if('C' in form.cleaned_data['teaching_member_type']):
+            #     teaching_member |= Q(is_teacher=True)
+            q_objects &= teaching_member
 
-            if len(form.cleaned_data["commercial_member_type"]) > 0:
-                commercial_member = Q()
-                if "I" in form.cleaned_data["commercial_member_type"]:
-                    commercial_member |= Q(is_instrument_maker=True)
-                if "B" in form.cleaned_data["commercial_member_type"]:
-                    commercial_member |= Q(is_bow_maker=True)
-                if "R" in form.cleaned_data["commercial_member_type"]:
-                    commercial_member |= Q(is_repairer=True)
-                if "P" in form.cleaned_data["commercial_member_type"]:
-                    commercial_member |= Q(is_publisher=True)
-                if "O" in form.cleaned_data["commercial_member_type"]:
-                    commercial_member |= Q(other_commercial__isnull=False) & ~Q(
-                        other_commercial=""
-                    )
-                q_objects &= commercial_member
+        if len(form.cleaned_data["commercial_member_type"]) > 0:
+            commercial_member = Q()
+            if "I" in form.cleaned_data["commercial_member_type"]:
+                commercial_member |= Q(is_instrument_maker=True)
+            if "B" in form.cleaned_data["commercial_member_type"]:
+                commercial_member |= Q(is_bow_maker=True)
+            if "R" in form.cleaned_data["commercial_member_type"]:
+                commercial_member |= Q(is_repairer=True)
+            if "P" in form.cleaned_data["commercial_member_type"]:
+                commercial_member |= Q(is_publisher=True)
+            if "O" in form.cleaned_data["commercial_member_type"]:
+                commercial_member |= Q(other_commercial__isnull=False) & ~Q(
+                    other_commercial=""
+                )
+            q_objects &= commercial_member
 
-        return User.objects.filter(q_objects).order_by("last_name")
+        queryset = User.objects.select_related(
+            'subscription_is_family_member_for', 'owned_subscription').filter(q_objects).order_by("last_name")
+
+        return list(filter(lambda membership: membership.subscription_is_current, queryset))
 
     def post(self, *args: Any, **kwargs: Any) -> HttpResponse:
         form = DirectorySearchForm(self.request.POST)
@@ -224,7 +201,7 @@ class DirectoryHomeView(LoginRequiredMixin, UserPassesTestMixin, View):
         if not form.is_valid():
             return render(self.request, self.template_name)
         else:
-            p = Paginator(self.getFiltered(form), 10 )
+            p = Paginator(self.getFiltered(form), 10)
             context["results"] = p.get_page(form.cleaned_data["page"])
         return render(self.request, self.template_name, context)
 
