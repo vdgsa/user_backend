@@ -96,6 +96,26 @@ If you add/change/remove any files in `app_backend/static`, run the following to
 
 ## Deploying to Production
 
+Before deploying for the first time, the secrets and public keys need to be set as described [below](#set-secrets--application-public-keys-1).
+
+To deploy an update on our current production server:
+```
+cd vdgsa_backend
+git pull
+cd
+./deploy.sh
+```
+
+The `deploy.sh` script only exists on the server and has the following contents:
+```
+compose_file=vdgsa_backend/deployment/prod/docker-compose.yml
+docker compose -f $compose_file build
+docker compose -f $compose_file up -d
+sleep 3
+docker exec -it vdgsa_prod_django python3 manage.py migrate
+docker exec -it vdgsa_prod_django python3 manage.py collectstatic
+```
+
 ### Set Secrets & Application Public Keys
 
 #### Application Public Keys
