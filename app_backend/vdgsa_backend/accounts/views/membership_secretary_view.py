@@ -41,7 +41,7 @@ class AddUserForm(forms.ModelForm):
         ]
         widgets = {
             'address_state': Select(
-                
+
             ),
             'address_country': Select(
                 choices=[(c.name, c.name) for c in LocationAddress.get_countries()]
@@ -95,14 +95,14 @@ class MembershipSecretaryView(LoginRequiredMixin, UserPassesTestMixin, ListView)
     @property
     def all_users(self) -> bool:
         return self.request.GET.get('all_users', 'false').lower() == 'true'
-    
+
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         # Access the instance being updated via self.object
 
         form.fields['address_state'].choices = [(c.code.split('-')[1], c.name) for c in LocationAddress.get_subdivisions(self.model.address_country)]
         return form
-    
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['all_users'] = self.all_users
@@ -143,6 +143,7 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
             'Country',
             'Phone 1',
             'Phone 2',
+            'Website',
 
             'Is Young Player',
             'Is Teacher',
@@ -203,6 +204,7 @@ class AllUsersSpreadsheetView(LoginRequiredMixin, UserPassesTestMixin, View):
 
                 'Phone 1': user.phone1,
                 'Phone 2': user.phone2,
+                'Website': user.website,
 
                 'Is Young Player': self._format_bool(user.is_young_player),
                 'Is Teacher': self._format_bool(user.is_teacher),
