@@ -26,6 +26,9 @@ from django.urls.base import reverse
 from django.urls.conf import re_path
 
 
+# LOWERCASE THE USERNAME/EMAIL
+# Figure out which method to override to convert the
+# email address to lowercase
 class VdGSALoginView(LoginView):
     success_url_allowed_hosts = {
         'public.vdgsa.org',

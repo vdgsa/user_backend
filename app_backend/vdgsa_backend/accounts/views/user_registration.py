@@ -47,9 +47,9 @@ class UserRegistrationView(View):
 
         if not form.is_valid():
             return self._render_form(form)
-        
-        else: 
-            email = form.cleaned_data['email']
+
+        else:
+            email = form.cleaned_data['email'].lower()
             user, created = User.objects.update_or_create(
                 username=email,
                 defaults={
@@ -78,6 +78,8 @@ class UserRegistrationView(View):
 
     # "username_taken = True" will tell the template to show a message with a link to the
     # password reset page.
+    # LOWERCASE: Figure out what method to override in the PasswordResetForm to convert
+    # email to lowercase
     def _render_form(self, form: PasswordResetForm, username_taken: bool = False) -> HttpResponse:
         return render(
             self.request,
