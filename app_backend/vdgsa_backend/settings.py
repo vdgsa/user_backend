@@ -31,6 +31,9 @@ if _deployment_mode not in _allowed_deployment_modes:
 
 
 def get_docker_secret(secret_name: str) -> str:
+    if _deployment_mode == 'unit_test':
+        return secret_name
+
     secret_file = f'/run/secrets/{secret_name}'
     if not os.path.isfile(secret_file):
         raise FileNotFoundError(f'Secret file "{secret_name}" not found.')
@@ -68,7 +71,7 @@ DEBUG = _deployment_mode in ['dev', 'unit_test']
 if _deployment_mode == 'dev':
     ALLOWED_HOSTS: List[str] = ['*']
     EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-    EMAIL_FILE_PATH = "./emails.log"
+    EMAIL_FILE_PATH = "./emails"
 elif _deployment_mode == 'prod':
     ALLOWED_HOSTS = ['hume.vdgsa.org']
     SESSION_COOKIE_SECURE = True
@@ -155,8 +158,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres' if _deployment_mode == 'prod' else 'vdgsa_postgres',
         'USER': 'postgres',
-        'PASSWORD': get_docker_secret('postgres_password'),
-        'HOST': 'postgres',
+        'PASSWORD': 'postgres' if _deployment_mode == 'unit_test' else get_docker_secret('postgres_password'),
+        'HOST': 'localhost' if _deployment_mode == 'unit_test' else 'postgres',
         'PORT': '5432'
     }
 }

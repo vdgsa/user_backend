@@ -33,6 +33,10 @@ class ChangeEmailForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.user = requested_user
 
+    def clean_new_email(self):
+        new_email = self.cleaned_data.get('new_email')
+        return new_email.lower() if new_email is not None else new_email
+
     def save(self, commit: bool = True) -> ChangeEmailRequest:
         # Automatically use the requested user as the "user" field
         # for the ChangeEmailRequest object.

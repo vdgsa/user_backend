@@ -77,6 +77,25 @@ If any additional events need to be forwarded, add them to the stripe-cli comman
 
 ## Running Linters and Tests
 
+### Install Packages Locally
+
+```
+cd app_backend
+pipenv sync --dev
+```
+
+### Start a Local Postgres Server
+
+```
+./dev_scripts/start_postgres.sh
+```
+
+### Run the Tests
+
+```
+./dev_scripts/test.sh
+```
+
 ## Generating and Applying Django DB Migrations
 Whenever you add/alter/remove DB Models, run the following to generate migration files:
 ```

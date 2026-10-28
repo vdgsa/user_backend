@@ -531,7 +531,7 @@ _WORK_STUDY_DATA = {
     'has_been_to_conclave': YesNo.yes,
     'has_done_work_study': YesNo.yes,
     'student_info': '',
-    'job_preferences': [WorkStudyJob.tech_support],
+    'job_preferences': [WorkStudyJob.copy_crew],
     'relevant_job_experience': 'noristearst',
     'other_skills': '',
     'other_info': '',
