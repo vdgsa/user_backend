@@ -13,6 +13,7 @@ isort = "*"
 pyyaml = "*"
 uritemplate = "*"
 selenium = "*"
+playwright = "*"
 
 [packages]
 django = "<3.3"

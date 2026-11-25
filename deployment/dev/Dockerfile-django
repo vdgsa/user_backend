@@ -9,6 +9,8 @@ RUN pip install pipenv
 
 COPY Pipfile .
 COPY Pipfile.lock .
-RUN pipenv install --system
+
+RUN pipenv install --system --dev
+RUN python -m playwright install --with-deps chromium
 
 COPY . /usr/src/app

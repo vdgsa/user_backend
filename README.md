@@ -77,6 +77,14 @@ If any additional events need to be forwarded, add them to the stripe-cli comman
 
 ## Running Linters and Tests
 
+The browser UI tests for accounts, rental viols, and conclave registration use
+Playwright with Chromium. The development Docker image installs Chromium when
+it is built. With the development stack running, run all tests with:
+
+```
+./dev_scripts/compose_dev exec django python3 manage.py test
+```
+
 ## Generating and Applying Django DB Migrations
 Whenever you add/alter/remove DB Models, run the following to generate migration files:
 ```
