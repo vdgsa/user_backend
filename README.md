@@ -134,13 +134,11 @@ In `dev_scripts`, there are several other shortcut scripts for interacting with 
 ## Running Linters and Tests
 Note: We have been lax in running these. Expect errors.
 ```
-cd app_backend
-pipenv shell
-../lint.sh
+./dev_scripts/lint.sh
 # If start_postgres.sh says the container vdgsa-dev-postgres already exists,
 # start instead it with `docker start vdgsa-dev-postgres`
 ../dev_scripts/start_postgres.sh
-DEPLOYMENT_MODE=unit_test ./manage.py test
+./dev_scripts/test.sh
 ```
 
 ## Generating and Applying Django DB Migrations
