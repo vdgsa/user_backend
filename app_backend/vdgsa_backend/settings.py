@@ -31,9 +31,12 @@ if _deployment_mode not in _allowed_deployment_modes:
 
 
 def get_docker_secret(secret_name: str) -> str:
-    secret_file = f'/run/secrets/{secret_name}'
+    secret_file = (
+        f'{BASE_DIR.parent}/deployment/dev/secrets/{secret_name}'
+        if _deployment_mode == 'unit_test' else f'/run/secrets/{secret_name}'
+    )
     if not os.path.isfile(secret_file):
-        raise FileNotFoundError(f'Secret file "{secret_name}" not found.')
+        raise FileNotFoundError(f'Secret file "{secret_file}" not found.')
 
     with open(secret_file) as f:
         return f.read().strip()
@@ -68,7 +71,7 @@ DEBUG = _deployment_mode in ['dev', 'unit_test']
 if _deployment_mode == 'dev':
     ALLOWED_HOSTS: List[str] = ['*']
     EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-    EMAIL_FILE_PATH = "./emails.log"
+    EMAIL_FILE_PATH = "./email_logs"
 elif _deployment_mode == 'prod':
     ALLOWED_HOSTS = ['hume.vdgsa.org']
     SESSION_COOKIE_SECURE = True
@@ -153,10 +156,22 @@ WSGI_APPLICATION = 'vdgsa_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres' if _deployment_mode == 'prod' else 'vdgsa_postgres',
+        'NAME': {
+            'prod': 'postgres',
+            'dev': 'vdgsa_postgres',
+            'unit_test': 'vdgsa_postgres',  # set in dev_scripts/start_postgres.sh
+        }[_deployment_mode],
         'USER': 'postgres',
-        'PASSWORD': get_docker_secret('postgres_password'),
-        'HOST': 'postgres',
+        'PASSWORD': {
+            'prod': get_docker_secret('postgres_password'),
+            'dev': get_docker_secret('postgres_password'),
+            'unit_test': 'postgres',  # set in dev_scripts/start_postgres.sh
+        }[_deployment_mode],
+        'HOST': {
+            'prod': 'postgres',
+            'dev': 'postgres',
+            'unit_test': 'localhost'
+        }[_deployment_mode],
         'PORT': '5432'
     }
 }

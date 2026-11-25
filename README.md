@@ -1,9 +1,22 @@
 # VdGSA Web Applications
 Web application code for parts of the VdGSA website including: user account system, Conclave registration, rental viol system, historical viols database.
 
-## Running the Development Stack
-The dev stack requires Python 3.10 or later and [Docker](https://docs.docker.com/engine/install/ubuntu/).
-We recommend running the dev stack on a supported Ubuntu LTS version.
+The commands listed are relative to the root directory of the repository unless otherwise specified.
+
+## Development Environment Setup
+
+### Install Prerequisites
+
+- We recommend using a supported Ubuntu LTS version.
+- Python 3.10 or later with pip and venv
+  ```
+  sudo add-apt-repository ppa:deadsnakes/ppa
+  sudo apt-get update
+  sudo apt-get install python3.10
+  sudo apt-get install python3.10-venv
+  python3.10 -m ensurepip
+  ```
+- [Docker](https://docs.docker.com/engine/install/ubuntu/)
 
 ### Clone the Repository
 ```
@@ -11,7 +24,22 @@ git clone git@github.com:vdgsa/user_backend.git vdgsa_website
 cd vdgsa_website
 ```
 
+### Install Pipenv and Python Dependencies Locally
+
+This is needed for running tests and generating migrations.
+Install [pipenv](https://pipenv.pypa.io/en/latest/installation.html) and the required Python packages.
+```
+sudo apt install pipenv
+cd app_backend
+pipenv sync --dev
+```
+
+Note: `pipenv sync` installs needed packages but does not remove unneeded ones.
+`pipenv clean` removes extra packages.
+
 ### Set Secrets & Application Public Keys
+
+The secrets files and environment variables set here apply to the development stack (`DEPLOYMENT_MODE=dev`) and unit test mode (`DEPLOYMENT_MODE=unit_test`).
 
 #### Configure a Stripe Sandbox
 In the stripe dashboard, create a sandbox (we're allowed 5, so double check that we have enough left).
@@ -75,12 +103,51 @@ Check the pairing code printed to the logs, and click Allow Access.
 Note that the Stripe CLI is currently only set to listen for checkout session completed events.
 If any additional events need to be forwarded, add them to the stripe-cli command in deployment/dev/docker-compose.yml.
 
+### How the Dev Stack Sends Emails
+
+The development stack will write the contents of any emails it would send to the directory `/usr/src/app/emails.log` in the `vdgsa_django` container.
+The filename is configured in `vdgsa_backend/settings.py`.
+
+To print the most email file:
+```
+docker exec -it vdgsa_django bash -c "cat $(tail -n 1 $(ls -1 /usr/src/app/emails.log))"
+```
+
+### Creating a User Account for Development
+
+To create a superuser (has all permissions):
+```
+DEPLOYMENT_MODE=unit_test pipenv run ./manage.py
+```
+
+Note: You can set specific user permissions through the django admin site at <http://localhost:1680/admin>.
+Log in with your superuser account.
+
+You can also create an account and "purchase" a membership through the site's normal interface.
+When you get to the phase of receiving an email with a link to finish creating the account, print the most recent logged email with:
+```
+./dev_scripts/email_log_print_most_recent.sh
+```
+
+In `dev_scripts`, there are several other shortcut scripts for interacting with logged emails.
+
 ## Running Linters and Tests
+Note: We have been lax in running these. Expect errors.
+```
+cd app_backend
+pipenv shell
+../lint.sh
+# If start_postgres.sh says the container vdgsa-dev-postgres already exists,
+# start instead it with `docker start vdgsa-dev-postgres`
+../dev_scripts/start_postgres.sh
+DEPLOYMENT_MODE=unit_test ./manage.py test
+```
 
 ## Generating and Applying Django DB Migrations
 Whenever you add/alter/remove DB Models, run the following to generate migration files:
 ```
-./manage.py makemigrations
+cd app_backend
+DEPLOYMENT_MODE=unit_test pipenv run ./manage.py makemigrations
 ```
 
 To apply new migrations to your stack:
